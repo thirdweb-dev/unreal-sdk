@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "thirdweb_unrealEditor Editor Win64 Development (thirdweb_unreal)",
+            "compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": "D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_thirdweb_unreal.json"
+        },
+        {
+            "name": "Win32",
+            "compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": "D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default.json"
+        }
+    ],
+    "version": 4
+}

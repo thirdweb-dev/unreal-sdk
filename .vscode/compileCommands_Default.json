@@ -1,0 +1,74 @@
+[
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Private\\ThirdwebActor.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Private\\ThirdwebModule.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Public\\Thirdweb.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Public\\ThirdwebActor.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Public\\ThirdwebModule.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Plugins\\Thirdweb\\Source\\Thirdweb\\Thirdweb.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\Thirdweb.24.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Source\\thirdweb_unreal\\thirdweb_unreal.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\thirdweb_unreal.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Source\\thirdweb_unreal\\thirdweb_unreal.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\thirdweb_unreal.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "D:\\Projects\\thirdweb_unreal\\Source\\thirdweb_unreal\\thirdweb_unreal.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@D:\\Projects\\thirdweb_unreal\\.vscode\\compileCommands_Default\\thirdweb_unreal.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	}
+]
