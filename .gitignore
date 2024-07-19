@@ -72,3 +72,6 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Include specific thirdweb Rust library file
+!Plugins/Thirdweb/lib/thirdweb.lib
