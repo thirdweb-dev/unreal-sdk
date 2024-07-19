@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Thirdweb.h"
-#include <cstdint>
 #include "ThirdwebActor.generated.h"
 
 UCLASS()
@@ -24,32 +23,41 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     // Blueprint callable function to create a private key wallet
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString CreatePrivateKeyWallet(const FString &PrivateKey);
+    // Thirdweb -> Private Key category
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|PrivateKeyWallet")
+    void CreatePrivateKeyWallet(const FString &PrivateKey, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to generate a private key wallet
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString GeneratePrivateKeyWallet();
-
-    // Blueprint callable function to get the wallet address
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString GetWalletAddress(int64 WalletHandle);
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|PrivateKeyWallet")
+    void GeneratePrivateKeyWallet(bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to create an InAppWallet
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString CreateInAppWallet(const FString &Email);
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void CreateInAppWallet(const FString &Email, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to send OTP
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString SendOTP(int64 InAppWalletHandle);
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void SendOTP(int64 InAppWalletHandle, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to verify OTP
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString VerifyOTP(int64 InAppWalletHandle, const FString &OTP);
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to get the wallet address
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
+    void GetWalletAddress(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to sign a message
-    UFUNCTION(BlueprintCallable, Category = "Thirdweb")
-    FString SignMessage(int64 WalletHandle, const FString &Message);
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
+    void SignMessage(int64 WalletHandle, const FString &Message, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to check if a wallet is connected
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
+    void IsConnected(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to disconnect a wallet
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
+    void Disconnect(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output);
 
     // Properties for configurable parameters
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thirdweb")

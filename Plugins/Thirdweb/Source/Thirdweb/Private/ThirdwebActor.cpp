@@ -25,131 +25,86 @@ void AThirdwebActor::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-// Blueprint callable function to create a private key wallet
-FString AThirdwebActor::CreatePrivateKeyWallet(const FString &PrivateKey)
+// Helper function to convert FFIResult to separate operation results
+void ConvertFFIResultToOperationResult(const Thirdweb::FFIResult &ffi_result, bool &Success, bool &CanRetry, FString &Output)
 {
-    Thirdweb::FFIResult wallet_result = Thirdweb::create_private_key_wallet(TCHAR_TO_UTF8(*PrivateKey));
-    if (wallet_result.success)
+    // Log FFIResult object
+    UE_LOG(LogTemp, Warning, TEXT("FFIResult: success=%d, message=%s"), ffi_result.success, UTF8_TO_TCHAR(ffi_result.message));
+
+    Success = ffi_result.success;
+    Output = UTF8_TO_TCHAR(ffi_result.message);
+    if (Success && Output.StartsWith("RecoverableError"))
     {
-        int64 WalletHandle = std::stoll(wallet_result.message);
-        FString WalletHandleStr(UTF8_TO_TCHAR(wallet_result.message));
-        Thirdweb::free_ffi_result(wallet_result);
-        return WalletHandleStr;
+        Success = false;
+        CanRetry = true;
+        Output = Output.Mid(17).TrimStart();
     }
     else
     {
-        FString ErrorStr(UTF8_TO_TCHAR(wallet_result.message));
-        Thirdweb::free_ffi_result(wallet_result);
-        return ErrorStr;
+        CanRetry = false;
     }
+    Thirdweb::free_ffi_result(ffi_result);
+}
+
+// Blueprint callable function to create a private key wallet
+void AThirdwebActor::CreatePrivateKeyWallet(const FString &PrivateKey, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult wallet_result = Thirdweb::create_private_key_wallet(TCHAR_TO_UTF8(*PrivateKey));
+    ConvertFFIResultToOperationResult(wallet_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to generate a private key wallet
-FString AThirdwebActor::GeneratePrivateKeyWallet()
+void AThirdwebActor::GeneratePrivateKeyWallet(bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult wallet_result = Thirdweb::generate_private_key_wallet();
-    if (wallet_result.success)
-    {
-        int64 WalletHandle = std::stoll(wallet_result.message);
-        FString WalletHandleStr(UTF8_TO_TCHAR(wallet_result.message));
-        Thirdweb::free_ffi_result(wallet_result);
-        return WalletHandleStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(wallet_result.message));
-        Thirdweb::free_ffi_result(wallet_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(wallet_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to get the wallet address
-FString AThirdwebActor::GetWalletAddress(int64 WalletHandle)
+void AThirdwebActor::GetWalletAddress(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult address_result = Thirdweb::get_wallet_address(WalletHandle);
-    if (address_result.success)
-    {
-        FString AddressStr(UTF8_TO_TCHAR(address_result.message));
-        Thirdweb::free_ffi_result(address_result);
-        return AddressStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(address_result.message));
-        Thirdweb::free_ffi_result(address_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(address_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to create an InAppWallet
-FString AThirdwebActor::CreateInAppWallet(const FString &Email)
+void AThirdwebActor::CreateInAppWallet(const FString &Email, bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult inapp_result = Thirdweb::create_in_app_wallet(TCHAR_TO_UTF8(*ClientID), TCHAR_TO_UTF8(*BundleID), TCHAR_TO_UTF8(*SecretKey), TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*StorageDirectoryPath));
-    if (inapp_result.success)
-    {
-        int64 InAppWalletHandle = std::stoll(inapp_result.message);
-        FString InAppWalletHandleStr(UTF8_TO_TCHAR(inapp_result.message));
-        Thirdweb::free_ffi_result(inapp_result);
-        return InAppWalletHandleStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(inapp_result.message));
-        Thirdweb::free_ffi_result(inapp_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(inapp_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to send OTP
-FString AThirdwebActor::SendOTP(int64 InAppWalletHandle)
+void AThirdwebActor::SendOTP(int64 InAppWalletHandle, bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult otp_result = Thirdweb::in_app_wallet_send_otp(InAppWalletHandle);
-    if (otp_result.success)
-    {
-        FString OtpStr(UTF8_TO_TCHAR(otp_result.message));
-        Thirdweb::free_ffi_result(otp_result);
-        return OtpStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(otp_result.message));
-        Thirdweb::free_ffi_result(otp_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(otp_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to verify OTP
-FString AThirdwebActor::VerifyOTP(int64 InAppWalletHandle, const FString &OTP)
+void AThirdwebActor::VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult verify_result = Thirdweb::in_app_wallet_verify_otp(InAppWalletHandle, TCHAR_TO_UTF8(*OTP));
-    if (verify_result.success)
-    {
-        FString VerifyStr(UTF8_TO_TCHAR(verify_result.message));
-        Thirdweb::free_ffi_result(verify_result);
-        return VerifyStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(verify_result.message));
-        Thirdweb::free_ffi_result(verify_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(verify_result, Success, CanRetry, Output);
 }
 
 // Blueprint callable function to sign a message
-FString AThirdwebActor::SignMessage(int64 WalletHandle, const FString &Message)
+void AThirdwebActor::SignMessage(int64 WalletHandle, const FString &Message, bool &Success, bool &CanRetry, FString &Output)
 {
     Thirdweb::FFIResult sign_result = Thirdweb::sign_message(WalletHandle, TCHAR_TO_UTF8(*Message));
-    if (sign_result.success)
-    {
-        FString SignatureStr(UTF8_TO_TCHAR(sign_result.message));
-        Thirdweb::free_ffi_result(sign_result);
-        return SignatureStr;
-    }
-    else
-    {
-        FString ErrorStr(UTF8_TO_TCHAR(sign_result.message));
-        Thirdweb::free_ffi_result(sign_result);
-        return ErrorStr;
-    }
+    ConvertFFIResultToOperationResult(sign_result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to check if a wallet is connected
+void AThirdwebActor::IsConnected(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult connected_result = Thirdweb::is_connected(WalletHandle);
+    ConvertFFIResultToOperationResult(connected_result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to disconnect a wallet
+void AThirdwebActor::Disconnect(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult disconnect_result = Thirdweb::disconnect(WalletHandle);
+    ConvertFFIResultToOperationResult(disconnect_result, Success, CanRetry, Output);
 }

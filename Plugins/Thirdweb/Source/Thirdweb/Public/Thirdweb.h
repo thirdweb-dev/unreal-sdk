@@ -38,6 +38,10 @@ namespace Thirdweb
 
         FFIResult sign_message(uintptr_t handle_id, const char *message);
 
+        FFIResult is_connected(uintptr_t handle_id);
+
+        FFIResult disconnect(uintptr_t handle_id);
+
         void free_wallet(uintptr_t handle_id);
 
         void free_string(char *s);
