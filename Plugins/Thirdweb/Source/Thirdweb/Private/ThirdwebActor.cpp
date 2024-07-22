@@ -70,7 +70,19 @@ void AThirdwebActor::GetWalletAddress(int64 WalletHandle, bool &Success, bool &C
 // Blueprint callable function to create an InAppWallet
 void AThirdwebActor::CreateInAppWallet(const FString &Email, bool &Success, bool &CanRetry, FString &Output)
 {
-    Thirdweb::FFIResult inapp_result = Thirdweb::create_in_app_wallet(TCHAR_TO_UTF8(*ClientID), TCHAR_TO_UTF8(*BundleID), TCHAR_TO_UTF8(*SecretKey), TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*StorageDirectoryPath));
+    const char *client_id = ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*ClientID);
+    const char *bundle_id = BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*BundleID);
+    const char *secret_key = SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*SecretKey);
+    const char *storage_directory_path = StorageDirectoryPath.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*StorageDirectoryPath);
+
+    Thirdweb::FFIResult inapp_result = Thirdweb::create_in_app_wallet(
+        client_id,
+        bundle_id,
+        secret_key,
+        TCHAR_TO_UTF8(*Email),
+        storage_directory_path
+    );
+
     ConvertFFIResultToOperationResult(inapp_result, Success, CanRetry, Output);
 }
 
