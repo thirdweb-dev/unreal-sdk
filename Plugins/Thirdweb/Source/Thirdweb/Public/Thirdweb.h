@@ -9,43 +9,69 @@
 namespace Thirdweb
 {
 
-    struct FFIResult
-    {
-        bool success;
-        const char *message;
-    };
+  struct FFIResult
+  {
+    bool success;
+    const char *message;
+  };
 
-    extern "C"
-    {
+  extern "C"
+  {
 
-        void free_ffi_result(FFIResult result);
+    void free_ffi_result(FFIResult result);
 
-        FFIResult create_private_key_wallet(const char *private_key);
+    FFIResult create_private_key_wallet(const char *private_key);
 
-        FFIResult generate_private_key_wallet();
+    FFIResult generate_private_key_wallet();
 
-        FFIResult create_in_app_wallet(const char *client_id,
-                                       const char *bundle_id,
-                                       const char *secret_key,
-                                       const char *email,
-                                       const char *storage_directory_path);
+    FFIResult create_in_app_wallet(const char *client_id,
+                                   const char *bundle_id,
+                                   const char *secret_key,
+                                   const char *email,
+                                   const char *storage_directory_path);
 
-        FFIResult in_app_wallet_send_otp(uintptr_t handle_id);
+    FFIResult in_app_wallet_send_otp(uintptr_t handle_id);
 
-        FFIResult in_app_wallet_verify_otp(uintptr_t handle_id, const char *otp);
+    FFIResult in_app_wallet_verify_otp(uintptr_t handle_id, const char *otp);
 
-        FFIResult get_wallet_address(uintptr_t handle_id);
+    FFIResult create_smart_wallet(const char *client_id,
+                                  const char *bundle_id,
+                                  const char *secret_key,
+                                  uintptr_t personal_wallet_handle_id,
+                                  const char *chain_id,
+                                  bool gasless,
+                                  const char *factory,
+                                  const char *account_override);
 
-        FFIResult sign_message(uintptr_t handle_id, const char *message);
+    FFIResult smart_wallet_is_deployed(uintptr_t handle_id);
 
-        FFIResult is_connected(uintptr_t handle_id);
+    FFIResult smart_wallet_get_all_admins(uintptr_t handle_id);
 
-        FFIResult disconnect(uintptr_t handle_id);
+    FFIResult smart_wallet_get_all_active_signers(uintptr_t handle_id);
 
-        void free_wallet(uintptr_t handle_id);
+    FFIResult smart_wallet_create_session_key(uintptr_t handle_id,
+                                              const char *signer_address,
+                                              const char *is_admin,
+                                              const char *const *approved_targets,
+                                              uintptr_t approved_targets_count,
+                                              const char *native_token_limit_per_transaction_in_wei,
+                                              const char *permission_start_timestamp,
+                                              const char *permission_end_timestamp,
+                                              const char *req_validity_start_timestamp,
+                                              const char *req_validity_end_timestamp);
 
-        void free_string(char *s);
+    FFIResult get_wallet_address(uintptr_t handle_id);
 
-    } // extern "C"
+    FFIResult sign_message(uintptr_t handle_id, const char *message);
+
+    FFIResult is_connected(uintptr_t handle_id);
+
+    FFIResult disconnect(uintptr_t handle_id);
+
+    void free_wallet(uintptr_t handle_id);
+
+    void free_string(char *s);
+
+  } // extern "C"
 
 } // namespace Thirdweb

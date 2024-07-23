@@ -22,14 +22,17 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
+    // PRIVATE KEY WALLET FUNCTIONS
+
     // Blueprint callable function to create a private key wallet
-    // Thirdweb -> Private Key category
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|PrivateKeyWallet")
     void CreatePrivateKeyWallet(const FString &PrivateKey, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to generate a private key wallet
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|PrivateKeyWallet")
     void GeneratePrivateKeyWallet(bool &Success, bool &CanRetry, FString &Output);
+
+    // IN-APP WALLET FUNCTIONS
 
     // Blueprint callable function to create an InAppWallet
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
@@ -42,6 +45,47 @@ public:
     // Blueprint callable function to verify OTP
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
     void VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool &Success, bool &CanRetry, FString &Output);
+
+    // SMART WALLET FUNCTIONS
+
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|SmartWallet")
+    void CreateSmartWallet(int64 PersonalWalletHandle,
+                           const FString &ChainID,
+                           bool Gasless,
+                           const FString &Factory,
+                           const FString &AccountOverride,
+                           bool &Success,
+                           bool &CanRetry,
+                           FString &Output);
+
+    // Blueprint callable function to check if a smart wallet is deployed
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|SmartWallet")
+    void IsSmartWalletDeployed(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to get all admins of a smart wallet
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|SmartWallet")
+    void GetSmartWalletAdmins(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to get all active signers of a smart wallet
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|SmartWallet")
+    void GetSmartWalletActiveSigners(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to create a session key for a smart wallet
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|SmartWallet")
+    void CreateSmartWalletSessionKey(int64 SmartWalletHandle,
+                                     const FString &SignerAddress,
+                                     const FString &IsAdmin,
+                                     const TArray<FString> &ApprovedTargets,
+                                     const FString &NativeTokenLimitPerTransactionInWei,
+                                     const FString &PermissionStartTimestamp,
+                                     const FString &PermissionEndTimestamp,
+                                     const FString &ReqValidityStartTimestamp,
+                                     const FString &ReqValidityEndTimestamp,
+                                     bool &Success,
+                                     bool &CanRetry,
+                                     FString &Output);
+
+    // THIRDWEB WALLET FUNCTIONS
 
     // Blueprint callable function to get the wallet address
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
@@ -58,6 +102,8 @@ public:
     // Blueprint callable function to disconnect a wallet
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|Wallets")
     void Disconnect(int64 WalletHandle, bool &Success, bool &CanRetry, FString &Output);
+
+    // CLIENT CONFIGURATION
 
     // Properties for configurable parameters
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thirdweb")

@@ -80,8 +80,7 @@ void AThirdwebActor::CreateInAppWallet(const FString &Email, bool &Success, bool
         bundle_id,
         secret_key,
         TCHAR_TO_UTF8(*Email),
-        storage_directory_path
-    );
+        storage_directory_path);
 
     ConvertFFIResultToOperationResult(inapp_result, Success, CanRetry, Output);
 }
@@ -119,4 +118,90 @@ void AThirdwebActor::Disconnect(int64 WalletHandle, bool &Success, bool &CanRetr
 {
     Thirdweb::FFIResult disconnect_result = Thirdweb::disconnect(WalletHandle);
     ConvertFFIResultToOperationResult(disconnect_result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to create a smart wallet
+void AThirdwebActor::CreateSmartWallet(int64 PersonalWalletHandle,
+                                       const FString &ChainID,
+                                       bool Gasless,
+                                       const FString &Factory,
+                                       const FString &AccountOverride,
+                                       bool &Success,
+                                       bool &CanRetry,
+                                       FString &Output)
+{
+    const char *client_id = ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*ClientID);
+    const char *bundle_id = BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*BundleID);
+    const char *secret_key = SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*SecretKey);
+    const char *factory = Factory.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Factory);
+    const char *account_override = AccountOverride.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*AccountOverride);
+
+    Thirdweb::FFIResult result = Thirdweb::create_smart_wallet(
+        client_id,
+        bundle_id,
+        secret_key,
+        PersonalWalletHandle,
+        TCHAR_TO_UTF8(*ChainID),
+        Gasless,
+        factory,
+        account_override);
+
+    ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to check if a smart wallet is deployed
+void AThirdwebActor::IsSmartWalletDeployed(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult result = Thirdweb::smart_wallet_is_deployed(SmartWalletHandle);
+    ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to get all admins of a smart wallet
+void AThirdwebActor::GetSmartWalletAdmins(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult result = Thirdweb::smart_wallet_get_all_admins(SmartWalletHandle);
+    ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to get all active signers of a smart wallet
+void AThirdwebActor::GetSmartWalletActiveSigners(int64 SmartWalletHandle, bool &Success, bool &CanRetry, FString &Output)
+{
+    Thirdweb::FFIResult result = Thirdweb::smart_wallet_get_all_active_signers(SmartWalletHandle);
+    ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+}
+
+// Blueprint callable function to create a session key for a smart wallet
+void AThirdwebActor::CreateSmartWalletSessionKey(int64 SmartWalletHandle,
+                                                 const FString &SignerAddress,
+                                                 const FString &IsAdmin,
+                                                 const TArray<FString> &ApprovedTargets,
+                                                 const FString &NativeTokenLimitPerTransactionInWei,
+                                                 const FString &PermissionStartTimestamp,
+                                                 const FString &PermissionEndTimestamp,
+                                                 const FString &ReqValidityStartTimestamp,
+                                                 const FString &ReqValidityEndTimestamp,
+                                                 bool &Success,
+                                                 bool &CanRetry,
+                                                 FString &Output)
+{
+    // Convert TArray<FString> to const char* const*
+    TArray<const char *> ApprovedTargetsCArray;
+    for (const FString &Target : ApprovedTargets)
+    {
+        ApprovedTargetsCArray.Add(TCHAR_TO_UTF8(*Target));
+    }
+
+    Thirdweb::FFIResult result = Thirdweb::smart_wallet_create_session_key(
+        SmartWalletHandle,
+        TCHAR_TO_UTF8(*SignerAddress),
+        TCHAR_TO_UTF8(*IsAdmin),
+        ApprovedTargetsCArray.GetData(),
+        ApprovedTargetsCArray.Num(),
+        TCHAR_TO_UTF8(*NativeTokenLimitPerTransactionInWei),
+        TCHAR_TO_UTF8(*PermissionStartTimestamp),
+        TCHAR_TO_UTF8(*PermissionEndTimestamp),
+        TCHAR_TO_UTF8(*ReqValidityStartTimestamp),
+        TCHAR_TO_UTF8(*ReqValidityEndTimestamp));
+
+    ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
 }
