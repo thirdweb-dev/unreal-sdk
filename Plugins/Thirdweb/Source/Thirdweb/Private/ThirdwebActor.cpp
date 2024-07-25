@@ -114,24 +114,24 @@ void AThirdwebActor::VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool
 }
 
 // Blueprint callable function to start OAuth login flow from start to finish
-void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle, bool &Success, bool &CanRetry, FString &Output)
+void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle)
 {
     FString RedirectUrl = TEXT("http://localhost:8789/callback");
 
     // Fetch the OAuth login link
     Thirdweb::FFIResult fetch_link_result = Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, TCHAR_TO_UTF8(*RedirectUrl));
-    ConvertFFIResultToOperationResult(fetch_link_result, Success, CanRetry, Output);
+    bool OAuthSuccess, OAuthCanRetry;
+    FString OAuthOutput;
+    ConvertFFIResultToOperationResult(fetch_link_result, OAuthSuccess, OAuthCanRetry, OAuthOutput);
 
-    if (!Success)
+    if (!OAuthSuccess)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to fetch OAuth login link."));
+        OnOAuthFailure.Broadcast(InAppWalletHandle, OAuthOutput);
         return;
     }
 
-    LoginUrl = Output;
-    Success = false;
-    CanRetry = false;
-    Output.Empty();
+    OAuthLoginUrl = OAuthOutput;
 
     // Ensure the HTTP server module is loaded
     if (!FModuleManager::Get().IsModuleLoaded("HTTPServer"))
@@ -142,6 +142,7 @@ void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle, bool &Succes
     if (!FModuleManager::Get().IsModuleLoaded("HTTPServer"))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to load HTTP Server module."));
+        OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to load HTTP Server module."));
         return;
     }
 
@@ -151,25 +152,26 @@ void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle, bool &Succes
     if (!HttpRouter.IsValid())
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to get HTTP Router."));
+        OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to get HTTP Router."));
         return;
     }
 
     AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
     bAuthComplete = false;
     OAuthWalletHandle = InAppWalletHandle;
-    OutputString = Output;
 
     // Bind the route
     RouteHandle = HttpRouter->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET,
                                         [this](const FHttpServerRequest &Request, const FHttpResultCallback &OnComplete)
                                         {
-                                            AuthRes = Request.QueryParams.FindRef(TEXT("authResult"));
+                                            OAuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
 
-                                            if (AuthRes.IsEmpty())
+                                            if (OAuthResult.IsEmpty())
                                             {
                                                 UE_LOG(LogTemp, Error, TEXT("AuthResult query parameter is missing."));
                                                 TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("AuthResult query parameter is missing."), TEXT("text/plain"));
                                                 OnComplete(MoveTemp(Response));
+                                                OnOAuthFailure.Broadcast(OAuthWalletHandle, TEXT("AuthResult query parameter is missing."));
                                                 return true;
                                             }
 
@@ -187,6 +189,7 @@ void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle, bool &Succes
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to bind route."));
         FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
+        OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to bind route."));
         return;
     }
 
@@ -195,8 +198,8 @@ void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle, bool &Succes
     UE_LOG(LogTemp, Log, TEXT("HTTP Server started and listening on port 8789."));
 
     // Open the browser with the login URL
-    FPlatformProcess::LaunchURL(*LoginUrl, nullptr, nullptr);
-    UE_LOG(LogTemp, Log, TEXT("Browser opened with URL: %s"), *LoginUrl);
+    FPlatformProcess::LaunchURL(*OAuthLoginUrl, nullptr, nullptr);
+    UE_LOG(LogTemp, Log, TEXT("Browser opened with URL: %s"), *OAuthLoginUrl);
 
     // Start a timer to periodically check for the OAuth completion
     GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AThirdwebActor::CheckOAuthCompletion);
@@ -226,26 +229,29 @@ void AThirdwebActor::CheckOAuthCompletion()
         FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
 
         // Set the results based on the authentication
-        if (bAuthComplete && !AuthRes.IsEmpty())
+        if (bAuthComplete && !OAuthResult.IsEmpty())
         {
             // Sign in with OAuth
-            SignInWithOAuth(OAuthWalletHandle, AuthRes, bSuccess, bCanRetry, OutputString);
+            SignInWithOAuth(OAuthWalletHandle, OAuthResult, bOAuthSuccess, bOAuthCanRetry, OAuthOutputString);
 
-            if (bSuccess)
+            if (bOAuthSuccess)
             {
                 UE_LOG(LogTemp, Log, TEXT("OAuth login flow completed successfully."));
+                OnOAuthSuccess.Broadcast(OAuthWalletHandle, TEXT("Successfully signed in with OAuth."));
             }
             else
             {
                 UE_LOG(LogTemp, Error, TEXT("OAuth login flow failed."));
+                OnOAuthFailure.Broadcast(OAuthWalletHandle, OAuthOutputString);
             }
         }
         else
         {
-            bSuccess = false;
-            bCanRetry = true;
-            OutputString = TEXT("OAuth login flow did not complete in time.");
+            bOAuthSuccess = false;
+            bOAuthCanRetry = true;
+            OAuthOutputString = TEXT("OAuth login flow did not complete in time.");
             UE_LOG(LogTemp, Error, TEXT("OAuth login flow did not complete in time."));
+            OnOAuthFailure.Broadcast(OAuthWalletHandle, OAuthOutputString);
         }
     }
     else
