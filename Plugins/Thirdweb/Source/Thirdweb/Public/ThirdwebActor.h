@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "IHttpRouter.h"
 #include "Thirdweb.h"
 #include "ThirdwebActor.generated.h"
 
@@ -36,7 +37,7 @@ public:
 
     // Blueprint callable function to create an InAppWallet
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
-    void CreateInAppWallet(const FString &Email, bool &Success, bool &CanRetry, FString &Output);
+    void CreateInAppWallet(const FString &Email, const FString &OAuthMethod, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to send OTP
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
@@ -45,6 +46,18 @@ public:
     // Blueprint callable function to verify OTP
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
     void VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to fetch OAuth login link
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void FetchOAuthLoginLink(int64 InAppWalletHandle, const FString &RedirectUrl, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to sign in with OAuth
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void SignInWithOAuth(int64 InAppWalletHandle, const FString &AuthResult, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to start OAuth login flow from start to finish
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void LoginWithOauthDefault(int64 InAppWalletHandle, bool &Success, bool &CanRetry, FString &Output);
 
     // SMART WALLET FUNCTIONS
 
@@ -117,4 +130,16 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thirdweb")
     FString StorageDirectoryPath;
+
+private:
+    void CheckOAuthCompletion();
+    FEvent *AuthEvent;
+    bool bAuthComplete;
+    FString AuthRes;
+    int64 OAuthWalletHandle;
+    FHttpRouteHandle RouteHandle;
+    FString LoginUrl;
+    FString OutputString;
+    bool bSuccess;
+    bool bCanRetry;
 };

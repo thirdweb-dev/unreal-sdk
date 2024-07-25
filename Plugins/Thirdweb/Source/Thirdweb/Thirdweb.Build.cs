@@ -39,6 +39,8 @@ public class Thirdweb : ModuleRules
         PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private"));
 
         // Add dependencies
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine" });
+        PublicDependencyModuleNames.AddRange(
+            new string[] { "Core", "CoreUObject", "Engine", "HTTP", "HTTPServer", "Networking" }
+        );
     }
 }
