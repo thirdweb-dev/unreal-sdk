@@ -28,11 +28,16 @@ namespace Thirdweb
                                    const char *bundle_id,
                                    const char *secret_key,
                                    const char *email,
-                                   const char *storage_directory_path);
+                                   const char *storage_directory_path,
+                                   const char *oauth_provider);
 
     FFIResult in_app_wallet_send_otp(uintptr_t handle_id);
 
     FFIResult in_app_wallet_verify_otp(uintptr_t handle_id, const char *otp);
+
+    FFIResult in_app_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char *redirect_url);
+
+    FFIResult in_app_wallet_sign_in_with_oauth(uintptr_t handle_id, const char *auth_result);
 
     FFIResult create_smart_wallet(const char *client_id,
                                   const char *bundle_id,

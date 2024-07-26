@@ -2,8 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "IHttpRouter.h"
 #include "Thirdweb.h"
 #include "ThirdwebActor.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOAuthSuccessDelegate, int64, WalletHandle, const FString &, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOAuthFailureDelegate, int64, WalletHandle, const FString &, Message);
 
 UCLASS()
 class THIRDWEB_API AThirdwebActor : public AActor
@@ -11,8 +15,13 @@ class THIRDWEB_API AThirdwebActor : public AActor
     GENERATED_BODY()
 
 public:
-    // Sets default values for this actor's properties
     AThirdwebActor();
+
+    UPROPERTY(BlueprintAssignable, Category = "Thirdweb|InAppWallet")
+    FOAuthSuccessDelegate OnOAuthSuccess;
+
+    UPROPERTY(BlueprintAssignable, Category = "Thirdweb|InAppWallet")
+    FOAuthFailureDelegate OnOAuthFailure;
 
 protected:
     // Called when the game starts or when spawned
@@ -36,7 +45,7 @@ public:
 
     // Blueprint callable function to create an InAppWallet
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
-    void CreateInAppWallet(const FString &Email, bool &Success, bool &CanRetry, FString &Output);
+    void CreateInAppWallet(const FString &Email, const FString &OAuthMethod, bool &Success, bool &CanRetry, FString &Output);
 
     // Blueprint callable function to send OTP
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
@@ -45,6 +54,18 @@ public:
     // Blueprint callable function to verify OTP
     UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
     void VerifyOTP(int64 InAppWalletHandle, const FString &OTP, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to fetch OAuth login link
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void FetchOAuthLoginLink(int64 InAppWalletHandle, const FString &RedirectUrl, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to sign in with OAuth
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void SignInWithOAuth(int64 InAppWalletHandle, const FString &AuthResult, bool &Success, bool &CanRetry, FString &Output);
+
+    // Blueprint callable function to start OAuth login flow using default browser implementation
+    UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
+    void LoginWithOauthDefault(int64 InAppWalletHandle);
 
     // SMART WALLET FUNCTIONS
 
@@ -117,4 +138,16 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thirdweb")
     FString StorageDirectoryPath;
+
+private:
+    void CheckOAuthCompletion();
+    FEvent *AuthEvent;
+    bool bAuthComplete;
+    FString OAuthResult;
+    int64 OAuthWalletHandle;
+    FHttpRouteHandle RouteHandle;
+    FString OAuthLoginUrl;
+    FString OAuthOutputString;
+    bool bOAuthSuccess;
+    bool bOAuthCanRetry;
 };

@@ -7,7 +7,8 @@ public class thirdweb_unrealEditorTarget : TargetRules
         : base(Target)
     {
         Type = TargetType.Editor;
-        DefaultBuildSettings = BuildSettingsVersion.V2;
+        DefaultBuildSettings = BuildSettingsVersion.V5;
         ExtraModuleNames.AddRange(new string[] { "thirdweb_unreal" });
+        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
     }
 }

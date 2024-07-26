@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.jslib": "javascript",
+    ".env*": "dotenv",
+    "iostream": "cpp",
+    "*.rh": "cpp",
+    "cstdint": "cpp",
+    "string": "cpp"
+  }
+}
