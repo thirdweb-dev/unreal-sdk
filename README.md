@@ -1,4 +1,4 @@
-# Thirdweb Unreak SDK Plugin
+# Thirdweb Unreal Engine SDK Plugin
 
 # Unreal Plugin
 
