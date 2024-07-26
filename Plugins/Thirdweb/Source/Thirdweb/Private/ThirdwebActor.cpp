@@ -161,29 +161,30 @@ void AThirdwebActor::LoginWithOauthDefault(int64 InAppWalletHandle)
     OAuthWalletHandle = InAppWalletHandle;
 
     // Bind the route
-    RouteHandle = HttpRouter->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET,
-                                        [this](const FHttpServerRequest &Request, const FHttpResultCallback &OnComplete)
-                                        {
-                                            OAuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
+    RouteHandle = HttpRouter->BindRoute(
+        FHttpPath(TEXT("/callback")),
+        EHttpServerRequestVerbs::VERB_GET,
+        FHttpRequestHandler::CreateLambda([this](const FHttpServerRequest &Request, const FHttpResultCallback &OnComplete) -> bool
+                                          {
+            OAuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
 
-                                            if (OAuthResult.IsEmpty())
-                                            {
-                                                UE_LOG(LogTemp, Error, TEXT("AuthResult query parameter is missing."));
-                                                TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("AuthResult query parameter is missing."), TEXT("text/plain"));
-                                                OnComplete(MoveTemp(Response));
-                                                OnOAuthFailure.Broadcast(OAuthWalletHandle, TEXT("AuthResult query parameter is missing."));
-                                                return true;
-                                            }
+            if (OAuthResult.IsEmpty())
+            {
+                UE_LOG(LogTemp, Error, TEXT("AuthResult query parameter is missing."));
+                TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("AuthResult query parameter is missing."), TEXT("text/plain"));
+                OnComplete(MoveTemp(Response));
+                OnOAuthFailure.Broadcast(OAuthWalletHandle, TEXT("AuthResult query parameter is missing."));
+                return true;
+            }
 
-                                            bAuthComplete = true;
-                                            AuthEvent->Trigger();
+            bAuthComplete = true;
+            AuthEvent->Trigger();
 
-                                            // Respond to the browser
-                                            TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("<html><body><h1>DONE!</h1><p>You can close this tab/window now.</p></body></html>"), TEXT("text/html"));
-                                            OnComplete(MoveTemp(Response));
+            // Respond to the browser
+            TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("<html><body><h1>DONE!</h1><p>You can close this tab/window now.</p></body></html>"), TEXT("text/html"));
+            OnComplete(MoveTemp(Response));
 
-                                            return true;
-                                        });
+            return true; }));
 
     if (!RouteHandle.IsValid())
     {
