@@ -1,0 +1,10 @@
+/.git
+/.vs
+/.vscode
+/Content
+/DerivedDataCache
+/Intermediate
+/Saved
+/Plugins/Thirdweb/Content
+/Plugins/Thirdweb/Intermediate
+/Plugins/Thirdweb/lib
