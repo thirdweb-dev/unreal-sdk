@@ -2,7 +2,6 @@
 
 #include "ThirdwebModule.h"
 #include "Modules/ModuleManager.h"
-#include "Interfaces/IPluginManager.h"
 
 IMPLEMENT_MODULE(FThirdwebModule, Thirdweb)
 
