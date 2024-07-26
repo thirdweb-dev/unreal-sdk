@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Thirdweb. All Rights Reserved.
+
 #include "ThirdwebActor.h"
 #include "Engine/Engine.h"
 #include <string>

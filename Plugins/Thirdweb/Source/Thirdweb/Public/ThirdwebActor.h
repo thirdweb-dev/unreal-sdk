@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Thirdweb. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
