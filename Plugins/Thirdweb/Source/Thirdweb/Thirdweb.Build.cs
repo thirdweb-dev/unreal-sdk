@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Thirdweb. All Rights Reserved.
+
 using UnrealBuildTool;
 using System.IO;
 

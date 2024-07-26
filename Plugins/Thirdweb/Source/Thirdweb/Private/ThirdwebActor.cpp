@@ -12,6 +12,7 @@
 #include "Misc/OutputDeviceNull.h"
 #include "HAL/Event.h"
 #include "Misc/ScopeLock.h"
+#include "TimerManager.h"
 
 // Sets default values
 AThirdwebActor::AThirdwebActor()

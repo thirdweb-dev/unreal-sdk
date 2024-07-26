@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Thirdweb. All Rights Reserved.
+
 #include "ThirdwebModule.h"
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
