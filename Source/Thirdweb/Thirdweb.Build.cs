@@ -33,7 +33,8 @@ public class Thirdweb : ModuleRules
 			"Engine",
 			"HTTP",
 			"HTTPServer",
-			"Networking"
+			"Networking",
+			"DeveloperSettings"
 		});
 	}
 }

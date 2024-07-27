@@ -7,7 +7,11 @@
 #include "IHttpRouter.h"
 #include "Thirdweb.h"
 #include "ThirdwebLog.h"
+#include "ThirdwebRuntimeSettings.h"
+#include "ThirdwebWalletHandle.h"
+#include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/DefaultValueHelper.h"
 
 void UThirdwebSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -21,213 +25,400 @@ void UThirdwebSubsystem::Deinitialize()
 	TW_LOG(Log, TEXT("ThirdwebSubsystem::Deinitialize::Subsystem deinitialization complete"))
 }
 
-void UThirdwebSubsystem::CreatePrivateKeyWallet(const FString& PrivateKey, bool& Success, bool& CanRetry, FString& Output)
+EFunctionResult UThirdwebSubsystem::BP_CreatePrivateKeyWallet(const FString& PrivateKey, FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::create_private_key_wallet(StringCast<ANSICHAR>(*PrivateKey).Get()).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (CreatePrivateKeyWallet(PrivateKey, bCanRetry, Wallet, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
 }
 
-void UThirdwebSubsystem::GeneratePrivateKeyWallet(bool& Success, bool& CanRetry, FString& Output)
+bool UThirdwebSubsystem::CreatePrivateKeyWallet(const FString& PrivateKey, bool& bCanRetry, FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::generate_private_key_wallet().ToOperationResult(Success, CanRetry, Output);
+	FString Output;
+	if (Thirdweb::create_private_key_wallet(StringCast<ANSICHAR>(*PrivateKey).Get()).AssignResult(bCanRetry, Output))
+	{
+		Wallet = FWalletHandle(FWalletHandle::PrivateKey, Output);
+		return true;
+	}
+	Wallet = FWalletHandle::Invalid;
+	Error = Output;
+	return false;
 }
 
-void UThirdwebSubsystem::GetWalletAddress(const int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
+EFunctionResult UThirdwebSubsystem::BP_GeneratePrivateKeyWallet(FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::get_wallet_address(WalletHandle).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (GeneratePrivateKeyWallet(Wallet, bCanRetry, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
 }
 
-void UThirdwebSubsystem::CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& bSuccess, bool& CanRetry, FString& Output)
+bool UThirdwebSubsystem::GeneratePrivateKeyWallet(FWalletHandle& Wallet, bool& CanRetry, FString& Error)
 {
-	Thirdweb::create_in_app_wallet(
-		StringCast<ANSICHAR>(*BundleID).Get(),
+	FString Output;
+	if (Thirdweb::generate_private_key_wallet().AssignResult(CanRetry, Output))
+	{
+		Wallet = FWalletHandle(FWalletHandle::PrivateKey, Output);
+		return true;
+	}
+	Wallet = FWalletHandle::Invalid;
+	Error = Output;
+	return false;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error)
+{
+	bool bCanRetry;
+	if (CreateInAppWallet(Email, TEXT(""), bCanRetry, Wallet, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_CreateInAppOAuthWallet(const FString& OAuthMethod, FWalletHandle& Wallet, FString& Error)
+{
+	bool bCanRetry;
+	if (CreateInAppWallet(TEXT(""), OAuthMethod, bCanRetry, Wallet, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& bCanRetry, FWalletHandle& Wallet, FString& Error)
+{
+	const UThirdwebRuntimeSettings* Settings = GetDefault<UThirdwebRuntimeSettings>();
+	FString Output;
+	if (Thirdweb::create_in_app_wallet(
+		Settings->GetClientID(),
 		StringCast<ANSICHAR>(*Email).Get(),
-		StringCast<ANSICHAR>(*SecretKey).Get(),
+		Settings->GetSecretKey(),
 		StringCast<ANSICHAR>(*Email).Get(),
-		StringCast<ANSICHAR>(*StorageDirectoryPath).Get(),
+		Settings->GetStorageDirectoryPath(),
 		StringCast<ANSICHAR>(*OAuthMethod).Get()
-	).ToOperationResult(bSuccess, CanRetry, Output);
+	).AssignResult(bCanRetry, Output))
+	{
+		Wallet = FWalletHandle(FWalletHandle::InApp, Output);
+		return true;
+	}
+	Wallet = FWalletHandle::Invalid;
+	Error = Output;
+	return false;
 }
 
-void UThirdwebSubsystem::SendOTP(int64 InAppWalletHandle, bool& Success, bool& CanRetry, FString& Output)
+EFunctionResult UThirdwebSubsystem::BP_SendOTP(const FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::in_app_wallet_send_otp(InAppWalletHandle).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (SendOTP(Wallet, bCanRetry, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
 }
 
-void UThirdwebSubsystem::VerifyOTP(int64 InAppWalletHandle, const FString& OTP, bool& Success, bool& CanRetry, FString& Output)
+bool UThirdwebSubsystem::SendOTP(const FWalletHandle& Wallet, bool& CanRetry, FString& Error)
 {
-	Thirdweb::in_app_wallet_verify_otp(InAppWalletHandle, StringCast<ANSICHAR>(*OTP).Get()).ToOperationResult(Success, CanRetry, Output);
+	return Thirdweb::in_app_wallet_send_otp(Wallet.ID).AssignResult(CanRetry, Error, true);
 }
 
-void UThirdwebSubsystem::LoginWithOauthDefault(int64 InAppWalletHandle)
+EFunctionResult UThirdwebSubsystem::BP_VerifyOTP(const FWalletHandle& Wallet, const FString& OTP, FString& Error)
+{
+	bool bCanRetry;
+	if (VerifyOTP(Wallet, OTP, bCanRetry, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::VerifyOTP(const FWalletHandle& Wallet, const FString& OTP, bool& CanRetry, FString& Error)
+{
+	return Thirdweb::in_app_wallet_verify_otp(Wallet.ID, StringCast<ANSICHAR>(*OTP).Get()).AssignResult(CanRetry, Error, true);
+}
+
+EFunctionResult UThirdwebSubsystem::BP_FetchOAuthLoginLink(const FWalletHandle& Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error)
+{
+	bool bCanRetry;
+	if (FetchOAuthLoginLink(Wallet, RedirectUrl, bCanRetry, LoginLink, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::FetchOAuthLoginLink(const FWalletHandle& Wallet, const FString& RedirectUrl, bool& CanRetry, FString& LoginLink, FString& Error)
+{
+	FString Output;
+	if (Thirdweb::in_app_wallet_fetch_oauth_login_link(Wallet.ID, StringCast<ANSICHAR>(*RedirectUrl).Get()).AssignResult(CanRetry, Output))
+	{
+		LoginLink = Output;
+		return true;
+	}
+	Error = Output;
+	return false;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_SignInWithOAuth(const FWalletHandle& Wallet, const FString& AuthResult, FString& Output)
+{
+	bool bCanRetry;
+	if (SignInWithOAuth(Wallet, AuthResult, bCanRetry, Output))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::SignInWithOAuth(const FWalletHandle& Wallet, const FString& AuthResult, bool& CanRetry, FString& Output)
+{
+	return Thirdweb::in_app_wallet_sign_in_with_oauth(Wallet.ID, StringCast<ANSICHAR>(*AuthResult).Get()).AssignResult(CanRetry, Output);
+}
+
+void UThirdwebSubsystem::LoginWithOAuthDefault(const FWalletHandle& Wallet, const FOauthResponseDelegate& SuccessDelegate, const FOauthResponseDelegate& ErrorDelegate)
 {
 	FString RedirectUrl = TEXT("http://localhost:8789/callback");
-	bool OAuthSuccess, OAuthCanRetry;
+	bool OAuthCanRetry;
 	FString OAuthOutput;
-	Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, StringCast<ANSICHAR>(*RedirectUrl).Get())
-		.ToOperationResult(OAuthSuccess, OAuthCanRetry, OAuthOutput);
+	bool OAuthSuccess = Thirdweb::in_app_wallet_fetch_oauth_login_link(Wallet.ID, StringCast<ANSICHAR>(*RedirectUrl).Get())
+		.AssignResult(OAuthCanRetry, OAuthOutput);
 
 	if (!OAuthSuccess)
 	{
 		TW_LOG(Error, TEXT("Failed to fetch OAuth login link."));
-		OnOAuthFailure.Broadcast(InAppWalletHandle, OAuthOutput);
-		return;
-	}
-
-	OAuthLoginUrl = OAuthOutput;
-
-	// Ensure the HTTP server module is loaded
-	if (!FModuleManager::Get().IsModuleLoaded("HTTPServer"))
-	{
-		FModuleManager::Get().LoadModule("HTTPServer");
-	}
-
-	if (!FModuleManager::Get().IsModuleLoaded("HTTPServer"))
-	{
-		TW_LOG(Error, TEXT("Failed to load HTTP Server module."));
-		OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to load HTTP Server module."));
-		return;
-	}
-
-	FHttpServerModule& HttpServerModule = FHttpServerModule::Get();
-	TSharedPtr<IHttpRouter> HttpRouter = HttpServerModule.GetHttpRouter(8789);
-
-	if (!HttpRouter.IsValid())
-	{
-		TW_LOG(Error, TEXT("Failed to get HTTP Router."));
-		OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to get HTTP Router."));
-		return;
-	}
-
-	AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
-	bAuthComplete = false;
-	OAuthWalletHandle = InAppWalletHandle;
-
-	// Bind the route
-	RouteHandle = HttpRouter->BindRoute(
-		FHttpPath(TEXT("/callback")),
-		EHttpServerRequestVerbs::VERB_GET,
-		FHttpRequestHandler::CreateLambda([this](const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete) -> bool
+		if (ErrorDelegate.IsBound())
 		{
-			OAuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
-
-			if (OAuthResult.IsEmpty())
-			{
-				TW_LOG(Error, TEXT("AuthResult query parameter is missing."));
-				TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("AuthResult query parameter is missing."), TEXT("text/plain"));
-				OnComplete(MoveTemp(Response));
-				OnOAuthFailure.Broadcast(OAuthWalletHandle, TEXT("AuthResult query parameter is missing."));
-				return true;
-			}
-
-			bAuthComplete = true;
-			AuthEvent->Trigger();
-
-			// Respond to the browser
-			TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(TEXT("<html><body><h1>DONE!</h1><p>You can close this tab/window now.</p></body></html>"), TEXT("text/html"));
-			OnComplete(MoveTemp(Response));
-
-			return true;
-		}));
-
-	if (!RouteHandle.IsValid())
-	{
-		TW_LOG(Error, TEXT("Failed to bind route."));
-		FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
-		OnOAuthFailure.Broadcast(InAppWalletHandle, TEXT("Failed to bind route."));
-		return;
-	}
-
-	// Start the HTTP server
-	HttpServerModule.StartAllListeners();
-	TW_LOG(Log, TEXT("HTTP Server started and listening on port 8789."));
-
-	// Open the browser with the login URL
-	FPlatformProcess::LaunchURL(*OAuthLoginUrl, nullptr, nullptr);
-	TW_LOG(Log, TEXT("Browser opened with URL: %s"), *OAuthLoginUrl);
-
-	// Start a timer to periodically check for the OAuth completion
-	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UThirdwebSubsystem::CheckOAuthCompletion);
-}
-
-void UThirdwebSubsystem::CheckOAuthCompletion()
-{
-	if (bAuthComplete)
-	{
-		// Ensure the HTTP server module is loaded
-		if (!FModuleManager::Get().IsModuleLoaded("HTTPServer"))
-		{
-			FModuleManager::Get().LoadModule("HTTPServer");
-		}
-
-		FHttpServerModule& HttpServerModule = FHttpServerModule::Get();
-
-		// Stop the HTTP listener
-		HttpServerModule.StopAllListeners();
-		TW_LOG(Log, TEXT("HTTP Server stopped listening."));
-
-		// Unbind the route
-		TSharedPtr<IHttpRouter> HttpRouter = HttpServerModule.GetHttpRouter(8789);
-		HttpRouter->UnbindRoute(RouteHandle);
-		TW_LOG(Log, TEXT("Route unbound."));
-
-		FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
-
-		// Set the results based on the authentication
-		if (bAuthComplete && !OAuthResult.IsEmpty())
-		{
-			// Sign in with OAuth
-			SignInWithOAuth(OAuthWalletHandle, OAuthResult, bOAuthSuccess, bOAuthCanRetry, OAuthOutputString);
-
-			if (bOAuthSuccess)
-			{
-				TW_LOG(Log, TEXT("OAuth login flow completed successfully."));
-				OnOAuthSuccess.Broadcast(OAuthWalletHandle, TEXT("Successfully signed in with OAuth."));
-			}
-			else
-			{
-				TW_LOG(Error, TEXT("OAuth login flow failed."));
-				OnOAuthFailure.Broadcast(OAuthWalletHandle, OAuthOutputString);
-			}
-		}
-		else
-		{
-			bOAuthSuccess = false;
-			bOAuthCanRetry = true;
-			OAuthOutputString = TEXT("OAuth login flow did not complete in time.");
-			TW_LOG(Error, TEXT("OAuth login flow did not complete in time."));
-			OnOAuthFailure.Broadcast(OAuthWalletHandle, OAuthOutputString);
+			ErrorDelegate.Execute(OAuthOutput);
 		}
 	}
-	else
+	if (SuccessDelegate.IsBound())
 	{
-		// Continue checking
-		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UThirdwebSubsystem::CheckOAuthCompletion);
+		SuccessDelegate.Execute(OAuthOutput);
 	}
 }
 
-void UThirdwebSubsystem::FetchOAuthLoginLink(int64 InAppWalletHandle, const FString& RedirectUrl, bool& Success, bool& CanRetry, FString& Output)
+EFunctionResult UThirdwebSubsystem::BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, const FString& ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride,
+                                                         FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, StringCast<ANSICHAR>(*RedirectUrl).Get()).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (CreateSmartWallet(PersonalWallet, ChainID, bGasless, Factory, AccountOverride, Wallet, bCanRetry, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
 }
 
-void UThirdwebSubsystem::SignInWithOAuth(int64 InAppWalletHandle, const FString& AuthResult, bool& Success, bool& CanRetry, FString& Output)
+bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, const FString& ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride,
+                                           FWalletHandle& Wallet, bool& CanRetry, FString& Error)
 {
-	Thirdweb::in_app_wallet_sign_in_with_oauth(InAppWalletHandle, StringCast<ANSICHAR>(*AuthResult).Get()).ToOperationResult(Success, CanRetry, Output);
+	const UThirdwebRuntimeSettings* Settings = GetDefault<UThirdwebRuntimeSettings>();
+	FString Output;
+	bool bSuccess = Thirdweb::create_smart_wallet(
+		Settings->GetClientID(),
+		Settings->GetBundleID(),
+		Settings->GetSecretKey(),
+		PersonalWallet.ID,
+		StringCast<ANSICHAR>(*ChainID).Get(),
+		bGasless,
+		StringCast<ANSICHAR>(*Factory).Get(),
+		StringCast<ANSICHAR>(*AccountOverride).Get()
+	).AssignResult(CanRetry, Output);
+	if (bSuccess)
+	{
+		Wallet = FWalletHandle(FWalletHandle::Smart, Output);
+		return true;
+	}
+	Wallet = FWalletHandle::Invalid;
+	Error = Output;
+	return false;
 }
 
-void UThirdwebSubsystem::SignMessage(int64 WalletHandle, const FString& Message, bool& Success, bool& CanRetry, FString& Output)
+ESmartWalletDeployedFunctionResult UThirdwebSubsystem::BP_IsSmartWalletDeployed(const FWalletHandle& Wallet, FString& Error)
 {
-	Thirdweb::sign_message(WalletHandle, StringCast<ANSICHAR>(*Message).Get()).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (bool bDeployed; IsSmartWalletDeployed(Wallet, bDeployed, bCanRetry, Error))
+	{
+		return bDeployed ? ESmartWalletDeployedFunctionResult::Deployed : ESmartWalletDeployedFunctionResult::NotDeployed;
+	}
+	return bCanRetry ? ESmartWalletDeployedFunctionResult::FailedCanRetry : ESmartWalletDeployedFunctionResult::Failed;
 }
 
-void UThirdwebSubsystem::IsConnected(int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
+bool UThirdwebSubsystem::IsSmartWalletDeployed(const FWalletHandle& Wallet, bool& bDeployed, bool& CanRetry, FString& Error)
 {
-	Thirdweb::is_connected(WalletHandle).ToOperationResult(Success, CanRetry, Output);
+	FString Output;
+	if (Thirdweb::smart_wallet_is_deployed(Wallet.ID).AssignResult(CanRetry, Output))
+	{
+		bDeployed = Output.ToBool();
+		return true;
+	}
+	Error = Output;
+	return false;
 }
 
-void UThirdwebSubsystem::Disconnect(int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
+EFunctionResult UThirdwebSubsystem::BP_GetSmartWalletAdmins(const FWalletHandle& Wallet, FString& Output)
 {
-	Thirdweb::disconnect(WalletHandle).ToOperationResult(Success, CanRetry, Output);
+	bool bCanRetry;
+	if (GetSmartWalletAdmins(Wallet, bCanRetry, Output))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::GetSmartWalletAdmins(const FWalletHandle& Wallet, bool& CanRetry, FString& Output)
+{
+	return Thirdweb::smart_wallet_get_all_admins(Wallet.ID).AssignResult(CanRetry, Output);
+}
+
+EFunctionResult UThirdwebSubsystem::BP_GetSmartWalletActiveSigners(const FWalletHandle& Wallet, FString& Output)
+{
+	bool bCanRetry;
+	if (GetSmartWalletActiveSigners(Wallet, bCanRetry, Output))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::GetSmartWalletActiveSigners(const FWalletHandle& Wallet, bool& CanRetry, FString& Output)
+{
+	return Thirdweb::smart_wallet_get_all_active_signers(Wallet.ID).AssignResult(CanRetry, Output);
+}
+
+EFunctionResult UThirdwebSubsystem::BP_CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool IsAdmin, const TArray<FString>& ApprovedTargets,
+                                                                   const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
+                                                                   const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd,
+                                                                   FString& Key, FString& Error)
+{
+	bool bCanRetry;
+	if (CreateSmartWalletSessionKey(Wallet, SignerAddress, IsAdmin, ApprovedTargets, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd,
+	                                bCanRetry, Key, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool bIsAdmin, const TArray<FString>& ApprovedTargets,
+                                                     const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
+                                                     const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd, bool& CanRetry, FString& Key, FString& Error)
+{
+	TArray<const char*> ApprovedTargetsCArray;
+	for (const FString& Target : ApprovedTargets)
+	{
+		ApprovedTargetsCArray.Add(StringCast<ANSICHAR>(*Target).Get());
+	}
+	FString Output;
+	bool bSuccess = Thirdweb::smart_wallet_create_session_key(
+		Wallet.ID,
+		StringCast<ANSICHAR>(*SignerAddress).Get(),
+		StringCast<ANSICHAR>(bIsAdmin ? TEXT("1") : TEXT("0")).Get(),
+		ApprovedTargetsCArray.GetData(),
+		ApprovedTargetsCArray.Num(),
+		StringCast<ANSICHAR>(*NativeTokenLimitPerTransactionInWei).Get(),
+		StringCast<ANSICHAR>(*FString::FromInt(PermissionStart.ToUnixTimestampDecimal())).Get(),
+		StringCast<ANSICHAR>(*FString::FromInt(PermissionEnd.ToUnixTimestampDecimal())).Get(),
+		StringCast<ANSICHAR>(*FString::FromInt(RequestValidityStart.ToUnixTimestampDecimal())).Get(),
+		StringCast<ANSICHAR>(*FString::FromInt(RequestValidityEnd.ToUnixTimestampDecimal())).Get()
+	).AssignResult(CanRetry, Output);
+	if (bSuccess)
+	{
+		Key = Output;
+		return true;
+	}
+	Error = Output;
+	return false;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_GetWalletAddress(const FWalletHandle& Wallet, FString& Address, FString& Error)
+{
+	bool bCanRetry;
+	if (GetWalletAddress(Wallet, bCanRetry, Address, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::GetWalletAddress(const FWalletHandle& Wallet, bool& CanRetry, FString& Address, FString& Error)
+{
+	FString Output;
+	if (Thirdweb::get_wallet_address(Wallet.ID).AssignResult(CanRetry, Output))
+	{
+		Address = Output;
+		return true;
+	}
+	Error = Output;
+	return false;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_SignMessage(const FWalletHandle& Wallet, const FString& Message, FString& Result, FString& Error)
+{
+	bool bCanRetry;
+	if (SignMessage(Wallet, Message, bCanRetry, Result, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::SignMessage(const FWalletHandle& Wallet, const FString& Message, bool& CanRetry, FString& Result, FString& Error)
+{
+	FString Output;
+	if (Thirdweb::sign_message(Wallet.ID, StringCast<ANSICHAR>(*Message).Get()).AssignResult(CanRetry, Output))
+	{
+		Result = Output;
+		return true;
+	}
+	Error = Output;
+	return false;
+}
+
+EWalletConnectedFunctionResult UThirdwebSubsystem::BP_IsConnected(const FWalletHandle& Wallet, FString& Error)
+{
+	bool bCanRetry;
+	if (bool bIsConnected; IsConnected(Wallet, bIsConnected, bCanRetry, Error))
+	{
+		return bIsConnected ? EWalletConnectedFunctionResult::Connected : EWalletConnectedFunctionResult::Disconnected;
+	}
+	return bCanRetry ? EWalletConnectedFunctionResult::FailedCanRetry : EWalletConnectedFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::IsConnected(const FWalletHandle& Wallet, bool& bIsConnected, bool& CanRetry, FString& Error)
+{
+	FString Output;
+	if (Thirdweb::is_connected(Wallet.ID).AssignResult(CanRetry, Output))
+	{
+		bIsConnected = Output.ToBool();
+		return true;
+	}
+	Error = Output;
+	return false;
+}
+
+EFunctionResult UThirdwebSubsystem::BP_Disconnect(const FWalletHandle& Wallet, FString& Error)
+{
+	bool bCanRetry;
+	if (Disconnect(Wallet, bCanRetry, Error))
+	{
+		return EFunctionResult::Success;
+	}
+	return bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+}
+
+bool UThirdwebSubsystem::Disconnect(const FWalletHandle& Wallet, bool& CanRetry, FString& Error)
+{
+	FString Output;
+	if (Thirdweb::disconnect(Wallet.ID).AssignResult(CanRetry, Output))
+	{
+		return true;
+	}
+	Error = Output;
+	return false;
 }
 
 UThirdwebSubsystem* UThirdwebSubsystem::Get(const UObject* WorldContextObject)
@@ -239,74 +430,4 @@ UThirdwebSubsystem* UThirdwebSubsystem::Get(const UObject* WorldContextObject)
 	return nullptr;
 }
 
-void UThirdwebSubsystem::CreateSmartWallet(int64 PersonalWalletHandle,
-                                           const FString& ChainID,
-                                           bool Gasless,
-                                           const FString& Factory,
-                                           const FString& AccountOverride,
-                                           bool& Success,
-                                           bool& CanRetry,
-                                           FString& Output)
-{
-	Thirdweb::create_smart_wallet(
-		StringCast<ANSICHAR>(*ClientID).Get(),
-		StringCast<ANSICHAR>(*BundleID).Get(),
-		StringCast<ANSICHAR>(*SecretKey).Get(),
-		PersonalWalletHandle,
-		StringCast<ANSICHAR>(*ChainID).Get(),
-		Gasless,
-		StringCast<ANSICHAR>(*Factory).Get(),
-		StringCast<ANSICHAR>(*AccountOverride).Get()
-	).ToOperationResult(Success, CanRetry, Output);
-}
 
-void UThirdwebSubsystem::IsSmartWalletDeployed(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
-{
-	Thirdweb::smart_wallet_is_deployed(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
-}
-
-void UThirdwebSubsystem::GetSmartWalletAdmins(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
-{
-	Thirdweb::smart_wallet_get_all_admins(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
-}
-
-// Blueprint callable function to get all active signers of a smart wallet
-void UThirdwebSubsystem::GetSmartWalletActiveSigners(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
-{
-	Thirdweb::smart_wallet_get_all_active_signers(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
-}
-
-// Blueprint callable function to create a session key for a smart wallet
-void UThirdwebSubsystem::CreateSmartWalletSessionKey(int64 SmartWalletHandle,
-                                                     const FString& SignerAddress,
-                                                     const FString& IsAdmin,
-                                                     const TArray<FString>& ApprovedTargets,
-                                                     const FString& NativeTokenLimitPerTransactionInWei,
-                                                     const FString& PermissionStartTimestamp,
-                                                     const FString& PermissionEndTimestamp,
-                                                     const FString& ReqValidityStartTimestamp,
-                                                     const FString& ReqValidityEndTimestamp,
-                                                     bool& Success,
-                                                     bool& CanRetry,
-                                                     FString& Output)
-{
-	// Convert TArray<FString> to const char* const*
-	TArray<const char*> ApprovedTargetsCArray;
-	for (const FString& Target : ApprovedTargets)
-	{
-		ApprovedTargetsCArray.Add(StringCast<ANSICHAR>(*Target).Get());
-	}
-
-	Thirdweb::smart_wallet_create_session_key(
-		SmartWalletHandle,
-		StringCast<ANSICHAR>(*SignerAddress).Get(),
-		StringCast<ANSICHAR>(*IsAdmin).Get(),
-		ApprovedTargetsCArray.GetData(),
-		ApprovedTargetsCArray.Num(),
-		StringCast<ANSICHAR>(*NativeTokenLimitPerTransactionInWei).Get(),
-		StringCast<ANSICHAR>(*PermissionStartTimestamp).Get(),
-		StringCast<ANSICHAR>(*PermissionEndTimestamp).Get(),
-		StringCast<ANSICHAR>(*ReqValidityStartTimestamp).Get(),
-		StringCast<ANSICHAR>(*ReqValidityEndTimestamp).Get()
-	).ToOperationResult(Success, CanRetry, Output);
-}
