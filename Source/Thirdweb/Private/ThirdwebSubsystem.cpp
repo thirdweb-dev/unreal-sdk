@@ -1,5 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
+// ReSharper disable CppUE4BlueprintCallableFunctionMayBeStatic
 
 #include "ThirdwebSubsystem.h"
 #include "HttpServerModule.h"
@@ -20,93 +21,50 @@ void UThirdwebSubsystem::Deinitialize()
 	TW_LOG(Log, TEXT("ThirdwebSubsystem::Deinitialize::Subsystem deinitialization complete"))
 }
 
-// Helper function to convert FFIResult to separate operation results
-void ConvertFFIResultToOperationResult(const Thirdweb::FFIResult& ffi_result, bool& Success, bool& CanRetry, FString& Output)
-{
-	// Log FFIResult object
-	TW_LOG(Warning, TEXT("FFIResult: success=%d, message=%s"), ffi_result.success, UTF8_TO_TCHAR(ffi_result.message));
-
-	Success = ffi_result.success;
-	Output = UTF8_TO_TCHAR(ffi_result.message);
-	if (Success && Output.StartsWith("RecoverableError"))
-	{
-		Success = false;
-		CanRetry = true;
-		Output = Output.Mid(17).TrimStart();
-	}
-	else
-	{
-		CanRetry = false;
-	}
-	Thirdweb::free_ffi_result(ffi_result);
-}
-
-// Blueprint callable function to create a private key wallet
 void UThirdwebSubsystem::CreatePrivateKeyWallet(const FString& PrivateKey, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult wallet_result = Thirdweb::create_private_key_wallet(TCHAR_TO_UTF8(*PrivateKey));
-	ConvertFFIResultToOperationResult(wallet_result, Success, CanRetry, Output);
+	Thirdweb::create_private_key_wallet(StringCast<ANSICHAR>(*PrivateKey).Get()).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to generate a private key wallet
 void UThirdwebSubsystem::GeneratePrivateKeyWallet(bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult wallet_result = Thirdweb::generate_private_key_wallet();
-	ConvertFFIResultToOperationResult(wallet_result, Success, CanRetry, Output);
+	Thirdweb::generate_private_key_wallet().ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to get the wallet address
-void UThirdwebSubsystem::GetWalletAddress(int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
+void UThirdwebSubsystem::GetWalletAddress(const int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult address_result = Thirdweb::get_wallet_address(WalletHandle);
-	ConvertFFIResultToOperationResult(address_result, Success, CanRetry, Output);
+	Thirdweb::get_wallet_address(WalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to create an InAppWallet
-void UThirdwebSubsystem::CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& Success, bool& CanRetry, FString& Output)
+void UThirdwebSubsystem::CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& bSuccess, bool& CanRetry, FString& Output)
 {
-	const char* email = Email.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Email);
-	const char* oauth_method = OAuthMethod.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*OAuthMethod);
-	const char* client_id = ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*ClientID);
-	const char* bundle_id = BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*BundleID);
-	const char* secret_key = SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*SecretKey);
-	const char* storage_directory_path = StorageDirectoryPath.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*StorageDirectoryPath);
-
-	Thirdweb::FFIResult inapp_result = Thirdweb::create_in_app_wallet(
-		client_id,
-		bundle_id,
-		secret_key,
-		email,
-		storage_directory_path,
-		oauth_method);
-
-	ConvertFFIResultToOperationResult(inapp_result, Success, CanRetry, Output);
+	Thirdweb::create_in_app_wallet(
+		StringCast<ANSICHAR>(*BundleID).Get(),
+		StringCast<ANSICHAR>(*Email).Get(),
+		StringCast<ANSICHAR>(*SecretKey).Get(),
+		StringCast<ANSICHAR>(*Email).Get(),
+		StringCast<ANSICHAR>(*StorageDirectoryPath).Get(),
+		StringCast<ANSICHAR>(*OAuthMethod).Get()
+	).ToOperationResult(bSuccess, CanRetry, Output);
 }
 
-// Blueprint callable function to send OTP
 void UThirdwebSubsystem::SendOTP(int64 InAppWalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult otp_result = Thirdweb::in_app_wallet_send_otp(InAppWalletHandle);
-	ConvertFFIResultToOperationResult(otp_result, Success, CanRetry, Output);
+	Thirdweb::in_app_wallet_send_otp(InAppWalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to verify OTP
 void UThirdwebSubsystem::VerifyOTP(int64 InAppWalletHandle, const FString& OTP, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult verify_result = Thirdweb::in_app_wallet_verify_otp(InAppWalletHandle, TCHAR_TO_UTF8(*OTP));
-	ConvertFFIResultToOperationResult(verify_result, Success, CanRetry, Output);
+	Thirdweb::in_app_wallet_verify_otp(InAppWalletHandle, StringCast<ANSICHAR>(*OTP).Get()).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to start OAuth login flow from start to finish
 void UThirdwebSubsystem::LoginWithOauthDefault(int64 InAppWalletHandle)
 {
 	FString RedirectUrl = TEXT("http://localhost:8789/callback");
-
-	// Fetch the OAuth login link
-	Thirdweb::FFIResult fetch_link_result = Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, TCHAR_TO_UTF8(*RedirectUrl));
 	bool OAuthSuccess, OAuthCanRetry;
 	FString OAuthOutput;
-	ConvertFFIResultToOperationResult(fetch_link_result, OAuthSuccess, OAuthCanRetry, OAuthOutput);
+	Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, StringCast<ANSICHAR>(*RedirectUrl).Get())
+		.ToOperationResult(OAuthSuccess, OAuthCanRetry, OAuthOutput);
 
 	if (!OAuthSuccess)
 	{
@@ -247,39 +205,29 @@ void UThirdwebSubsystem::CheckOAuthCompletion()
 	}
 }
 
-// Blueprint callable function to fetch OAuth login link
 void UThirdwebSubsystem::FetchOAuthLoginLink(int64 InAppWalletHandle, const FString& RedirectUrl, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult result = Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, TCHAR_TO_UTF8(*RedirectUrl));
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+	Thirdweb::in_app_wallet_fetch_oauth_login_link(InAppWalletHandle, StringCast<ANSICHAR>(*RedirectUrl).Get()).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to sign in with OAuth
 void UThirdwebSubsystem::SignInWithOAuth(int64 InAppWalletHandle, const FString& AuthResult, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult result = Thirdweb::in_app_wallet_sign_in_with_oauth(InAppWalletHandle, TCHAR_TO_UTF8(*AuthResult));
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+	Thirdweb::in_app_wallet_sign_in_with_oauth(InAppWalletHandle, StringCast<ANSICHAR>(*AuthResult).Get()).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to sign a message
 void UThirdwebSubsystem::SignMessage(int64 WalletHandle, const FString& Message, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult sign_result = Thirdweb::sign_message(WalletHandle, TCHAR_TO_UTF8(*Message));
-	ConvertFFIResultToOperationResult(sign_result, Success, CanRetry, Output);
+	Thirdweb::sign_message(WalletHandle, StringCast<ANSICHAR>(*Message).Get()).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to check if a wallet is connected
 void UThirdwebSubsystem::IsConnected(int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult connected_result = Thirdweb::is_connected(WalletHandle);
-	ConvertFFIResultToOperationResult(connected_result, Success, CanRetry, Output);
+	Thirdweb::is_connected(WalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to disconnect a wallet
 void UThirdwebSubsystem::Disconnect(int64 WalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult disconnect_result = Thirdweb::disconnect(WalletHandle);
-	ConvertFFIResultToOperationResult(disconnect_result, Success, CanRetry, Output);
+	Thirdweb::disconnect(WalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
 UThirdwebSubsystem* UThirdwebSubsystem::Get(const UObject* WorldContextObject)
@@ -291,7 +239,6 @@ UThirdwebSubsystem* UThirdwebSubsystem::Get(const UObject* WorldContextObject)
 	return nullptr;
 }
 
-// Blueprint callable function to create a smart wallet
 void UThirdwebSubsystem::CreateSmartWallet(int64 PersonalWalletHandle,
                                            const FString& ChainID,
                                            bool Gasless,
@@ -301,44 +248,32 @@ void UThirdwebSubsystem::CreateSmartWallet(int64 PersonalWalletHandle,
                                            bool& CanRetry,
                                            FString& Output)
 {
-	const char* client_id = ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*ClientID);
-	const char* bundle_id = BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*BundleID);
-	const char* secret_key = SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*SecretKey);
-	const char* factory = Factory.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Factory);
-	const char* account_override = AccountOverride.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*AccountOverride);
-
-	Thirdweb::FFIResult result = Thirdweb::create_smart_wallet(
-		client_id,
-		bundle_id,
-		secret_key,
+	Thirdweb::create_smart_wallet(
+		StringCast<ANSICHAR>(*ClientID).Get(),
+		StringCast<ANSICHAR>(*BundleID).Get(),
+		StringCast<ANSICHAR>(*SecretKey).Get(),
 		PersonalWalletHandle,
-		TCHAR_TO_UTF8(*ChainID),
+		StringCast<ANSICHAR>(*ChainID).Get(),
 		Gasless,
-		factory,
-		account_override);
-
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+		StringCast<ANSICHAR>(*Factory).Get(),
+		StringCast<ANSICHAR>(*AccountOverride).Get()
+	).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to check if a smart wallet is deployed
 void UThirdwebSubsystem::IsSmartWalletDeployed(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult result = Thirdweb::smart_wallet_is_deployed(SmartWalletHandle);
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+	Thirdweb::smart_wallet_is_deployed(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
-// Blueprint callable function to get all admins of a smart wallet
 void UThirdwebSubsystem::GetSmartWalletAdmins(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult result = Thirdweb::smart_wallet_get_all_admins(SmartWalletHandle);
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+	Thirdweb::smart_wallet_get_all_admins(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
 // Blueprint callable function to get all active signers of a smart wallet
 void UThirdwebSubsystem::GetSmartWalletActiveSigners(int64 SmartWalletHandle, bool& Success, bool& CanRetry, FString& Output)
 {
-	Thirdweb::FFIResult result = Thirdweb::smart_wallet_get_all_active_signers(SmartWalletHandle);
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+	Thirdweb::smart_wallet_get_all_active_signers(SmartWalletHandle).ToOperationResult(Success, CanRetry, Output);
 }
 
 // Blueprint callable function to create a session key for a smart wallet
@@ -359,20 +294,19 @@ void UThirdwebSubsystem::CreateSmartWalletSessionKey(int64 SmartWalletHandle,
 	TArray<const char*> ApprovedTargetsCArray;
 	for (const FString& Target : ApprovedTargets)
 	{
-		ApprovedTargetsCArray.Add(TCHAR_TO_UTF8(*Target));
+		ApprovedTargetsCArray.Add(StringCast<ANSICHAR>(*Target).Get());
 	}
 
-	Thirdweb::FFIResult result = Thirdweb::smart_wallet_create_session_key(
+	Thirdweb::smart_wallet_create_session_key(
 		SmartWalletHandle,
-		TCHAR_TO_UTF8(*SignerAddress),
-		TCHAR_TO_UTF8(*IsAdmin),
+		StringCast<ANSICHAR>(*SignerAddress).Get(),
+		StringCast<ANSICHAR>(*IsAdmin).Get(),
 		ApprovedTargetsCArray.GetData(),
 		ApprovedTargetsCArray.Num(),
-		TCHAR_TO_UTF8(*NativeTokenLimitPerTransactionInWei),
-		TCHAR_TO_UTF8(*PermissionStartTimestamp),
-		TCHAR_TO_UTF8(*PermissionEndTimestamp),
-		TCHAR_TO_UTF8(*ReqValidityStartTimestamp),
-		TCHAR_TO_UTF8(*ReqValidityEndTimestamp));
-
-	ConvertFFIResultToOperationResult(result, Success, CanRetry, Output);
+		StringCast<ANSICHAR>(*NativeTokenLimitPerTransactionInWei).Get(),
+		StringCast<ANSICHAR>(*PermissionStartTimestamp).Get(),
+		StringCast<ANSICHAR>(*PermissionEndTimestamp).Get(),
+		StringCast<ANSICHAR>(*ReqValidityStartTimestamp).Get(),
+		StringCast<ANSICHAR>(*ReqValidityEndTimestamp).Get()
+	).ToOperationResult(Success, CanRetry, Output);
 }

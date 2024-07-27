@@ -38,7 +38,7 @@ public:
 
 	// Blueprint callable function to create an InAppWallet
 	UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
-	void CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& Success, bool& CanRetry, FString& Output);
+	void CreateInAppWallet(const FString& Email, const FString& OAuthMethod, bool& bSuccess, bool& CanRetry, FString& Output);
 
 	// Blueprint callable function to send OTP
 	UFUNCTION(BlueprintCallable, Category = "Thirdweb|InAppWallet")
@@ -119,6 +119,7 @@ public:
 
 	// Static subsystem accessor convenience function for C++ implementations
 	static UThirdwebSubsystem* Get(const UObject* WorldContextObject);
+	
 private:
 	void CheckOAuthCompletion();
 

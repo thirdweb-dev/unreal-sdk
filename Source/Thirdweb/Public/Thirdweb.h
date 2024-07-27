@@ -1,5 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
+// ReSharper disable CppUE4CodingStandardNamingViolationWarning,CppUE4CodingStandardNamingViolationWarning
 #pragma once
 
 #include <cstdarg>
@@ -15,8 +16,12 @@ namespace Thirdweb
   {
     bool success;
     const char *message;
-  };
 
+    const TCHAR* Message() const { return StringCast<TCHAR>(message).Get(); }
+    // Helper function to convert to separate operation results
+    void ToOperationResult(bool& Success, bool& CanRetry, FString& Output);
+  };
+  
   extern "C"
   {
 
