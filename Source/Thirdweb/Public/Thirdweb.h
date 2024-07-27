@@ -1,5 +1,7 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
+#pragma once
+
 #include <cstdarg>
 #include <cstdint>
 #include <cstdlib>
