@@ -1,7 +1,7 @@
 {
     "FileVersion": 3,
     "Version": 1,
-    "VersionName": "1.0",
+    "VersionName": "1.0.0",
     "FriendlyName": "Thirdweb",
     "Description": "Unreal Integration of Thirdweb Wallets",
     "Category": "Other",
@@ -14,7 +14,6 @@
     "IsBetaVersion": false,
     "IsExperimentalVersion": false,
     "Installed": false,
-    "EngineVersion": "5.4.0",
     "Modules": [
         {
             "Name": "Thirdweb",
