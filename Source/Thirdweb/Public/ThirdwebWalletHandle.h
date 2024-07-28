@@ -5,7 +5,7 @@
 #include "ThirdwebWalletHandle.generated.h"
 
 /** Unique handle that can be used to distinguish wallets */
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FWalletHandle
 {
 	GENERATED_BODY()

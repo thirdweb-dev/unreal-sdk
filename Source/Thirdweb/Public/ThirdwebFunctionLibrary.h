@@ -20,7 +20,8 @@ UCLASS(meta=(BlueprintThreadSafe, DisplayName="Thirdweb", ScriptName="ThirdwebFu
 class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
+	
+public:
 	/** Converts a private key into a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To Wallet", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FWalletHandle Conv_StringToWalletHandle(FString PrivateKey);
@@ -38,7 +39,7 @@ class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 	static FWalletHandle BP_GenerateWallet();
 
 	/** Gets the public address of a wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="To Address", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="To String (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FString Conv_WalletHandleToString(FWalletHandle Wallet);
 
 	/** Generates a private key wallet handle */
