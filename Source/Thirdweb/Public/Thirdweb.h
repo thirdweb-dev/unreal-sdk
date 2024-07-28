@@ -16,15 +16,22 @@ namespace Thirdweb
 	struct FFIResult
 	{
 		friend class UThirdwebSubsystem;
-
+		friend struct FWalletHandle;
 		bool success;
 		const char* message;
 
 	private:
 		const TCHAR* Message() const { return StringCast<TCHAR>(message).Get(); }
-		// Helper function to convert to separate operation results
-		bool AssignResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult = false);
-		EFunctionResult AssignBPResult(FString& Output);
+		// Assign's result to variables and then frees the underlying FFIResult
+		bool AssignResult(FString& Output, bool bErrorOnlyResult = false) const;
+		// Assign's result to variables including retry and then frees the underlying FFIResult
+		bool AssignRetryResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult = false) const;
+		// Assign's result to output directly
+		FString GetOutput() const;
+		// Frees the FFI Result for functions that have no relevant output
+		void Free() const;
+		// Convenience function to log the FFIResult
+		void Log() const;
 	};
 
 	extern "C" {

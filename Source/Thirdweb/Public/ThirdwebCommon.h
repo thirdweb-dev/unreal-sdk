@@ -4,28 +4,53 @@
 
 #include "ThirdwebCommon.generated.h"
 
-UENUM(BlueprintType)
+#define LOCTEXT_NAMESPACE "Thirdweb"
+
+UENUM()
 enum class EFunctionResult : uint8
 {
 	Success,
-	FailedCanRetry,
 	Failed
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class ESmartWalletDeployedFunctionResult : uint8
 {
 	Deployed,
 	NotDeployed,
-	FailedCanRetry,
 	Failed
 };
 
-UENUM(BlueprintType)
-enum class EWalletConnectedFunctionResult : uint8
+UENUM()
+enum class EOTPVerificationFunctionResult : uint8
 {
-	Connected,
-	Disconnected,
-	FailedCanRetry,
+	Verified,
+	Retry,
 	Failed
 };
+
+UENUM(Blueprintable)
+enum class EThirdwebOAuthProvider : uint8
+{
+	Google UMETA(DisplayName="Google"),
+	Apple UMETA(DisplayName="Apple"),
+	Facebook UMETA(DisplayName="Facebook")
+};
+
+inline FText ToText(const EThirdwebOAuthProvider Provider)
+{
+	static TMap<EThirdwebOAuthProvider, FText> Map = {
+		{EThirdwebOAuthProvider::Google, LOCTEXT("Google", "Google")},
+		{EThirdwebOAuthProvider::Apple, LOCTEXT("Apple", "Apple")},
+		{EThirdwebOAuthProvider::Facebook, LOCTEXT("Facebook", "Facebook")}
+	};
+	return Map.Contains(Provider) ? Map[Provider] : FText::FromString(TEXT("Invalid"));
+}
+
+inline FString ToString(const EThirdwebOAuthProvider Provider)
+{
+	return ToText(Provider).ToString();
+}
+
+#undef LOCTEXT_NAMESPACE
+

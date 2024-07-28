@@ -1,15 +1,25 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #include "Thirdweb.h"
-
-#include "ThirdwebCommon.h"
 #include "ThirdwebLog.h"
 
-bool Thirdweb::FFIResult::AssignResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult)
+bool Thirdweb::FFIResult::AssignResult(FString& Output, bool bErrorOnlyResult) const
 {
-	// Log FFIResult object
-	TW_LOG(Log, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), Message());
+	Log();
+	bool bSuccess = success;
+	Output = Message();
 
+	if (bSuccess && bErrorOnlyResult)
+	{
+		Output.Empty();
+	}
+	free_ffi_result(*this);
+	return bSuccess;
+}
+
+bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult) const
+{
+	Log();
 	bool bSuccess = success;
 	bCanRetry = false;
 	Output = Message();
@@ -29,9 +39,19 @@ bool Thirdweb::FFIResult::AssignResult(bool& bCanRetry, FString& Output, bool bE
 	return bSuccess;
 }
 
-EFunctionResult Thirdweb::FFIResult::AssignBPResult(FString& Output)
+FString Thirdweb::FFIResult::GetOutput() const
 {
-	bool bCanRetry = false;
-	bool bSuccess = AssignResult(bCanRetry, Output);
-	return bSuccess ? EFunctionResult::Success : bCanRetry ? EFunctionResult::FailedCanRetry : EFunctionResult::Failed;
+	FString Output = Message();
+	free_ffi_result(*this);
+	return Output;
+}
+
+void Thirdweb::FFIResult::Free() const
+{
+	free_ffi_result(*this);
+}
+
+void Thirdweb::FFIResult::Log() const
+{
+	TW_LOG(Log, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), Message());
 }
