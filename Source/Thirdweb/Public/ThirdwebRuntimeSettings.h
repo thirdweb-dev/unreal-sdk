@@ -15,7 +15,7 @@ class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 	friend UThirdwebSubsystem;
-	
+
 public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	FString ClientID;
@@ -33,8 +33,9 @@ public:
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
 private:
-	const char* GetClientID() const { return StringCast<ANSICHAR>(*ClientID).Get(); }
-	const char* GetBundleID() const { return StringCast<ANSICHAR>(*BundleID).Get(); }
-	const char* GetSecretKey() const { return StringCast<ANSICHAR>(*SecretKey).Get(); }
-	const char* GetStorageDirectoryPath() const { return StringCast<ANSICHAR>(*StorageDirectoryPath).Get(); }
+	const char* GetClientID() const { return GetOrNull(ClientID); }
+	const char* GetBundleID() const { return GetOrNull(BundleID); }
+	const char* GetSecretKey() const { return GetOrNull(SecretKey); }
+	const char* GetStorageDirectoryPath() const { return GetOrNull(StorageDirectoryPath); }
+	static const char* GetOrNull(const FString& In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
 };
