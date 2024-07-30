@@ -62,16 +62,16 @@ bool UThirdwebSubsystem::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Pro
 }
 
 
-EFunctionResult UThirdwebSubsystem::BP_CreateSmartWallet(const FWalletHandle& LocalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless, const FString& Factory,
+EFunctionResult UThirdwebSubsystem::BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless, const FString& Factory,
                                                          const FString& AccountOverride)
 {
-	return CreateSmartWallet(LocalWallet, ChainID, bGasless, Factory, AccountOverride, SmartWallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return CreateSmartWallet(PersonalWallet, ChainID, bGasless, Factory, AccountOverride, SmartWallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& LocalWallet, const int64 ChainID, bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet,
+bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet,
                                            FString& Error)
 {
-	if (Thirdweb::create_smart_wallet(Settings->GetClientID(), Settings->GetBundleID(), Settings->GetSecretKey(), LocalWallet.ID, StringCast<ANSICHAR>(*FString::Printf(TEXT("%lld"), ChainID)).Get(),
+	if (Thirdweb::create_smart_wallet(Settings->GetClientID(), Settings->GetBundleID(), Settings->GetSecretKey(), PersonalWallet.ID, StringCast<ANSICHAR>(*FString::Printf(TEXT("%lld"), ChainID)).Get(),
 	                                  bGasless, StringCast<ANSICHAR>(*Factory).Get(), StringCast<ANSICHAR>(*AccountOverride).Get()).AssignResult(Error))
 	{
 		SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);

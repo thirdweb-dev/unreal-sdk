@@ -42,8 +42,8 @@ public:
 	// SMART WALLET FUNCTIONS
 
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Create Smart Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride"))
-	EFunctionResult BP_CreateSmartWallet(const FWalletHandle& LocalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
-	bool CreateSmartWallet(const FWalletHandle& LocalWallet, const int64 ChainID, bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet, FString& Error);
+	EFunctionResult BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
+	bool CreateSmartWallet(const FWalletHandle& PersonalWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet, FString& Error);
 
 	// Blueprint callable function to get all admins of a smart wallet
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Get Smart Wallet Admins", meta=(ExpandEnumAsExecs="ReturnValue"))

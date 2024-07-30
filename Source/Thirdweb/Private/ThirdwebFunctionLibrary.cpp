@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Cajun Pro LLC. All Rights Reserved.
+﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 // ReSharper disable CppParameterMayBeConst,CppPassValueParameterByConstReference
 
@@ -32,9 +32,9 @@ FString UThirdwebFunctionLibrary::Conv_WalletHandleToString(FWalletHandle Wallet
 	return Wallet.ToAddress();
 }
 
-FString UThirdwebFunctionLibrary::BP_LocalWalletSignMessage(const FWalletHandle& Wallet, const FString& Message)
+FString UThirdwebFunctionLibrary::BP_SignMessage(const FWalletHandle& Wallet, const FString& Message)
 {
-	return ensureAlwaysMsgf(Wallet.Type != FWalletHandle::Smart, TEXT("Cannot use networked wallet for local signing")) ? Wallet.Sign(Message) : Message;
+	return Wallet.Sign(Message);
 }
 
 bool UThirdwebFunctionLibrary::BP_WalletIsConnected(const FWalletHandle& Wallet)

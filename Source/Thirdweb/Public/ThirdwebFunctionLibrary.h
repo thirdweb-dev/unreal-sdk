@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Cajun Pro LLC. All Rights Reserved.
+﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #pragma once
 
@@ -23,9 +23,13 @@ class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 	
 public:
 	/** Converts a private key into a wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="To Wallet", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
 	static FWalletHandle Conv_StringToWalletHandle(FString PrivateKey);
 
+	/** Converts a private key into a wallet handle */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
+	static FWalletHandle Conv_TextToWalletHandle(FText PrivateKey) { return Conv_StringToWalletHandle(PrivateKey.ToString()); }
+	
 	/** Returns true if A is equal to B (A == B) */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
 	static bool EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B);
@@ -42,9 +46,13 @@ public:
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To String (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FString Conv_WalletHandleToString(FWalletHandle Wallet);
 
+	/** Gets the public address of a wallet handle */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="To Text (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	static FText Conv_WalletHandleToText(FWalletHandle Wallet) { return FText::FromString(Conv_WalletHandleToString(Wallet)); }
+
 	/** Generates a private key wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
-	static FString BP_LocalWalletSignMessage(const FWalletHandle& Wallet, const FString& Message);
+	static FString BP_SignMessage(const FWalletHandle& Wallet, const FString& Message);
 
 	/** Check if the wallet handle is connected to a session */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Connected"), Category="Thirdweb|Wallets")

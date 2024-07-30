@@ -62,7 +62,7 @@ bool FWalletHandle::VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error
 	{
 		return Thirdweb::in_app_wallet_verify_otp(ID, StringCast<ANSICHAR>(*OTP).Get()).AssignRetryResult(CanRetry, Error, true);
 	}
-	Error = TEXT("Invalid wallet type for OTP action");
+	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
 }
 
@@ -73,7 +73,7 @@ bool FWalletHandle::SendOTP(FString& Error)
 	{
 		return Thirdweb::in_app_wallet_send_otp(ID).AssignResult(Error, true);
 	}
-	Error = TEXT("Invalid wallet type for OTP action");
+	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
 }
 
@@ -88,7 +88,7 @@ bool FWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString& Logi
 			return true;
 		}
 	}
-	Error = TEXT("Invalid wallet type for OTP action");
+	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
 }
 
@@ -99,7 +99,7 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 	{
 		return Thirdweb::in_app_wallet_sign_in_with_oauth(ID, StringCast<ANSICHAR>(*AuthResult).Get()).AssignResult(Error);
 	}
-	Error = TEXT("Invalid wallet type for OTP action");
+	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
 }
 

@@ -41,6 +41,7 @@ bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, bo
 
 FString Thirdweb::FFIResult::GetOutput() const
 {
+	Log();
 	FString Output = Message();
 	free_ffi_result(*this);
 	return Output;

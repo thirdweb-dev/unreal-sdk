@@ -21,7 +21,7 @@ namespace Thirdweb
 		const char* message;
 
 	private:
-		const TCHAR* Message() const { return StringCast<TCHAR>(message).Get(); }
+		const TCHAR* Message() const { return StringCast<TCHAR, 1024, ANSICHAR>(message).Get(); }
 		// Assign's result to variables and then frees the underlying FFIResult
 		bool AssignResult(FString& Output, bool bErrorOnlyResult = false) const;
 		// Assign's result to variables including retry and then frees the underlying FFIResult
