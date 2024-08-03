@@ -9,6 +9,8 @@
 #include <ostream>
 #include <new>
 
+#include "Hash/Keccak256.h"
+
 enum class EFunctionResult : uint8;
 
 namespace Thirdweb
@@ -33,6 +35,54 @@ namespace Thirdweb
 		// Convenience function to log the FFIResult
 		void Log() const;
 	};
+
+	static const char* GetOrNull(const FString& In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
+	static bool IsHex(const FString& In) { return FRegexMatcher(FRegexPattern(TEXT("^((-)?0x[0-9a-f]+|(0x))$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
+	static bool IsAddressLike(const FString& In) { return FRegexMatcher(FRegexPattern(TEXT("^(0x)?[0-9a-f]{40}$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
+
+	static bool IsChecksummedAddress(const FString& In)
+	{
+		if (!IsAddressLike(In))
+		{
+			return false;
+		}
+		FString Address = In;
+
+		// Convert the correct hash into a hex string
+		FString addressHash = FKeccak256().KeccakFromString(In, true);
+
+		for (int32 i = 0; i < 40; ++i)
+		{
+			// ReSharper disable once CppTooWideScopeInitStatement
+			int32 HexValue = FParse::HexDigit(addressHash[i]);
+			if ((HexValue > 7 && FChar::ToUpper(Address[i]) != Address[i]) || (HexValue <= 7 && FChar::ToLower(Address[i]) != Address[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static bool IsValidAddress(const FString& In, const bool bWithChecksum = false)
+	{
+		FString Value = In;
+		if (!IsHex(Value))
+		{
+			Value = Value.ToLower().StartsWith(TEXT("0x")) ? Value : TEXT("0x") + Value;
+		}
+		// basic check
+		if (!IsAddressLike(Value))
+		{
+			return false;
+		}
+		// all lower or all upper
+		if (FRegexMatcher(FRegexPattern(TEXT("^(0x|0X)?[0-9a-f]{40}$")), Value).FindNext(), FRegexMatcher(FRegexPattern(TEXT("^(0x|0X)?[0-9A-F]{40}$")), Value).FindNext())
+		{
+			return true;
+		}
+
+		return bWithChecksum ? IsChecksummedAddress(Value) : true;
+	}
 
 	extern "C" {
 	void free_ffi_result(FFIResult result);

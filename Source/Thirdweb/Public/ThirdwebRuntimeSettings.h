@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Thirdweb.h"
 #include "Engine/DeveloperSettings.h"
 #include "ThirdwebRuntimeSettings.generated.h"
 
@@ -33,9 +34,8 @@ public:
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
 private:
-	const char* GetClientID() const { return GetOrNull(ClientID); }
-	const char* GetBundleID() const { return GetOrNull(BundleID); }
-	const char* GetSecretKey() const { return GetOrNull(SecretKey); }
-	const char* GetStorageDirectoryPath() const { return GetOrNull(StorageDirectoryPath); }
-	static const char* GetOrNull(const FString& In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
+	const char* GetClientID() const { return Thirdweb::GetOrNull(ClientID); }
+	const char* GetBundleID() const { return Thirdweb::GetOrNull(BundleID); }
+	const char* GetSecretKey() const { return Thirdweb::GetOrNull(SecretKey); }
+	const char* GetStorageDirectoryPath() const { return Thirdweb::GetOrNull(StorageDirectoryPath); }
 };

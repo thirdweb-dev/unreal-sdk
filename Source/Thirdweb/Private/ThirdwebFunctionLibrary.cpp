@@ -4,6 +4,7 @@
 
 #include "ThirdwebFunctionLibrary.h"
 
+#include "Thirdweb.h"
 #include "ThirdwebCommon.h"
 #include "ThirdwebWalletHandle.h"
 
@@ -89,6 +90,16 @@ FText UThirdwebFunctionLibrary::Conv_ThirdwebOAuthProviderToText(EThirdwebOAuthP
 FString UThirdwebFunctionLibrary::Conv_ThirdwebOAuthProviderToString(EThirdwebOAuthProvider Provider)
 {
 	return ToString(Provider);
+}
+
+bool UThirdwebFunctionLibrary::BP_IsStringValidAddress(const FString& Address)
+{
+	return Thirdweb::IsValidAddress(Address);
+}
+
+bool UThirdwebFunctionLibrary::BP_IsTextValidAddress(const FText& Address)
+{
+	return Thirdweb::IsValidAddress(Address.ToString());
 }
 
 

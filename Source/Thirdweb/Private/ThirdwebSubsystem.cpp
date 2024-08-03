@@ -72,7 +72,7 @@ bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, 
                                            FString& Error)
 {
 	if (Thirdweb::create_smart_wallet(Settings->GetClientID(), Settings->GetBundleID(), Settings->GetSecretKey(), PersonalWallet.ID, StringCast<ANSICHAR>(*FString::Printf(TEXT("%lld"), ChainID)).Get(),
-	                                  bGasless, StringCast<ANSICHAR>(*Factory).Get(), StringCast<ANSICHAR>(*AccountOverride).Get()).AssignResult(Error))
+	                                  bGasless, Thirdweb::GetOrNull(Factory), Thirdweb::GetOrNull(AccountOverride)).AssignResult(Error))
 	{
 		SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
 		Error.Empty();

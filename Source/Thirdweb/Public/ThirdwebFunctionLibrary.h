@@ -89,4 +89,12 @@ public:
 	/** Convert a Thirdweb OAuth Provider to String */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To String", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|String")
 	static FString Conv_ThirdwebOAuthProviderToString(EThirdwebOAuthProvider Provider);
+
+	/** Checks the validity of the address */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Address"), Category="Utilities|String")
+	static bool BP_IsStringValidAddress(const FString& Address);
+
+	/** Checks the validity of the address */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Address"), Category="Utilities|Text")
+	static bool BP_IsTextValidAddress(const FText& Address);
 };
