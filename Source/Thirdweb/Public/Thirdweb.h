@@ -20,14 +20,14 @@ namespace Thirdweb
 		friend class UThirdwebSubsystem;
 		friend struct FWalletHandle;
 		bool success;
-		const char* message;
+		const char *message;
 
 	private:
-		const TCHAR* Message() const { return StringCast<TCHAR, 1024, ANSICHAR>(message).Get(); }
+		const TCHAR *Message() const { return StringCast<TCHAR, 1024, ANSICHAR>(message).Get(); }
 		// Assign's result to variables and then frees the underlying FFIResult
-		bool AssignResult(FString& Output, bool bErrorOnlyResult = false) const;
+		bool AssignResult(FString &Output, bool bErrorOnlyResult = false) const;
 		// Assign's result to variables including retry and then frees the underlying FFIResult
-		bool AssignRetryResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult = false) const;
+		bool AssignRetryResult(bool &bCanRetry, FString &Output, bool bErrorOnlyResult = false) const;
 		// Assign's result to output directly
 		FString GetOutput() const;
 		// Frees the FFI Result for functions that have no relevant output
@@ -36,11 +36,11 @@ namespace Thirdweb
 		void Log() const;
 	};
 
-	static const char* GetOrNull(const FString& In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
-	static bool IsHex(const FString& In) { return FRegexMatcher(FRegexPattern(TEXT("^((-)?0x[0-9a-f]+|(0x))$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
-	static bool IsAddressLike(const FString& In) { return FRegexMatcher(FRegexPattern(TEXT("^(0x)?[0-9a-f]{40}$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
+	static const char *GetOrNull(const FString &In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
+	static bool IsHex(const FString &In) { return FRegexMatcher(FRegexPattern(TEXT("^((-)?0x[0-9a-f]+|(0x))$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
+	static bool IsAddressLike(const FString &In) { return FRegexMatcher(FRegexPattern(TEXT("^(0x)?[0-9a-f]{40}$"), ERegexPatternFlags::CaseInsensitive), In).FindNext(); }
 
-	static bool IsChecksummedAddress(const FString& In)
+	static bool IsChecksummedAddress(const FString &In)
 	{
 		if (!IsAddressLike(In))
 		{
@@ -63,7 +63,7 @@ namespace Thirdweb
 		return true;
 	}
 
-	static bool IsValidAddress(const FString& In, const bool bWithChecksum = false)
+	static bool IsValidAddress(const FString &In, const bool bWithChecksum = false)
 	{
 		FString Value = In;
 		if (!IsHex(Value))
@@ -84,64 +84,73 @@ namespace Thirdweb
 		return bWithChecksum ? IsChecksummedAddress(Value) : true;
 	}
 
-	extern "C" {
-	void free_ffi_result(FFIResult result);
+	extern "C"
+	{
 
-	FFIResult create_private_key_wallet(const char* private_key);
+		void free_ffi_result(FFIResult result);
 
-	FFIResult generate_private_key_wallet();
+		FFIResult create_private_key_wallet(const char *private_key);
 
-	FFIResult create_in_app_wallet(const char* client_id,
-	                               const char* bundle_id,
-	                               const char* secret_key,
-	                               const char* email,
-	                               const char* storage_directory_path,
-	                               const char* oauth_provider);
+		FFIResult generate_private_key_wallet();
 
-	FFIResult in_app_wallet_send_otp(uintptr_t handle_id);
+		FFIResult create_in_app_wallet(const char *client_id,
+									   const char *bundle_id,
+									   const char *secret_key,
+									   const char *email,
+									   const char *storage_directory_path,
+									   const char *oauth_provider);
 
-	FFIResult in_app_wallet_verify_otp(uintptr_t handle_id, const char* otp);
+		FFIResult in_app_wallet_send_otp(uintptr_t handle_id);
 
-	FFIResult in_app_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char* redirect_url);
+		FFIResult in_app_wallet_verify_otp(uintptr_t handle_id, const char *otp);
 
-	FFIResult in_app_wallet_sign_in_with_oauth(uintptr_t handle_id, const char* auth_result);
+		FFIResult in_app_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char *redirect_url);
 
-	FFIResult create_smart_wallet(const char* client_id,
-	                              const char* bundle_id,
-	                              const char* secret_key,
-	                              uintptr_t personal_wallet_handle_id,
-	                              const char* chain_id,
-	                              bool gasless,
-	                              const char* factory,
-	                              const char* account_override);
+		FFIResult in_app_wallet_sign_in_with_oauth(uintptr_t handle_id, const char *auth_result);
 
-	FFIResult smart_wallet_is_deployed(uintptr_t handle_id);
+		FFIResult create_smart_wallet(const char *client_id,
+									  const char *bundle_id,
+									  const char *secret_key,
+									  uintptr_t personal_wallet_handle_id,
+									  const char *chain_id,
+									  bool gasless,
+									  const char *factory,
+									  const char *account_override);
 
-	FFIResult smart_wallet_get_all_admins(uintptr_t handle_id);
+		FFIResult smart_wallet_is_deployed(uintptr_t handle_id);
 
-	FFIResult smart_wallet_get_all_active_signers(uintptr_t handle_id);
+		FFIResult smart_wallet_get_all_admins(uintptr_t handle_id);
 
-	FFIResult smart_wallet_create_session_key(uintptr_t handle_id,
-	                                          const char* signer_address,
-	                                          const char* is_admin,
-	                                          const char* const * approved_targets,
-	                                          uintptr_t approved_targets_count,
-	                                          const char* native_token_limit_per_transaction_in_wei,
-	                                          const char* permission_start_timestamp,
-	                                          const char* permission_end_timestamp,
-	                                          const char* req_validity_start_timestamp,
-	                                          const char* req_validity_end_timestamp);
+		FFIResult smart_wallet_get_all_active_signers(uintptr_t handle_id);
 
-	FFIResult get_wallet_address(uintptr_t handle_id);
+		FFIResult smart_wallet_create_session_key(uintptr_t handle_id,
+												  const char *signer_address,
+												  const char *is_admin,
+												  const char *const *approved_targets,
+												  uintptr_t approved_targets_count,
+												  const char *native_token_limit_per_transaction_in_wei,
+												  const char *permission_start_timestamp,
+												  const char *permission_end_timestamp,
+												  const char *req_validity_start_timestamp,
+												  const char *req_validity_end_timestamp);
 
-	FFIResult sign_message(uintptr_t handle_id, const char* message);
+		FFIResult get_wallet_address(uintptr_t handle_id);
 
-	FFIResult is_connected(uintptr_t handle_id);
+		FFIResult sign_message(uintptr_t handle_id, const char *message);
 
-	FFIResult disconnect(uintptr_t handle_id);
+		FFIResult is_connected(uintptr_t handle_id);
 
-	void free_wallet(uintptr_t handle_id);
+		FFIResult disconnect(uintptr_t handle_id);
 
-	void free_string(char* s);
+		void free_wallet(uintptr_t handle_id);
+
+		void free_string(char *s);
+
+		FFIResult is_valid_address(const char *address, bool check_checksum);
+
+		FFIResult to_checksummed_address(const char *address);
+
+		FFIResult is_valid_private_key(const char *private_key);
+
 	} // extern "C"
 } // namespace Thirdweb
