@@ -34,7 +34,8 @@ public class Thirdweb : ModuleRules
 			"HTTP",
 			"HTTPServer",
 			"Networking",
-			"DeveloperSettings"
+			"DeveloperSettings",
+			"Json"
 		});
 	}
 }

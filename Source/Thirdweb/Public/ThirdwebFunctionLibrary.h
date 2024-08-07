@@ -20,7 +20,7 @@ UCLASS(meta=(BlueprintThreadSafe, DisplayName="Thirdweb", ScriptName="ThirdwebFu
 class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	
+
 public:
 	/** Converts a private key into a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
@@ -29,7 +29,7 @@ public:
 	/** Converts a private key into a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
 	static FWalletHandle Conv_TextToWalletHandle(FText PrivateKey) { return Conv_StringToWalletHandle(PrivateKey.ToString()); }
-	
+
 	/** Returns true if A is equal to B (A == B) */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
 	static bool EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B);
@@ -65,7 +65,7 @@ public:
 	/** Disconnect the wallet handle from a session. Blueprint Callable for side effects */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Verify OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EOTPVerificationFunctionResult BP_VerifyOTP(FWalletHandle Wallet, const FString& OTP, FString& Error);
-	
+
 	/** Disconnect the wallet handle from a session. Blueprint Callable for side effects */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Send OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_SendOTP(FWalletHandle Wallet, FString& Error);
@@ -73,15 +73,43 @@ public:
 	// Blueprint callable function to fetch OAuth login link
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Fetch OAuth Login Link", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_FetchOAuthLoginLink(FWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error);
-	
+
 	/** Check if a wallet handle is valid */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets")
 	static bool BP_WalletIsValid(const FWalletHandle& Wallet);
 
-	// Blueprint callable function to check if a smart wallet is deployed
+	/** Check if a smart wallet is deployed */
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Is Deployed", meta=(ExpandEnumAsExecs="ReturnValue"))
 	static ESmartWalletDeployedFunctionResult BP_IsSmartWalletDeployed(FWalletHandle Wallet, FString& Error);
-	
+
+	/** Create a session key for a smart wallet */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Create Session Key",
+		meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd", AutoCreateRefTerm=
+			"PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd,ApprovedTargets"))
+	static EFunctionResult BP_CreateSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, const TArray<FString>& ApprovedTargets,
+	                                                      const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
+	                                                      const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd, FString& TransactionHash, FString& Error);
+
+	/** Get all admins of a smart wallet */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Get Admins", meta=(ExpandEnumAsExecs="ReturnValue"))
+	static EFunctionResult BP_GetSmartWalletAdmins(FWalletHandle Wallet, TArray<FString>& Admins, FString& Error);
+
+	/** Get all active signers of a smart wallet */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Get Active Signers", meta=(ExpandEnumAsExecs="ReturnValue"))
+	static EFunctionResult BP_GetSmartWalletActiveSigners(FWalletHandle Wallet, TArray<FSigner>& Signers, FString& Error);
+
+	/** Revoke the session key of a smart wallet signer */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Revoke Session Key", meta=(ExpandEnumAsExecs="ReturnValue"))
+	static EFunctionResult BP_RevokeSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, FString& Error);
+
+	/** Add an admin signer to a smart wallet */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Add Admin", meta=(ExpandEnumAsExecs="ReturnValue"))
+	static EFunctionResult BP_AddSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error);
+
+	/** Remove an admin signer from a smart wallet */
+	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Remove Admin", meta=(ExpandEnumAsExecs="ReturnValue"))
+	static EFunctionResult BP_RemoveSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error);
+
 	/** Convert a Thirdweb OAuth Provider to Text */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To Text", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Text")
 	static FText Conv_ThirdwebOAuthProviderToText(EThirdwebOAuthProvider Provider);
@@ -91,10 +119,37 @@ public:
 	static FString Conv_ThirdwebOAuthProviderToString(EThirdwebOAuthProvider Provider);
 
 	/** Checks the validity of the address */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Address"), Category="Utilities|String")
-	static bool BP_IsStringValidAddress(const FString& Address);
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid Address"), Category="Utilities|String")
+	static bool BP_IsStringValidAddress(const FString& Address, const bool bWithChecksum = false);
+
+	/** Checks the checksum of the address */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Checksummed Address"), Category="Utilities|String")
+	static bool BP_IsStringChecksummedAddress(const FString& Address);
+
+	/** Checks the validity of the private key */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid Private Key"), Category="Utilities|String")
+	static bool BP_IsStringValidPrivateKey(const FString& PrivateKey);
+
+	/** Returns the checksummed address. If already checksummed it is a no-op */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="To Checksummed Address"), Category="Utilities|String")
+	static FString Conv_StringAddressToStringChecksummedAddress(const FString& Address);
 
 	/** Checks the validity of the address */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Address"), Category="Utilities|Text")
-	static bool BP_IsTextValidAddress(const FText& Address);
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid Address", AutoCreateRefTerm="Address"), Category="Utilities|Text")
+	static bool BP_IsTextValidAddress(const FText& Address, const bool bWithChecksum = false);
+
+	/** Checks the checksum of the address */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Checksummed Address", AutoCreateRefTerm="Address"), Category="Utilities|Text")
+	static bool BP_IsTextChecksummedAddress(const FText& Address);
+
+	/** Checks the validity of the private key */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid Private Key", AutoCreateRefTerm="PrivateKey"), Category="Utilities|Text")
+	static bool BP_IsTextValidPrivateKey(const FText& PrivateKey);
+
+	/** Returns the checksummed address. If already checksummed it is a no-op */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="To Checksummed Address", AutoCreateRefTerm="Address"), Category="Utilities|Text")
+	static FText Conv_TextAddressToStringChecksummedAddress(const FText& Address);
+
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
+	static FString BP_ZeroAddress() { return TEXT("0x0000000000000000000000000000000000000000"); }
 };

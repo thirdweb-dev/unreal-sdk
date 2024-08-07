@@ -45,27 +45,6 @@ public:
 	EFunctionResult BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
 	bool CreateSmartWallet(const FWalletHandle& PersonalWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet, FString& Error);
 
-	// Blueprint callable function to get all admins of a smart wallet
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Get Smart Wallet Admins", meta=(ExpandEnumAsExecs="ReturnValue"))
-	EFunctionResult BP_GetSmartWalletAdmins(const FWalletHandle& Wallet, FString& Output, FString& Error);
-	bool GetSmartWalletAdmins(const FWalletHandle& Wallet, FString& Output, FString& Error);
-
-	// Blueprint callable function to get all active signers of a smart wallet
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Get Smart Wallet Active Signers", meta=(ExpandEnumAsExecs="ReturnValue"))
-	EFunctionResult BP_GetSmartWalletActiveSigners(const FWalletHandle& Wallet, FString& Output, FString& Error);
-	bool GetSmartWalletActiveSigners(const FWalletHandle& Wallet, FString& Output, FString& Error);
-
-	// Blueprint callable function to create a session key for a smart wallet
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Create Smart Wallet Session Key",
-		meta=(ExpandEnumAsExecs="ReturnValue", AutoCreateRefTerm="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd"))
-	EFunctionResult BP_CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool IsAdmin, const TArray<FString>& ApprovedTargets,
-	                                               const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
-	                                               const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd, FString& Key, FString& Error);
-	bool CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool bIsAdmin, const TArray<FString>& ApprovedTargets,
-	                                 const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd, const FDateTime& RequestValidityStart,
-	                                 const FDateTime& RequestValidityEnd, FString& Key, FString& Error);
-
-
 	// Static subsystem accessor convenience function for C++ implementations
 	static UThirdwebSubsystem* Get(const UObject* WorldContextObject);
 

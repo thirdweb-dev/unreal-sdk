@@ -82,6 +82,41 @@ ESmartWalletDeployedFunctionResult UThirdwebFunctionLibrary::BP_IsSmartWalletDep
 	return ESmartWalletDeployedFunctionResult::Failed;
 }
 
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, const TArray<FString>& ApprovedTargets,
+                                                                         const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
+                                                                         const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd,
+                                                                         FString& TransactionHash, FString& Error)
+{
+	return Wallet.CreateSessionKey(Signer, ApprovedTargets, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd, TransactionHash, Error)
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletAdmins(FWalletHandle Wallet, TArray<FString>& Admins, FString& Error)
+{
+	return Wallet.GetAdmins(Admins, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletActiveSigners(FWalletHandle Wallet, TArray<FSigner>& Signers, FString& Error)
+{
+	return Wallet.GetActiveSigners(Signers, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_RevokeSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, FString& Error)
+{
+	return Wallet.RevokeSessionKey(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_AddSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error)
+{
+	return Wallet.AddAdmin(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_RemoveSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error)
+{
+	return Wallet.RemoveAdmin(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
 FText UThirdwebFunctionLibrary::Conv_ThirdwebOAuthProviderToText(EThirdwebOAuthProvider Provider)
 {
 	return ToText(Provider);
@@ -92,14 +127,42 @@ FString UThirdwebFunctionLibrary::Conv_ThirdwebOAuthProviderToString(EThirdwebOA
 	return ToString(Provider);
 }
 
-bool UThirdwebFunctionLibrary::BP_IsStringValidAddress(const FString& Address)
+bool UThirdwebFunctionLibrary::BP_IsStringValidAddress(const FString& Address, const bool bWithChecksum)
 {
-	return Thirdweb::IsValidAddress(Address);
+	return Thirdweb::IsValidAddress(Address, bWithChecksum);
 }
 
-bool UThirdwebFunctionLibrary::BP_IsTextValidAddress(const FText& Address)
+bool UThirdwebFunctionLibrary::BP_IsStringChecksummedAddress(const FString& Address)
 {
-	return Thirdweb::IsValidAddress(Address.ToString());
+	return Thirdweb::IsChecksummedAddress(Address);
 }
 
+bool UThirdwebFunctionLibrary::BP_IsStringValidPrivateKey(const FString& PrivateKey)
+{
+	return Thirdweb::IsValidPrivateKey(PrivateKey);
+}
 
+FString UThirdwebFunctionLibrary::Conv_StringAddressToStringChecksummedAddress(const FString& Address)
+{
+	return Thirdweb::ToChecksummedAddress(Address);
+}
+
+bool UThirdwebFunctionLibrary::BP_IsTextValidAddress(const FText& Address, const bool bWithChecksum)
+{
+	return !Address.IsEmpty() && Thirdweb::IsValidAddress(Address.ToString(), bWithChecksum);
+}
+
+bool UThirdwebFunctionLibrary::BP_IsTextChecksummedAddress(const FText& Address)
+{
+	return !Address.IsEmpty() && Thirdweb::IsChecksummedAddress(Address.ToString());
+}
+
+bool UThirdwebFunctionLibrary::BP_IsTextValidPrivateKey(const FText& PrivateKey)
+{
+	return !PrivateKey.IsEmpty() && Thirdweb::IsValidPrivateKey(PrivateKey.ToString());
+}
+
+FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const FText& Address)
+{
+	return Address.IsEmpty() ? FText::GetEmpty() : FText::FromString(Thirdweb::ToChecksummedAddress(Address.ToString()));
+}

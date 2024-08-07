@@ -62,17 +62,27 @@ bool UThirdwebSubsystem::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Pro
 }
 
 
-EFunctionResult UThirdwebSubsystem::BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless, const FString& Factory,
+EFunctionResult UThirdwebSubsystem::BP_CreateSmartWallet(const FWalletHandle& PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless,
+                                                         const FString& Factory,
                                                          const FString& AccountOverride)
 {
 	return CreateSmartWallet(PersonalWallet, ChainID, bGasless, Factory, AccountOverride, SmartWallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet,
+bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride,
+                                           FWalletHandle& SmartWallet,
                                            FString& Error)
 {
-	if (Thirdweb::create_smart_wallet(Settings->GetClientID(), Settings->GetBundleID(), Settings->GetSecretKey(), PersonalWallet.ID, StringCast<ANSICHAR>(*FString::Printf(TEXT("%lld"), ChainID)).Get(),
-	                                  bGasless, Thirdweb::GetOrNull(Factory), Thirdweb::GetOrNull(AccountOverride)).AssignResult(Error))
+	if (Thirdweb::create_smart_wallet(
+		Settings->ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->ClientID),
+		Settings->BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->BundleID),
+		Settings->SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->SecretKey),
+		PersonalWallet.ID,
+		TCHAR_TO_UTF8(*FString::Printf(TEXT("%lld"), ChainID)),
+		bGasless,
+		Factory.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Factory),
+		AccountOverride.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*AccountOverride)
+	).AssignResult(Error))
 	{
 		SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
 		Error.Empty();
@@ -80,93 +90,6 @@ bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, 
 	}
 	return false;
 }
-
-EFunctionResult UThirdwebSubsystem::BP_GetSmartWalletAdmins(const FWalletHandle& Wallet, FString& Output, FString& Error)
-{
-	return GetSmartWalletAdmins(Wallet, Output, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
-}
-
-bool UThirdwebSubsystem::GetSmartWalletAdmins(const FWalletHandle& Wallet, FString& Output, FString& Error)
-{
-	if (Wallet.Type == FWalletHandle::Smart)
-	{
-		if (Thirdweb::smart_wallet_get_all_admins(Wallet.ID).AssignResult(Error))
-		{
-			Output = Error;
-			Error.Empty();
-			return true;
-		}
-	}
-	Error = TEXT("Not a networked wallet");
-	return false;
-}
-
-EFunctionResult UThirdwebSubsystem::BP_GetSmartWalletActiveSigners(const FWalletHandle& Wallet, FString& Output, FString& Error)
-{
-	return GetSmartWalletActiveSigners(Wallet, Output, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
-}
-
-bool UThirdwebSubsystem::GetSmartWalletActiveSigners(const FWalletHandle& Wallet, FString& Output, FString& Error)
-{
-	if (Wallet.Type == FWalletHandle::Smart)
-	{
-		if (Thirdweb::smart_wallet_get_all_active_signers(Wallet.ID).AssignResult(Error))
-		{
-			Output = Error;
-			Error.Empty();
-			return true;
-		}
-	}
-	Error = TEXT("Not a networked wallet");
-	return false;
-}
-
-EFunctionResult UThirdwebSubsystem::BP_CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool IsAdmin, const TArray<FString>& ApprovedTargets,
-                                                                   const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
-                                                                   const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd,
-                                                                   FString& Key, FString& Error)
-{
-	return CreateSmartWalletSessionKey(Wallet, SignerAddress, IsAdmin, ApprovedTargets, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd,
-	                                   Key, Error)
-		       ? EFunctionResult::Success
-		       : EFunctionResult::Failed;
-}
-
-bool UThirdwebSubsystem::CreateSmartWalletSessionKey(const FWalletHandle& Wallet, const FString& SignerAddress, const bool bIsAdmin, const TArray<FString>& ApprovedTargets,
-                                                     const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
-                                                     const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd, FString& Key, FString& Error)
-{
-	if (Wallet.Type != FWalletHandle::Smart)
-	{
-		Error = TEXT("Not a networked wallet");
-		return false;
-	}
-
-	TArray<const char*> ApprovedTargetsCArray;
-	for (const FString& Target : ApprovedTargets)
-	{
-		ApprovedTargetsCArray.Add(StringCast<ANSICHAR>(*Target).Get());
-	}
-	if (Thirdweb::smart_wallet_create_session_key(
-		Wallet.ID,
-		StringCast<ANSICHAR>(*SignerAddress).Get(),
-		StringCast<ANSICHAR>(bIsAdmin ? TEXT("1") : TEXT("0")).Get(),
-		ApprovedTargetsCArray.GetData(),
-		ApprovedTargetsCArray.Num(),
-		StringCast<ANSICHAR>(*NativeTokenLimitPerTransactionInWei).Get(),
-		StringCast<ANSICHAR>(*FString::FromInt(PermissionStart.ToUnixTimestampDecimal())).Get(),
-		StringCast<ANSICHAR>(*FString::FromInt(PermissionEnd.ToUnixTimestampDecimal())).Get(),
-		StringCast<ANSICHAR>(*FString::FromInt(RequestValidityStart.ToUnixTimestampDecimal())).Get(),
-		StringCast<ANSICHAR>(*FString::FromInt(RequestValidityEnd.ToUnixTimestampDecimal())).Get()
-	).AssignResult(Error))
-	{
-		Key = Error;
-		Error.Empty();
-		return true;
-	}
-	return false;
-}
-
 
 UThirdwebSubsystem* UThirdwebSubsystem::Get(const UObject* WorldContextObject)
 {

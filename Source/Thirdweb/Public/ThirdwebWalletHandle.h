@@ -4,6 +4,8 @@
 
 #include "ThirdwebWalletHandle.generated.h"
 
+struct FSigner;
+
 /** Unique handle that can be used to distinguish wallets */
 USTRUCT(BlueprintType, Blueprintable)
 struct FWalletHandle
@@ -20,8 +22,10 @@ struct FWalletHandle
 
 	friend class UThirdwebSubsystem;
 	friend class UThirdwebFunctionLibrary;
-	
-	FWalletHandle() {}
+
+	FWalletHandle()
+	{
+	}
 
 	explicit FWalletHandle(const EWalletHandleType InType, const int64 InID)
 	{
@@ -30,8 +34,9 @@ struct FWalletHandle
 		ensureAlwaysMsgf(InID > 0, TEXT("Invalid id 0"));
 		ID = InID;
 	}
+
 	explicit FWalletHandle(const EWalletHandleType InType, const FString& Int64String);
-	
+
 	/** True if this handle was ever initialized by the thirdweb subsystem */
 	bool IsValid() const { return Type != InvalidHandle && ID != 0; }
 
@@ -41,23 +46,23 @@ struct FWalletHandle
 		ID = 0;
 		Type = InvalidHandle;
 	}
-	
-	/** Create a private key wallet handle directly from a private key **/
+
+	/** Create a private key wallet handle directly from a private key */
 	static FWalletHandle FromPrivateKey(const FString& PrivateKey);
 
-	/** Generate a private key wallet handle **/
+	/** Generate a private key wallet handle */
 	static FWalletHandle GeneratePrivateKey();
 
 	/** Check if the smart wallet is deployed */
 	bool IsDeployed(bool& bDeployed, FString& Error);
-	
+
 	/** Check if the wallet is connected to a session */
 	bool IsConnected() const;
-	
+
 	/** Disconnect a wallet from a session */
 	void Disconnect() const;
 
-	/** Get the public address of the current wallet **/
+	/** Get the public address of the current wallet */
 	FString ToAddress() const;
 
 	bool VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error);
@@ -65,11 +70,40 @@ struct FWalletHandle
 
 	bool FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error);
 	bool SignInWithOAuth(const FString& AuthResult, FString& Error);
+
+	/** Create a session key for a smart wallet */
+	bool CreateSessionKey(
+		const FString& Signer,
+		const TArray<FString>& ApprovedTargets,
+		const FString& NativeTokenLimitPerTransactionInWei,
+		const FDateTime& PermissionStart,
+		const FDateTime& PermissionEnd,
+		const FDateTime& RequestValidityStart,
+		const FDateTime& RequestValidityEnd,
+		FString& TransactionHash,
+		FString& Error
+	);
 	
-	/** 
+	/** Revoke a session key for a smart wallet */
+	bool RevokeSessionKey(const FString& Signer, FString& Error);
+	
+	/** Get the admins of a smart wallet */
+	bool GetAdmins(TArray<FString>& Admins, FString& Error);
+
+	/** Add an admin to a smart wallet */
+	bool AddAdmin(const FString& Signer, FString& Error);
+
+	/** Remove an admin from a smart wallet */
+	bool RemoveAdmin(const FString& Signer, FString& Error);
+	
+	/** Get the active signers of a smart wallet */
+	bool GetActiveSigners(TArray<FSigner>& Signers, FString& Error);
+
+
+
 	/** sign a message */
-	FString Sign(const FString& Message) const; 
-	
+	FString Sign(const FString& Message) const;
+
 	bool operator==(const FWalletHandle& Other) const
 	{
 		return ID == Type == Other.Type && Other.ID;

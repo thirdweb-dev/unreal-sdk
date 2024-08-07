@@ -7,7 +7,7 @@ bool Thirdweb::FFIResult::AssignResult(FString& Output, bool bErrorOnlyResult) c
 {
 	Log();
 	bool bSuccess = success;
-	Output = Message();
+	Output = FString(UTF8_TO_TCHAR(message));
 
 	if (bSuccess && bErrorOnlyResult)
 	{
@@ -22,7 +22,7 @@ bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, bo
 	Log();
 	bool bSuccess = success;
 	bCanRetry = false;
-	Output = Message();
+	Output = FString(UTF8_TO_TCHAR(message));
 	
 	if (bSuccess && Output.StartsWith("RecoverableError"))
 	{
@@ -42,7 +42,7 @@ bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, bo
 FString Thirdweb::FFIResult::GetOutput() const
 {
 	Log();
-	FString Output = Message();
+	FString Output = FString(UTF8_TO_TCHAR(message));
 	free_ffi_result(*this);
 	return Output;
 }
@@ -54,5 +54,5 @@ void Thirdweb::FFIResult::Free() const
 
 void Thirdweb::FFIResult::Log() const
 {
-	TW_LOG(Log, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), Message());
+	TW_LOG(Log, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), *FString(UTF8_TO_TCHAR(message)));
 }
