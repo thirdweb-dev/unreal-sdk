@@ -125,14 +125,19 @@ namespace Thirdweb
 
 		FFIResult smart_wallet_create_session_key(uintptr_t handle_id,
 												  const char *signer_address,
-												  const char *is_admin,
 												  const char *const *approved_targets,
 												  uintptr_t approved_targets_count,
 												  const char *native_token_limit_per_transaction_in_wei,
-												  const char *permission_start_timestamp,
-												  const char *permission_end_timestamp,
-												  const char *req_validity_start_timestamp,
-												  const char *req_validity_end_timestamp);
+												  uint64_t permission_start_timestamp,
+												  uint64_t permission_end_timestamp,
+												  uint64_t req_validity_start_timestamp,
+												  uint64_t req_validity_end_timestamp);
+
+		FFIResult smart_wallet_revoke_session_key(uintptr_t handle_id, const char *signer_address);
+
+		FFIResult smart_wallet_add_admin(uintptr_t handle_id, const char *signer_address);
+
+		FFIResult smart_wallet_remove_admin(uintptr_t handle_id, const char *signer_address);
 
 		FFIResult get_wallet_address(uintptr_t handle_id);
 
@@ -145,6 +150,10 @@ namespace Thirdweb
 		void free_wallet(uintptr_t handle_id);
 
 		void free_string(char *s);
+
+		FFIResult get_unix_timestamp_now();
+
+		FFIResult get_unix_timestamp_in_ten_years();
 
 		FFIResult is_valid_address(const char *address, bool check_checksum);
 
