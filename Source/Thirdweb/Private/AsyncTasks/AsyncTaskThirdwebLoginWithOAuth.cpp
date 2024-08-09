@@ -7,7 +7,9 @@
 #include "ThirdwebLog.h"
 #include "ThirdwebSubsystem.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Engine/World.h"
+#include "Misc/DateTime.h"
+#include "TimerManager.h"
 
 void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 {
@@ -31,7 +33,7 @@ void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 	{
 		return HandleFailed(TEXT("Failed to get HTTP Router"));
 	}
-	
+
 	AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
 	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET, FHttpRequestHandler::CreateUObject(this, &ThisClass::CallbackRequestHandler));
 
@@ -53,18 +55,17 @@ void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::CheckOAuthCompletion);
 }
 
-UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAuth(UObject* WorldContextObject, const FWalletHandle& Wallet)
+UAsyncTaskThirdwebLoginWithOAuth *UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAuth(UObject *WorldContextObject, const FWalletHandle &Wallet)
 {
 	if (!WorldContextObject)
 	{
 		return nullptr;
 	}
-	UAsyncTaskThirdwebLoginWithOAuth* Task = NewObject<UAsyncTaskThirdwebLoginWithOAuth>(WorldContextObject);
+	UAsyncTaskThirdwebLoginWithOAuth *Task = NewObject<UAsyncTaskThirdwebLoginWithOAuth>(WorldContextObject);
 	Task->Wallet = Wallet;
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
 }
-
 
 void UAsyncTaskThirdwebLoginWithOAuth::CheckOAuthCompletion()
 {
@@ -74,7 +75,7 @@ void UAsyncTaskThirdwebLoginWithOAuth::CheckOAuthCompletion()
 		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::CheckOAuthCompletion);
 		return;
 	}
-	
+
 	// Stop the HTTP listener
 	FHttpServerModule::Get().StopAllListeners();
 	TW_LOG(Verbose, TEXT("HTTP Server stopped listening"));
@@ -94,12 +95,11 @@ void UAsyncTaskThirdwebLoginWithOAuth::CheckOAuthCompletion()
 			return HandleSuccess(TEXT("Successfully signed in with OAuth."));
 		}
 		return HandleFailed(FString::Printf(TEXT("OAuth login flow failed: %s"), *Error));
-		
 	}
 	HandleFailed(TEXT("OAuth login flow did not complete in time"));
 }
 
-bool UAsyncTaskThirdwebLoginWithOAuth::CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
+bool UAsyncTaskThirdwebLoginWithOAuth::CallbackRequestHandler(const FHttpServerRequest &Request, const FHttpResultCallback &OnComplete)
 {
 	OAuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
 
@@ -120,13 +120,13 @@ bool UAsyncTaskThirdwebLoginWithOAuth::CallbackRequestHandler(const FHttpServerR
 	return true;
 }
 
-void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
+void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString &Error)
 {
 	Failed.Broadcast(Error);
 	SetReadyToDestroy();
 }
 
-void UAsyncTaskThirdwebLoginWithOAuth::HandleSuccess(const FString& Output)
+void UAsyncTaskThirdwebLoginWithOAuth::HandleSuccess(const FString &Output)
 {
 	Success.Broadcast(Output);
 	SetReadyToDestroy();

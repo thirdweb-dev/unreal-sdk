@@ -6,6 +6,9 @@
 #include "ThirdwebSigner.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 
 FWalletHandle::FWalletHandle(const EWalletHandleType InType, const FString& Int64String)
 {

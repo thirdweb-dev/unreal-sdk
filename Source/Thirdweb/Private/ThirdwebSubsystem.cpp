@@ -13,6 +13,7 @@
 #include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DefaultValueHelper.h"
+#include "Engine/GameInstance.h"
 
 void UThirdwebSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {

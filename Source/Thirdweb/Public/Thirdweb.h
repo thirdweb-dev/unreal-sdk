@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <ostream>
 #include <new>
+#include "CoreMinimal.h" 
 
 enum class EFunctionResult : uint8;
 
