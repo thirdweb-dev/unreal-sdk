@@ -152,4 +152,7 @@ public:
 
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
 	static FString BP_ZeroAddress() { return TEXT("0x0000000000000000000000000000000000000000"); }
+
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
+	static bool BP_IsActiveSigner(FWalletHandle Wallet, const FString& BackendWallet);
 };

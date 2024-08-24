@@ -6,6 +6,7 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
+#include "ThirdwebSigner.h"
 #include "ThirdwebWalletHandle.h"
 
 FWalletHandle UThirdwebFunctionLibrary::Conv_StringToWalletHandle(FString PrivateKey)
@@ -165,4 +166,26 @@ bool UThirdwebFunctionLibrary::BP_IsTextValidPrivateKey(const FText& PrivateKey)
 FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const FText& Address)
 {
 	return Address.IsEmpty() ? FText::GetEmpty() : FText::FromString(Thirdweb::ToChecksummedAddress(Address.ToString()));
+}
+
+bool UThirdwebFunctionLibrary::BP_IsActiveSigner(FWalletHandle Wallet, const FString& BackendWallet)
+{
+	FString Error;
+	if (bool bDeployed; Wallet.IsDeployed(bDeployed, Error))
+	{
+		if (bDeployed)
+		{
+			if (TArray<FSigner> Signers; Wallet.GetActiveSigners(Signers, Error))
+			{
+				for (int i = 0; i < Signers.Num(); i++)
+				{
+					if (Signers[i].Address.Equals(BackendWallet, ESearchCase::IgnoreCase))
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
 }

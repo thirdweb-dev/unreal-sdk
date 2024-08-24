@@ -3,6 +3,7 @@
 #include "ThirdwebWalletHandle.h"
 
 #include "Thirdweb.h"
+#include "ThirdwebMacros.h"
 #include "ThirdwebSigner.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
@@ -120,7 +121,7 @@ bool FWalletHandle::CreateSessionKey(const FString& Signer, const TArray<FString
 	TArray<const char*> ApprovedTargetsCArray;
 	for (const FString& Target : ApprovedTargets)
 	{
-		ApprovedTargetsCArray.Add(Thirdweb::GetOrNull(Target));
+		ApprovedTargetsCArray.Add(TO_RUST_STRING(Target));
 	}
 	if (Thirdweb::smart_wallet_create_session_key(
 		ID,

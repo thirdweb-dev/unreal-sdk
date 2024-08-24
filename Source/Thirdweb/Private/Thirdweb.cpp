@@ -3,7 +3,7 @@
 #include "Thirdweb.h"
 #include "ThirdwebLog.h"
 
-bool Thirdweb::FFIResult::AssignResult(FString& Output, bool bErrorOnlyResult) const
+bool Thirdweb::FFIResult::AssignResult(FString& Output, const bool bErrorOnlyResult) const
 {
 	Log();
 	bool bSuccess = success;
@@ -17,7 +17,7 @@ bool Thirdweb::FFIResult::AssignResult(FString& Output, bool bErrorOnlyResult) c
 	return bSuccess;
 }
 
-bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult) const
+bool Thirdweb::FFIResult::AssignRetryResult(bool& bCanRetry, FString& Output, const bool bErrorOnlyResult) const
 {
 	Log();
 	bool bSuccess = success;

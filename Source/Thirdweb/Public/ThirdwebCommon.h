@@ -1,7 +1,8 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #pragma once
-
+#include "HAL/Platform.h"
+#include "Internationalization/Internationalization.h"
 #include "ThirdwebCommon.generated.h"
 
 #define LOCTEXT_NAMESPACE "Thirdweb"
