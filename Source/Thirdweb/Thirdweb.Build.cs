@@ -54,6 +54,11 @@ public class Thirdweb : ModuleRules
 			var libDir = Path.Combine(baseLibDir, "IOS");
 			PublicSystemLibraryPaths.Add(libDir);
 			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
+		} else if (target.Platform.Equals(UnrealTargetPlatform.Android))
+		{
+			var libDir = Path.Combine(baseLibDir, "Android");
+			PublicSystemLibraryPaths.Add(libDir);
+			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
 		}
 
 		PublicDependencyModuleNames.AddRange(new[]

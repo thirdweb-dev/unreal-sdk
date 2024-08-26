@@ -21,11 +21,10 @@
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
 				"Win64",
-				"Linux",
 				"Mac",
-				"IOS",
-				"TVOS",
-				"VisionOS"
+				"Linux",
+				"Android",
+				"IOS"
 			]
 		}
 	],
