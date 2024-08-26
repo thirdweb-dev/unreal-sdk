@@ -7,6 +7,7 @@ public class Thirdweb : ModuleRules
 {
 	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "WebBrowserWidget" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		var baseLibDir = Path.Combine(ModuleDirectory, "..", "ThirdParty");
 		if (target.Platform.Equals(UnrealTargetPlatform.Win64))
@@ -64,7 +65,11 @@ public class Thirdweb : ModuleRules
 			"HTTPServer",
 			"Networking",
 			"DeveloperSettings",
-			"Json"
+			"Json",
+			"WebBrowserWidget",
+			"UMG",
+			"Slate",
+			"SlateCore"
 		});
 	}
 }

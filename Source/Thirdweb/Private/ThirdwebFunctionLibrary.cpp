@@ -69,6 +69,11 @@ EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FWalletHandle W
 	return Wallet.FetchOAuthLoginURL(RedirectUrl, LoginLink, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
+EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithOAuth(FWalletHandle Wallet, const FString& AuthResult, FString& Error)
+{
+	return Wallet.SignInWithOAuth(AuthResult, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
 bool UThirdwebFunctionLibrary::BP_WalletIsValid(const FWalletHandle& Wallet)
 {
 	return Wallet.IsValid();

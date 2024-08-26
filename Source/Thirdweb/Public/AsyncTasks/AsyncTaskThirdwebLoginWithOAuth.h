@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "HttpRouteHandle.h"
 #include "ThirdwebWalletHandle.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AsyncTaskThirdwebLoginWithOAuth.generated.h"
 
-class IHttpRouter;
+class UThirdwebOAuthBrowser;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOAuthDelegate, const FString&, Message);
 
 /**
@@ -32,22 +31,15 @@ public:
 
 protected:
 	UPROPERTY(Transient)
+	UThirdwebOAuthBrowser* Browser;
+	
+	UPROPERTY(Transient)
 	FWalletHandle Wallet;
-
-	UPROPERTY(Transient)
-	bool bAuthComplete;
-
-	UPROPERTY(Transient)
-	FString OAuthResult;
-
-	FEvent* AuthEvent;
-	FHttpRouteHandle RouteHandle;
-	TSharedPtr<IHttpRouter> Router;
 	
 private:
-	void CheckOAuthCompletion();
-	bool CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
-	
-	void HandleFailed(const FString& Error);
-	void HandleSuccess(const FString& Output);
+	UFUNCTION()
+	void HandleFailed(FString Error);
+
+	UFUNCTION()
+	void HandleSuccess();
 };
