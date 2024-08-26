@@ -31,6 +31,10 @@ Config/
 *.a
 *.lib
 
+# Don't ignore Thirdparty libs
+!Source/ThirdParty/**/*.a
+!Source/ThirdParty/**/*.lib
+
 # Executables
 *.exe
 *.out
@@ -58,10 +62,10 @@ Plugins/*/Binaries/*
 # Builds
 Build/*
 
-# Whitelist PakBlacklist-<BuildConfiguration>.txt files
+# Allowlist PakDenylist-<BuildConfiguration>.txt files
 !Build/*/
 Build/*/**
-!Build/*/PakBlacklist*.txt
+!Build/*/PakDenylist*.txt
 
 # Don't ignore icon files in Build
 !Build/**/*.ico

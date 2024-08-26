@@ -5,11 +5,11 @@ using System.IO;
 
 public class Thirdweb : ModuleRules
 {
-	public Thirdweb(ReadOnlyTargetRules Target) : base(Target)
+	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		var baseLibDir = Path.Combine(ModuleDirectory, "..", "ThirdParty");
-		if (Target.Platform == UnrealTargetPlatform.Win64)
+		if (target.Platform.Equals(UnrealTargetPlatform.Win64))
 		{
 			var libDir = Path.Combine(baseLibDir, "Win64");
 			PublicSystemLibraryPaths.Add(libDir);
@@ -24,22 +24,31 @@ public class Thirdweb : ModuleRules
 				"Secur32.lib",
 				"Ncrypt.lib"
 			});
-		} else if (Target.Platform == UnrealTargetPlatform.Linux)
+		}
+		else if (target.Platform.Equals(UnrealTargetPlatform.Linux))
 		{
 			var libDir = Path.Combine(baseLibDir, "Linux");
 			PublicSystemLibraryPaths.Add(libDir);
 			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		}  else if (Target.Platform == UnrealTargetPlatform.LinuxArm64)
+		}
+		else if (target.Platform.Equals(UnrealTargetPlatform.LinuxArm64))
 		{
 			var libDir = Path.Combine(baseLibDir, "LinuxARM64");
 			PublicSystemLibraryPaths.Add(libDir);
 			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		} else if (Target.Platform == UnrealTargetPlatform.Mac)
+		}
+		else if (target.Platform.Equals(UnrealTargetPlatform.Mac))
 		{
 			var libDir = Path.Combine(baseLibDir, "Mac");
 			PublicSystemLibraryPaths.Add(libDir);
 			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		} else if (Target.Platform == UnrealTargetPlatform.IOS)
+			PublicFrameworks.Add("SystemConfiguration");
+		}
+		else if (
+			target.Platform.Equals(UnrealTargetPlatform.IOS) ||
+			target.Platform.Equals(UnrealTargetPlatform.TVOS) ||
+			target.Platform.Equals(UnrealTargetPlatform.VisionOS)
+		)
 		{
 			var libDir = Path.Combine(baseLibDir, "IOS");
 			PublicSystemLibraryPaths.Add(libDir);
