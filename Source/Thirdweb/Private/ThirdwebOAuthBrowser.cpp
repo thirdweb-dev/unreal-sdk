@@ -29,13 +29,12 @@ bool UThirdwebOAuthBrowser::Initialize()
 	const bool bInitializedThisCall = Super::Initialize();
 	if (bInitializedThisCall)
 	{
-		UWebBrowser* BrowserWidget = WidgetTree->ConstructWidget<UWebBrowser>(UWebBrowser::StaticClass(), TEXT("Browser"));
-		if (BrowserWidget)
+		if (!Browser)
 		{
-			WidgetTree->RootWidget = BrowserWidget;
-			Browser = BrowserWidget;
-			BrowserWidget->OnUrlChanged.AddDynamic(this, &ThisClass::HandleOnUrlChanged);
+			Browser = WidgetTree->ConstructWidget<UWebBrowser>(UWebBrowser::StaticClass(), TEXT("Browser"));
 		}
+		WidgetTree->RootWidget = Browser;
+		Browser->OnUrlChanged.AddDynamic(this, &ThisClass::HandleOnUrlChanged);
 	}
 	return bInitializedThisCall;
 }
@@ -66,7 +65,6 @@ void UThirdwebOAuthBrowser::HandleOnUrlChanged(const FText& InURL)
 	{
 		Browser->SetVisibility(ESlateVisibility::Visible);
 	}
-	OnSuccess.Broadcast();
 }
 
 

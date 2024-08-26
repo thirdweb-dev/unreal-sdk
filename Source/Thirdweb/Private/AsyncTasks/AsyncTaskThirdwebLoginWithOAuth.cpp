@@ -13,7 +13,6 @@
 
 void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 {
-	Browser = CreateWidget<UThirdwebOAuthBrowser>(UGameplayStatics::GetGameInstance(this), UThirdwebOAuthBrowser::StaticClass());
 	Browser->OnSuccess.AddDynamic(this, &ThisClass::HandleSuccess);
 	Browser->OnError.AddDynamic(this, &ThisClass::HandleFailed);
 	Browser->AddToViewport(10000);
@@ -28,6 +27,7 @@ UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAu
 	}
 	UAsyncTaskThirdwebLoginWithOAuth* Task = NewObject<UAsyncTaskThirdwebLoginWithOAuth>(WorldContextObject);
 	Task->Wallet = Wallet;
+	Task->Browser =  CreateWidget<UThirdwebOAuthBrowser>(UGameplayStatics::GetGameInstance(WorldContextObject), UThirdwebOAuthBrowser::StaticClass());
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
 }
