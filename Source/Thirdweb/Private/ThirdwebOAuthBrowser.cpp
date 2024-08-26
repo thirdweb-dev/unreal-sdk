@@ -51,7 +51,7 @@ void UThirdwebOAuthBrowser::HandleOnUrlChanged(const FText& InURL)
 		FString Left, Right;
 		if (URL.Split(TEXT("authResult="), &Left, &Right, ESearchCase::IgnoreCase))
 		{
-			if (FString Error; Wallet.SignInWithOAuth(FGenericPlatformHttp::UrlDecode(URL), Error))
+			if (FString Error; Wallet.SignInWithOAuth(FGenericPlatformHttp::UrlDecode(Right), Error))
 			{
 				OnSuccess.Broadcast();
 			} else
