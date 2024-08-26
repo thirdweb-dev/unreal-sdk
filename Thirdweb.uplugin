@@ -1,7 +1,7 @@
 {
     "FileVersion": 3,
-    "Version": 2,
-    "VersionName": "1.1.0",
+    "Version": 3,
+    "VersionName": "1.1.1",
     "FriendlyName": "Thirdweb",
     "Description": "Unreal Integration of Thirdweb Wallets",
     "Category": "Thirdweb",
@@ -19,7 +19,15 @@
             "Name": "Thirdweb",
             "Type": "Runtime",
             "LoadingPhase": "Default",
-            "PlatformAllowList": ["Win64"]
+            "PlatformAllowList": [
+                "Win64",
+                "Linux",
+                "LinuxArm64",
+                "Mac",
+                "IOS",
+                "TVOS",
+                "VisionOS"
+            ]
         }
     ]
 }
