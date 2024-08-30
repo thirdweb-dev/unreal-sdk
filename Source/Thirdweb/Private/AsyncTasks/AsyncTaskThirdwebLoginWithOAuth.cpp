@@ -3,7 +3,7 @@
 #include "AsyncTasks/AsyncTaskThirdwebLoginWithOAuth.h"
 
 #include "ThirdwebLog.h"
-#include "ThirdwebOAuthBrowser.h"
+#include "ThirdwebOAuthBrowserUserWidget.h"
 #include "ThirdwebSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -27,12 +27,12 @@ UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAu
 	}
 	UAsyncTaskThirdwebLoginWithOAuth* Task = NewObject<UAsyncTaskThirdwebLoginWithOAuth>(WorldContextObject);
 	Task->Wallet = Wallet;
-	Task->Browser =  CreateWidget<UThirdwebOAuthBrowser>(UGameplayStatics::GetGameInstance(WorldContextObject), UThirdwebOAuthBrowser::StaticClass());
+	Task->Browser = CreateWidget<UThirdwebOAuthBrowserUserWidget>(UGameplayStatics::GetGameInstance(WorldContextObject), UThirdwebOAuthBrowserUserWidget::StaticClass());
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
 }
 
-void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(FString Error)
+void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
 {
 	Failed.Broadcast(Error);
 	Browser->RemoveFromParent();

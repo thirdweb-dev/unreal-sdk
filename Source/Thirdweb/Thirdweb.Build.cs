@@ -2,19 +2,36 @@
 
 using UnrealBuildTool;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 public class Thirdweb : ModuleRules
 {
 	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] { "WebBrowserWidget" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Boost" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		var baseLibDir = Path.Combine(ModuleDirectory, "..", "ThirdParty");
+
+#if UE_5_3_OR_LATER
+        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+#endif
+		
+#if UE_5_0_OR_LATER
+		PublicDefinitions.Add("WITH_CEF=1");
+		PublicDependencyModuleNames.Add("WebBrowserWidget");
+		PrivateDependencyModuleNames.Add("WebBrowser");
+#else
+		PublicDefinitions.Add("WITH_CEF=0");
+#endif
+
+		var libDirName = target.Platform.IsInGroup(UnrealPlatformGroup.IOS) ? "IOS" : target.Platform.ToString();
+		var libDir = Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"), libDirName);
+		PublicSystemLibraryPaths.Add(libDir);
+		
+		var libName = target.Platform.Equals(UnrealTargetPlatform.Win64) ? "thirdweb.lib" : "libthirdweb.a";
+		PublicAdditionalLibraries.Add(Path.Combine(libDir, libName));
+		
 		if (target.Platform.Equals(UnrealTargetPlatform.Win64))
 		{
-			var libDir = Path.Combine(baseLibDir, "Win64");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "thirdweb.lib"));
 			PublicSystemLibraries.AddRange(new[]
 			{
 				"Advapi32.lib",
@@ -26,52 +43,33 @@ public class Thirdweb : ModuleRules
 				"Ncrypt.lib"
 			});
 		}
-		else if (target.Platform.Equals(UnrealTargetPlatform.Linux))
+
+		if (target.Platform.Equals(UnrealTargetPlatform.Mac) || target.Platform.Equals(UnrealTargetPlatform.IOS))
 		{
-			var libDir = Path.Combine(baseLibDir, "Linux");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		}
-		else if (target.Platform.Equals(UnrealTargetPlatform.LinuxArm64))
-		{
-			var libDir = Path.Combine(baseLibDir, "LinuxARM64");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		}
-		else if (target.Platform.Equals(UnrealTargetPlatform.Mac))
-		{
-			var libDir = Path.Combine(baseLibDir, "Mac");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-			PublicFrameworks.Add("SystemConfiguration");
-		}
-		else if (
-			target.Platform.Equals(UnrealTargetPlatform.IOS) ||
-			target.Platform.Equals(UnrealTargetPlatform.TVOS) ||
-			target.Platform.Equals(UnrealTargetPlatform.VisionOS)
-		)
-		{
-			var libDir = Path.Combine(baseLibDir, "IOS");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
-		} else if (target.Platform.Equals(UnrealTargetPlatform.Android))
-		{
-			var libDir = Path.Combine(baseLibDir, "Android");
-			PublicSystemLibraryPaths.Add(libDir);
-			PublicAdditionalLibraries.Add(Path.Combine(libDir, "libthirdweb.a"));
+			PublicFrameworks.AddRange(new []{"SystemConfiguration", "Foundation", "AuthenticationServices"});
+			PrivateIncludePaths.AddRange(new [] { Path.Combine(ModuleDirectory, "Private", target.Platform.ToString()) });
+			PrivateDependencyModuleNames.Add("CEF3Utils");
 		}
 
+		if (target.Platform.Equals(UnrealTargetPlatform.IOS) || target.Platform.Equals(UnrealTargetPlatform.Android))
+		{
+			PrivateDependencyModuleNames.Add("Launch");
+		}
+		
 		PublicDependencyModuleNames.AddRange(new[]
 		{
+			// Standard deps
 			"Core",
 			"CoreUObject",
 			"Engine",
+			// plugin settings deps
+			"DeveloperSettings",
+			// Thirdweb Engine call deps
 			"HTTP",
 			"HTTPServer",
 			"Networking",
-			"DeveloperSettings",
 			"Json",
-			"WebBrowserWidget",
+			// OAuth Widget UI deps
 			"UMG",
 			"Slate",
 			"SlateCore"
