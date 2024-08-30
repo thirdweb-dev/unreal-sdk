@@ -37,7 +37,9 @@ the framework during packaging. This requires either an engine patch or moving t
 then codesigning your build again.
 
 In the [CEF3.build.cs][cef3-build-cs] you need to bypass the `if` check for modern xcode. This can be accomplished by
-adding ``
+adding `|| true` to the end of the if check on line 102.
+
+Additionally, you need to add `bCompileCEF3 = true;` to your build target
 
 ## Supported Platforms & Architectures
 
@@ -45,7 +47,7 @@ adding ``
 |----------|:---:|:-----:|
 | Windows  |  ✅  |   ➖   |
 | Linux    |  ✅  |   ✅   |
-| Mac[^2]  |  ✅  |   ✅   |
+| Mac      |  ✅  |   ✅   |
 | IOS      |  ➖  |   ✅   |
 | TVOS     |  ➖  |   ❌   |
 | VisionOS |  ➖  |   ❌   |
