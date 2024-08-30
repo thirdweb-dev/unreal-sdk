@@ -70,10 +70,14 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Send OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_SendOTP(FWalletHandle Wallet, FString& Error);
 
-	// Blueprint callable function to fetch OAuth login link
+	// Fetch OAuth login link
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Fetch OAuth Login Link", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_FetchOAuthLoginLink(FWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error);
 
+	// Sign in with the oauth payload received from your login flow
+	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With OAuth", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_SignInWithOAuth(FWalletHandle Wallet, const FString& AuthResult, FString& Error);
+	
 	/** Check if a wallet handle is valid */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets")
 	static bool BP_WalletIsValid(const FWalletHandle& Wallet);
@@ -152,4 +156,7 @@ public:
 
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
 	static FString BP_ZeroAddress() { return TEXT("0x0000000000000000000000000000000000000000"); }
+
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
+	static bool BP_IsActiveSigner(FWalletHandle Wallet, const FString& BackendWallet);
 };

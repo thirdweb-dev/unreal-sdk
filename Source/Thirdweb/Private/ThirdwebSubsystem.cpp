@@ -35,8 +35,14 @@ EFunctionResult UThirdwebSubsystem::BP_CreateInAppEmailWallet(const FString& Ema
 
 bool UThirdwebSubsystem::CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error)
 {
-	if (Thirdweb::create_in_app_wallet(Settings->GetClientID(), StringCast<ANSICHAR>(*Email).Get(), Settings->GetSecretKey(), StringCast<ANSICHAR>(*Email).Get(), Settings->GetStorageDirectoryPath(),
-	                                   nullptr).AssignResult(Error))
+	if (Thirdweb::create_in_app_wallet(
+		TO_RUST_STRING(Settings->ClientID),
+		TO_RUST_STRING(Settings->BundleID),
+		TO_RUST_STRING(Settings->SecretKey),
+		TO_RUST_STRING(Email),
+		TO_RUST_STRING(Settings->StorageDirectoryPath),
+		nullptr
+	).AssignResult(Error))
 	{
 		Wallet = FWalletHandle(FWalletHandle::InApp, Error);
 		Error.Empty();
@@ -52,8 +58,14 @@ EFunctionResult UThirdwebSubsystem::BP_CreateInAppOAuthWallet(const EThirdwebOAu
 
 bool UThirdwebSubsystem::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error)
 {
-	if (Thirdweb::create_in_app_wallet(Settings->GetClientID(), Settings->GetBundleID(), Settings->GetSecretKey(), nullptr, Settings->GetStorageDirectoryPath(),
-	                                   StringCast<ANSICHAR>(*ToString(Provider)).Get()).AssignResult(Error))
+	if (Thirdweb::create_in_app_wallet(
+		TO_RUST_STRING(Settings->ClientID),
+		TO_RUST_STRING(Settings->BundleID),
+		TO_RUST_STRING(Settings->SecretKey),
+		nullptr,
+		TO_RUST_STRING(Settings->StorageDirectoryPath),
+		TO_RUST_STRING(ToString(Provider))
+	).AssignResult(Error))
 	{
 		Wallet = FWalletHandle(FWalletHandle::InApp, Error);
 		Error.Empty();

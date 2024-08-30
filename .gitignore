@@ -31,6 +31,10 @@ Config/
 *.a
 *.lib
 
+# Don't ignore Thirdparty libs
+!Source/ThirdParty/**/*.a
+!Source/ThirdParty/**/*.lib
+
 # Executables
 *.exe
 *.out
@@ -58,10 +62,10 @@ Plugins/*/Binaries/*
 # Builds
 Build/*
 
-# Whitelist PakBlacklist-<BuildConfiguration>.txt files
+# Allowlist PakDenylist-<BuildConfiguration>.txt files
 !Build/*/
 Build/*/**
-!Build/*/PakBlacklist*.txt
+!Build/*/PakDenylist*.txt
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
@@ -79,5 +83,5 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-# Include specific thirdweb Rust library file
-!Plugins/Thirdweb/lib/thirdweb.lib
+# ignore ue4cli dist folder
+dist/

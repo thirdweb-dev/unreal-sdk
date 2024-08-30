@@ -8,36 +8,31 @@
 #include <cstdlib>
 #include <ostream>
 #include <new>
-#include "CoreMinimal.h" 
 
-enum class EFunctionResult : uint8;
+#include "ThirdwebMacros.h"
+#include "HAL/Platform.h"
+#include "Containers/UnrealString.h"
+#include "Containers/StringConv.h"
 
 namespace Thirdweb
 {
 	struct FFIResult
 	{
-		friend class UThirdwebSubsystem;
-		friend struct FWalletHandle;
 		bool success;
 		const char* message;
-
-	private:
+		
 		// Assign's result to variables and then frees the underlying FFIResult
-		bool AssignResult(FString& Output, bool bErrorOnlyResult = false) const;
+		bool AssignResult(FString& Output, const bool bErrorOnlyResult = false) const;
 		// Assign's result to variables including retry and then frees the underlying FFIResult
-		bool AssignRetryResult(bool& bCanRetry, FString& Output, bool bErrorOnlyResult = false) const;
+		bool AssignRetryResult(bool& bCanRetry, FString& Output, const bool bErrorOnlyResult = false) const;
 		// Frees the FFI Result for functions that have no relevant output
 		void Free() const;
 		// Convenience function to log the FFIResult
 		void Log() const;
-
-	public:
 		// Assign's result to output directly
 		FString GetOutput() const;
 	};
-
-	static const char* GetOrNull(const FString& In) { return In.TrimStartAndEnd().IsEmpty() ? nullptr : StringCast<ANSICHAR>(*In.TrimStartAndEnd()).Get(); }
-
+	
 	extern "C" {
 	void free_ffi_result(FFIResult result);
 
@@ -120,8 +115,8 @@ namespace Thirdweb
 	FFIResult is_valid_private_key(const char* private_key);
 	} // extern "C"
 
-	static bool IsChecksummedAddress(const FString& In) { return is_valid_address(GetOrNull(In), true).GetOutput().ToBool(); }
-	static bool IsValidAddress(const FString& In, const bool bWithChecksum = false) { return is_valid_address(GetOrNull(In), bWithChecksum).GetOutput().ToBool(); }
-	static bool IsValidPrivateKey(const FString& In) { return is_valid_private_key(GetOrNull(In)).GetOutput().ToBool(); }
-	static FString ToChecksummedAddress(const FString& In) { return to_checksummed_address(GetOrNull(In)).GetOutput(); }
+	static bool IsChecksummedAddress(const FString& In) { return is_valid_address(TO_RUST_STRING(In), true).GetOutput().ToBool(); }
+	static bool IsValidAddress(const FString& In, const bool bWithChecksum = false) { return is_valid_address(TO_RUST_STRING(In), bWithChecksum).GetOutput().ToBool(); }
+	static bool IsValidPrivateKey(const FString& In) { return is_valid_private_key(TO_RUST_STRING(In)).GetOutput().ToBool(); }
+	static FString ToChecksummedAddress(const FString& In) { return to_checksummed_address(TO_RUST_STRING(In)).GetOutput(); }
 } // namespace Thirdweb

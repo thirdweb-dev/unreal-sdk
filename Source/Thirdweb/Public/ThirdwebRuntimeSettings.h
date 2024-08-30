@@ -6,7 +6,6 @@
 #include "Engine/DeveloperSettings.h"
 #include "ThirdwebRuntimeSettings.generated.h"
 
-class UThirdwebSubsystem;
 /**
  * 
  */
@@ -14,8 +13,6 @@ UCLASS(Config=Engine, DefaultConfig, meta=(DisplayName="Thirdweb"))
 class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
-
-	friend UThirdwebSubsystem;
 
 public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
@@ -30,12 +27,38 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	FString StorageDirectoryPath;
 
+    //~ Optional array of engine signers stored globally for convenience
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	TArray<FString> EngineSigners;
+	
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
+	
+	UFUNCTION(BlueprintPure, Category="Thirdweb")
+	static TArray<FString> GetThirdwebGlobalEngineSigners()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EngineSigners;
+		}
+		return {};
+	}
 
-private:
-	const char* GetClientID() const { return Thirdweb::GetOrNull(ClientID); }
-	const char* GetBundleID() const { return Thirdweb::GetOrNull(BundleID); }
-	const char* GetSecretKey() const { return Thirdweb::GetOrNull(SecretKey); }
-	const char* GetStorageDirectoryPath() const { return Thirdweb::GetOrNull(StorageDirectoryPath); }
+	//~ Gets the first engine signer in the array, if any
+
+	UFUNCTION(BlueprintPure, Category="Thirdweb", meta=(ReturnDisplayName="Signers"))
+	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
+	{
+		bFound = false;
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			if (Settings->EngineSigners.Num() > 0)
+			{
+				bFound = true;
+				return Settings->EngineSigners[0];
+			}
+			
+		}
+		return TEXT("");
+	}
 };

@@ -2,13 +2,11 @@
 
 #pragma once
 
-#include "HttpRouteHandle.h"
 #include "ThirdwebWalletHandle.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AsyncTaskThirdwebLoginWithOAuth.generated.h"
 
-class IHttpRouter;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOAuthDelegate, const FString&, Message);
+class UThirdwebOAuthBrowserUserWidget;
 
 /**
  * 
@@ -19,11 +17,13 @@ class THIRDWEB_API UAsyncTaskThirdwebLoginWithOAuth : public UBlueprintAsyncActi
 	GENERATED_BODY()
 
 public:
+	
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|In App")
 	static UAsyncTaskThirdwebLoginWithOAuth* LoginWithOAuth(UObject* WorldContextObject, const FWalletHandle& Wallet);
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOAuthDelegate, const FString&, Message);
 	UPROPERTY(BlueprintAssignable)
 	FOAuthDelegate Success;
 
@@ -32,22 +32,15 @@ public:
 
 protected:
 	UPROPERTY(Transient)
+	UThirdwebOAuthBrowserUserWidget* Browser;
+	
+	UPROPERTY(Transient)
 	FWalletHandle Wallet;
-
-	UPROPERTY(Transient)
-	bool bAuthComplete;
-
-	UPROPERTY(Transient)
-	FString OAuthResult;
-
-	FEvent* AuthEvent;
-	FHttpRouteHandle RouteHandle;
-	TSharedPtr<IHttpRouter> Router;
 	
 private:
-	void CheckOAuthCompletion();
-	bool CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
-	
+	UFUNCTION()
 	void HandleFailed(const FString& Error);
-	void HandleSuccess(const FString& Output);
+
+	UFUNCTION()
+	void HandleSuccess();
 };

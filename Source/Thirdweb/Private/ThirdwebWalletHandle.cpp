@@ -3,10 +3,12 @@
 #include "ThirdwebWalletHandle.h"
 
 #include "Thirdweb.h"
+#include "ThirdwebMacros.h"
 #include "ThirdwebSigner.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "Dom/JsonObject.h"
+#include "GenericPlatform/GenericPlatformHttp.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -83,14 +85,16 @@ bool FWalletHandle::SendOTP(FString& Error)
 
 bool FWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error)
 {
+	UE_LOG(LogTemp, Warning, TEXT("FWalletHandle::FetchOAuthLoginURL::WalletInfo:Type=%s|Id=%lld"), Type == InApp ? TEXT("InApp") : Type == PrivateKey ? TEXT("PrivateKey") : Type == Smart ? TEXT("Smart") : TEXT("WTF??"), ID);
 	if (Type == InApp)
 	{
-		if (Thirdweb::in_app_wallet_fetch_oauth_login_link(ID, StringCast<ANSICHAR>(*RedirectUrl).Get()).AssignResult(Error))
+		if (Thirdweb::in_app_wallet_fetch_oauth_login_link(ID, TO_RUST_STRING(RedirectUrl)).AssignResult(Error))
 		{
 			LoginLink = Error;
 			Error.Empty();
 			return true;
 		}
+		return false;
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
@@ -100,7 +104,12 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 {
 	if (Type == InApp)
 	{
-		return Thirdweb::in_app_wallet_sign_in_with_oauth(ID, StringCast<ANSICHAR>(*AuthResult).Get()).AssignResult(Error);
+		FString Result = AuthResult;
+		if (Result.StartsWith(TEXT("%7B%22")))
+		{
+			Result = FGenericPlatformHttp::UrlDecode(AuthResult);
+		}
+		return Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error);
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;
@@ -120,14 +129,14 @@ bool FWalletHandle::CreateSessionKey(const FString& Signer, const TArray<FString
 	TArray<const char*> ApprovedTargetsCArray;
 	for (const FString& Target : ApprovedTargets)
 	{
-		ApprovedTargetsCArray.Add(Thirdweb::GetOrNull(Target));
+		ApprovedTargetsCArray.Add(TO_RUST_STRING(Target));
 	}
 	if (Thirdweb::smart_wallet_create_session_key(
 		ID,
-		TCHAR_TO_UTF8(*Signer),
+		TO_RUST_STRING(Signer),
 		ApprovedTargets.IsEmpty() ? nullptr : ApprovedTargetsCArray.GetData(),
 		ApprovedTargetsCArray.Num(),
-		TCHAR_TO_UTF8(*NativeTokenLimitPerTransactionInWei),
+		TO_RUST_STRING(NativeTokenLimitPerTransactionInWei),
 		PermissionStart == FDateTime::MinValue() ? 0 : PermissionStart.ToUnixTimestamp(),
 		PermissionEnd == FDateTime::MinValue() ? TenYearsFromNow.ToUnixTimestamp() : PermissionEnd.ToUnixTimestamp(),
 		RequestValidityStart == FDateTime::MinValue() ? 0 : RequestValidityStart.ToUnixTimestamp(),
