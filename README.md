@@ -48,7 +48,7 @@ Additionally, you need to add `bCompileCEF3 = true;` to your build target
 | Windows  |  ✅  |   ➖   |
 | Linux    |  ✅  |   ✅   |
 | Mac      |  ✅  |   ✅   |
-| IOS      |  ➖  |   ✅   |
+| IOS      |  ➖  |   ❌   |
 | TVOS     |  ➖  |   ❌   |
 | VisionOS |  ➖  |   ❌   |
 | Android  |  ➖  |   ❌   |

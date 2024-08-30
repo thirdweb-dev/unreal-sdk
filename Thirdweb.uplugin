@@ -22,8 +22,7 @@
 			"PlatformAllowList": [
 				"Win64",
 				"Mac",
-				"Linux",
-				"Android"
+				"Linux"
 			]
 		}
 	],
