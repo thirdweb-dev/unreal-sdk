@@ -41,7 +41,7 @@ public:
 	
 private:
 	FString InitialUrl;
-	bool bSupportsTransparency = true;
+	bool bSupportsTransparency = false;
 	bool bShowInitialThrobber = false;
 	
 #if WITH_CEF
