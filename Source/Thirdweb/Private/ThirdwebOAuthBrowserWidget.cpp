@@ -4,6 +4,8 @@
 
 #include "ThirdwebLog.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Text/STextBlock.h"
 #if WITH_CEF
 #include "SWebBrowser.h"
 #endif
