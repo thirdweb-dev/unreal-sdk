@@ -5,6 +5,8 @@
 #include "Thirdweb.h"
 #include "Engine/DeveloperSettings.h"
 #include "Misc/Paths.h"
+#include "ThirdwebLog.h"
+#include "HAL/FileManager.h"
 #include "ThirdwebRuntimeSettings.generated.h"
 
 /**
