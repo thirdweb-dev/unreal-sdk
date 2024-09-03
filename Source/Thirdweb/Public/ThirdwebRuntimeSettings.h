@@ -4,6 +4,7 @@
 
 #include "Thirdweb.h"
 #include "Engine/DeveloperSettings.h"
+#include "Misc/Paths.h"
 #include "ThirdwebRuntimeSettings.generated.h"
 
 /**
@@ -61,6 +62,8 @@ public:
 
 	static FString GetStorageDirectory()
 	{
-		return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("thirdweb"));
+		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "thirdweb");
+		TW_LOG(Log, TEXT("StorageDir::%s"), *StorageDir)
+		return StorageDir;
 	}
 };
