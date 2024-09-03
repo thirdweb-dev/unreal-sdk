@@ -24,9 +24,6 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	FString SecretKey;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	FString StorageDirectoryPath;
-
     //~ Optional array of engine signers stored globally for convenience
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	TArray<FString> EngineSigners;
@@ -60,5 +57,10 @@ public:
 			
 		}
 		return TEXT("");
+	}
+
+	static FString GetStorageDirectory()
+	{
+		return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("thirdweb"));
 	}
 };

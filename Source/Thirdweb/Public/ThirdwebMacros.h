@@ -4,3 +4,5 @@
 #pragma once
 
 #define TO_RUST_STRING(v) v.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*v)
+
+#define TO_RUST_TIMESTAMP(v) v == FDateTime::MinValue() ? 0 : v.ToUnixTimestamp()

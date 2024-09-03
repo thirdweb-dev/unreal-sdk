@@ -40,7 +40,7 @@ bool UThirdwebSubsystem::CreateInAppEmailWallet(const FString& Email, FWalletHan
 		TO_RUST_STRING(Settings->BundleID),
 		TO_RUST_STRING(Settings->SecretKey),
 		TO_RUST_STRING(Email),
-		TO_RUST_STRING(Settings->StorageDirectoryPath),
+		TO_RUST_STRING(Settings->GetStorageDirectory()),
 		nullptr
 	).AssignResult(Error))
 	{
@@ -63,7 +63,7 @@ bool UThirdwebSubsystem::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Pro
 		TO_RUST_STRING(Settings->BundleID),
 		TO_RUST_STRING(Settings->SecretKey),
 		nullptr,
-		TO_RUST_STRING(Settings->StorageDirectoryPath),
+		TO_RUST_STRING(Settings->GetStorageDirectory()),
 		TO_RUST_STRING(ToString(Provider))
 	).AssignResult(Error))
 	{
@@ -87,14 +87,14 @@ bool UThirdwebSubsystem::CreateSmartWallet(const FWalletHandle& PersonalWallet, 
                                            FString& Error)
 {
 	if (Thirdweb::create_smart_wallet(
-		Settings->ClientID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->ClientID),
-		Settings->BundleID.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->BundleID),
-		Settings->SecretKey.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Settings->SecretKey),
+		TO_RUST_STRING(Settings->ClientID),
+		TO_RUST_STRING(Settings->BundleID),
+		TO_RUST_STRING(Settings->SecretKey),
 		PersonalWallet.ID,
-		TCHAR_TO_UTF8(*FString::Printf(TEXT("%lld"), ChainID)),
+		TO_RUST_STRING(FString::Printf(TEXT("%lld"), ChainID)),
 		bGasless,
-		Factory.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Factory),
-		AccountOverride.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*AccountOverride)
+		TO_RUST_STRING(Factory),
+		TO_RUST_STRING(AccountOverride)
 	).AssignResult(Error))
 	{
 		SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
