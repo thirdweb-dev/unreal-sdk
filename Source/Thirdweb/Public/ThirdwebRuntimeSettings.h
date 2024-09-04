@@ -3,14 +3,24 @@
 #pragma once
 
 #include "Thirdweb.h"
-#include "Engine/DeveloperSettings.h"
-#include "Misc/Paths.h"
 #include "ThirdwebLog.h"
+
+#include "Engine/DeveloperSettings.h"
+
 #include "HAL/FileManager.h"
+
+#include "Misc/Paths.h"
+
 #include "ThirdwebRuntimeSettings.generated.h"
 
+enum class EThirdwebAuthenticationMethod : uint8;
+
 /**
- * 
+ * @class UThirdwebRuntimeSettings
+ * @brief A settings class used for configuring runtime parameters for the Thirdweb system.
+ *
+ * This class acts as a configuration holder to manage various settings required for the runtime
+ * environment in the Thirdweb system.
  */
 UCLASS(Config=Engine, DefaultConfig, meta=(DisplayName="Thirdweb"))
 class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
@@ -18,16 +28,25 @@ class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	FString ClientID;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	FString BundleID;
+	UThirdwebRuntimeSettings();
 	
+	/** Toggles configuration between ClientID + BundleID and SecretKey. Thirdweb recommends using ClientID over SecretKey for security. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	EThirdwebAuthenticationMethod AuthenticationMethod;
+	
+	/** Stores the client identifier. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
+	FString ClientID;
+	
+	/** Stores the bundle identifier. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
+	FString BundleID;
+
+	/** Stores the secret key. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::SecretKey", EditConditionHides))
 	FString SecretKey;
 
-    //~ Optional array of engine signers stored globally for convenience
+    /** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	TArray<FString> EngineSigners;
 	
@@ -44,8 +63,7 @@ public:
 		return {};
 	}
 
-	//~ Gets the first engine signer in the array, if any
-
+	/** Gets the first global engine signer in the array, if any */
 	UFUNCTION(BlueprintPure, Category="Thirdweb", meta=(ReturnDisplayName="Signers"))
 	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
 	{
@@ -64,8 +82,9 @@ public:
 
 	static FString GetStorageDirectory()
 	{
-		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "thirdweb");
-		TW_LOG(Log, TEXT("StorageDir::%s"), *StorageDir)
+		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "Thirdweb", "InAppWallet");
+		TW_LOG(Verbose, TEXT("StorageDir::%s"), *StorageDir)
 		return StorageDir;
 	}
 };
+

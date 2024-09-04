@@ -3,7 +3,9 @@
 #pragma once
 
 #include "ThirdwebWalletHandle.h"
+
 #include "Blueprint/UserWidget.h"
+
 #include "ThirdwebOAuthBrowserUserWidget.generated.h"
 
 UCLASS()

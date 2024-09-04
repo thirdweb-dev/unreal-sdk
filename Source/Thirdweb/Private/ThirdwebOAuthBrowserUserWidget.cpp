@@ -3,11 +3,13 @@
 #include "ThirdwebOAuthBrowserUserWidget.h"
 
 #include "ThirdwebLog.h"
+#include "ThirdwebOAuthBrowserWidget.h"
+
 #include "Blueprint/WidgetTree.h"
-#include "Components/PanelWidget.h"
+
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
-#include "ThirdwebOAuthBrowserWidget.h"
+#include "Components/PanelWidget.h"
 
 const FString UThirdwebOAuthBrowserUserWidget::BackendUrlPrefix = TEXT("https://embedded-wallet.thirdweb.com/");
 

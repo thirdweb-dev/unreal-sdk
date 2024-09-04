@@ -5,8 +5,10 @@
 #if WITH_CEF
 #include "SWebBrowser.h"
 #endif
-#include "Components/Widget.h"
 #include "ThirdwebWalletHandle.h"
+
+#include "Components/Widget.h"
+
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
 UCLASS()

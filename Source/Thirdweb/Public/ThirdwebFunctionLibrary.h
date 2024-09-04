@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "ThirdwebWalletHandle.h"
+
 #include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "ThirdwebFunctionLibrary.generated.h"
 
 enum class EFunctionResult : uint8;
@@ -49,7 +50,16 @@ public:
 	/** Gets the public address of a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To Text (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FText Conv_WalletHandleToText(FWalletHandle Wallet) { return FText::FromString(Conv_WalletHandleToString(Wallet)); }
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error);
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Create OAuth Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error);
 
+	UFUNCTION(BlueprintCallable, DisplayName="Create Smart Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride", AutoCreateRefTerm="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart Wallet")
+	static EFunctionResult BP_CreateSmartWallet(FWalletHandle PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
+	
 	/** Generates a private key wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
 	static FString BP_SignMessage(const FWalletHandle& Wallet, const FString& Message);
@@ -89,7 +99,7 @@ public:
 	/** Create a session key for a smart wallet */
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Create Session Key",
 		meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd", AutoCreateRefTerm=
-			"PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd,ApprovedTargets"))
+			"PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd,ApprovedTargets,Signer,NativeTokenLimitPerTransactionInWei"))
 	static EFunctionResult BP_CreateSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, const TArray<FString>& ApprovedTargets,
 	                                                      const FString& NativeTokenLimitPerTransactionInWei, const FDateTime& PermissionStart, const FDateTime& PermissionEnd,
 	                                                      const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd, FString& TransactionHash, FString& Error);

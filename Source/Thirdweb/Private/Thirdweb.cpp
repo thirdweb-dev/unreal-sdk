@@ -1,6 +1,7 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #include "Thirdweb.h"
+
 #include "ThirdwebLog.h"
 
 bool Thirdweb::FFIResult::AssignResult(FString& Output, const bool bErrorOnlyResult) const
