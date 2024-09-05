@@ -16,11 +16,7 @@
 enum class EThirdwebAuthenticationMethod : uint8;
 
 /**
- * @class UThirdwebRuntimeSettings
- * @brief A settings class used for configuring runtime parameters for the Thirdweb system.
- *
- * This class acts as a configuration holder to manage various settings required for the runtime
- * environment in the Thirdweb system.
+ * This class acts as a configuration holder to manage various settings required for the runtime environment in the Thirdweb system.
  */
 UCLASS(Config=Engine, DefaultConfig, meta=(DisplayName="Thirdweb"))
 class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings

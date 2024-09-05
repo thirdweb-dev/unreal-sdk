@@ -15,6 +15,11 @@ FWalletHandle UThirdwebFunctionLibrary::Conv_StringToWalletHandle(FString Privat
 	return FWalletHandle::FromPrivateKey(PrivateKey);
 }
 
+FString UThirdwebFunctionLibrary::BP_GetPrivateKeyString(const FWalletHandle& Wallet)
+{
+	return Wallet.GetPrivateKey();
+}
+
 bool UThirdwebFunctionLibrary::EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B)
 {
 	return A == B;

@@ -54,6 +54,9 @@ struct FWalletHandle
 	/** Generate a private key wallet handle */
 	static FWalletHandle GeneratePrivateKey();
 
+	/** Get the private key of this handle (PrivateKey wallet only) */
+	FString GetPrivateKey() const;
+	
 	/**
 	 * Creates an in-app email wallet.
 	 *

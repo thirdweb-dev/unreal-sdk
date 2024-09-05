@@ -44,6 +44,11 @@ FWalletHandle FWalletHandle::GeneratePrivateKey()
 	return FWalletHandle(PrivateKey, ID);
 }
 
+FString FWalletHandle::GetPrivateKey() const
+{
+	return Thirdweb::private_key_wallet_export(ID).GetOutput();
+}
+
 bool FWalletHandle::CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error)
 {
 	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())

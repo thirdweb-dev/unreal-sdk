@@ -23,14 +23,22 @@ class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/** Converts a private key into a wallet handle */
+	/** Converts a private key string into a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
 	static FWalletHandle Conv_StringToWalletHandle(FString PrivateKey);
 
-	/** Converts a private key into a wallet handle */
+	/** Converts a private key text into a wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Create PrivateKey Wallet", BlueprintAutocast), Category="Utilities|Wallet")
 	static FWalletHandle Conv_TextToWalletHandle(FText PrivateKey) { return Conv_StringToWalletHandle(PrivateKey.ToString()); }
 
+	/** Get the private key of a wallet handle - PrivateKey wallets only! */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Private Key", BlueprintAutocast, ReturnDisplayName="Private Key"), Category="Thirdweb|Wallets")
+	static FString BP_GetPrivateKeyString(const FWalletHandle& Wallet);
+
+	/** Get the private key of a wallet handle - PrivateKey wallets only! */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Private Key", BlueprintAutocast, ReturnDisplayName="Private Key"), Category="Thirdweb|Wallets")
+	static FText BP_GetPrivateKeyText(const FWalletHandle& Wallet) { return FText::FromString(BP_GetPrivateKeyString(Wallet)); }
+	
 	/** Returns true if A is equal to B (A == B) */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
 	static bool EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B);
@@ -60,7 +68,7 @@ public:
 	UFUNCTION(BlueprintCallable, DisplayName="Create Smart Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride", AutoCreateRefTerm="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart Wallet")
 	static EFunctionResult BP_CreateSmartWallet(FWalletHandle PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
 	
-	/** Generates a private key wallet handle */
+	/** Signs an arbitrary message */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
 	static FString BP_SignMessage(const FWalletHandle& Wallet, const FString& Message);
 
@@ -72,11 +80,11 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Disconnect"), Category="Thirdweb|Wallets")
 	static void BP_DisconnectWallet(const FWalletHandle& Wallet);
 
-	/** Disconnect the wallet handle from a session. Blueprint Callable for side effects */
+	/** Verifies an OTP for the in-app wallet */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Verify OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EOTPVerificationFunctionResult BP_VerifyOTP(FWalletHandle Wallet, const FString& OTP, FString& Error);
 
-	/** Disconnect the wallet handle from a session. Blueprint Callable for side effects */
+	/** Sends an OTP for the in-app wallet */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Send OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_SendOTP(FWalletHandle Wallet, FString& Error);
 
@@ -167,6 +175,6 @@ public:
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
 	static FString BP_ZeroAddress() { return TEXT("0x0000000000000000000000000000000000000000"); }
 
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Active Signer"), Category="Utilities|String")
 	static bool BP_IsActiveSigner(FWalletHandle Wallet, const FString& BackendWallet);
 };
