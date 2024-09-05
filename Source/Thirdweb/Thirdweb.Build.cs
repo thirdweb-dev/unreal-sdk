@@ -2,19 +2,33 @@
 
 using UnrealBuildTool;
 using System.IO;
-using Microsoft.Extensions.Logging;
 
 public class Thirdweb : ModuleRules
 {
+	private bool IsWin64 => Target.Platform.Equals(UnrealTargetPlatform.Win64);
+
+	private bool IsIOSIsh => Target.Platform.IsInGroup(UnrealPlatformGroup.IOS) ||
+	                         Target.Platform.Equals(UnrealTargetPlatform.VisionOS);
+
+	private bool IsApple => Target.Platform.IsInGroup(UnrealPlatformGroup.Apple);
+
+	private bool IsMobile => IsIOSIsh || Target.Platform.Equals(UnrealTargetPlatform.Android);
+
+	private string LibExt => IsWin64 ? ".lib" : Target.Architecture == UnrealArch.IOSSimulator ? ".sim.a" : ".a";
+
+	private string LibDir => Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"),
+		IsIOSIsh ? "IOS" : Target.Platform.ToString());
+
+
 	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
 		PrivateDependencyModuleNames.AddRange(new string[] { "Boost" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 #if UE_5_3_OR_LATER
-        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 #endif
-		
+
 #if UE_5_0_OR_LATER
 		PublicDefinitions.Add("WITH_CEF=1");
 		PublicDependencyModuleNames.Add("WebBrowserWidget");
@@ -23,14 +37,10 @@ public class Thirdweb : ModuleRules
 		PublicDefinitions.Add("WITH_CEF=0");
 #endif
 
-		var libDirName = target.Platform.IsInGroup(UnrealPlatformGroup.IOS) ? "IOS" : target.Platform.ToString();
-		var libDir = Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"), libDirName);
-		PublicSystemLibraryPaths.Add(libDir);
-		
-		var libName = target.Platform.Equals(UnrealTargetPlatform.Win64) ? "thirdweb.lib" : "libthirdweb.a";
-		PublicAdditionalLibraries.Add(Path.Combine(libDir, libName));
-		
-		if (target.Platform.Equals(UnrealTargetPlatform.Win64))
+		PublicSystemLibraryPaths.Add(LibDir);
+		PublicAdditionalLibraries.Add(Path.Combine(LibDir, "libthirdweb" + LibExt));
+
+		if (IsWin64)
 		{
 			PublicSystemLibraries.AddRange(new[]
 			{
@@ -44,18 +54,17 @@ public class Thirdweb : ModuleRules
 			});
 		}
 
-		if (target.Platform.Equals(UnrealTargetPlatform.Mac) || target.Platform.Equals(UnrealTargetPlatform.IOS))
+		if (IsApple)
 		{
-			PublicFrameworks.AddRange(new []{"SystemConfiguration", "Foundation", "AuthenticationServices"});
-			PrivateIncludePaths.AddRange(new [] { Path.Combine(ModuleDirectory, "Private", target.Platform.ToString()) });
+			PublicFrameworks.AddRange(new[] { "SystemConfiguration", "Foundation", "AuthenticationServices" });
 			PrivateDependencyModuleNames.Add("CEF3Utils");
 		}
 
-		if (target.Platform.Equals(UnrealTargetPlatform.IOS) || target.Platform.Equals(UnrealTargetPlatform.Android))
+		if (IsMobile)
 		{
 			PrivateDependencyModuleNames.Add("Launch");
 		}
-		
+
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			// Standard deps
