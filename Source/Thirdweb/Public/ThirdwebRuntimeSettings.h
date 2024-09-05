@@ -71,7 +71,6 @@ public:
 				bFound = true;
 				return Settings->EngineSigners[0];
 			}
-			
 		}
 		return TEXT("");
 	}
