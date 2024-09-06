@@ -7,8 +7,8 @@ public class Thirdweb : ModuleRules
 {
 	private bool IsWin64 => Target.Platform.Equals(UnrealTargetPlatform.Win64);
 
-	private bool IsIOSIsh => Target.Platform.IsInGroup(UnrealPlatformGroup.IOS) ||
-	                         Target.Platform.Equals(UnrealTargetPlatform.VisionOS);
+	private bool IsIOSIsh =>
+		Target.Platform.IsInGroup(UnrealPlatformGroup.IOS); // || Target.Platform.Equals(UnrealTargetPlatform.VisionOS);
 
 	private bool IsApple => Target.Platform.IsInGroup(UnrealPlatformGroup.Apple);
 
