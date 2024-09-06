@@ -3,12 +3,20 @@
 #include "ThirdwebWalletHandle.h"
 
 #include "Thirdweb.h"
+#include "ThirdwebCommon.h"
 #include "ThirdwebMacros.h"
+#include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebSigner.h"
-#include "Kismet/KismetStringLibrary.h"
-#include "Misc/DefaultValueHelper.h"
+#include "ThirdwebUtils.h"
+
 #include "Dom/JsonObject.h"
+
 #include "GenericPlatform/GenericPlatformHttp.h"
+
+#include "Kismet/KismetStringLibrary.h"
+
+#include "Misc/DefaultValueHelper.h"
+
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -25,7 +33,7 @@ FWalletHandle::FWalletHandle(const EWalletHandleType InType, const FString& Int6
 FWalletHandle FWalletHandle::FromPrivateKey(const FString& PrivateKey)
 {
 	int64 ID;
-	FDefaultValueHelper::ParseInt64(Thirdweb::create_private_key_wallet(StringCast<ANSICHAR>(*PrivateKey).Get()).GetOutput(), ID);
+	FDefaultValueHelper::ParseInt64(Thirdweb::create_private_key_wallet(TO_RUST_STRING(PrivateKey)).GetOutput(), ID);
 	return FWalletHandle(EWalletHandleType::PrivateKey, ID);
 }
 
@@ -34,6 +42,77 @@ FWalletHandle FWalletHandle::GeneratePrivateKey()
 	int64 ID;
 	FDefaultValueHelper::ParseInt64(Thirdweb::generate_private_key_wallet().GetOutput(), ID);
 	return FWalletHandle(PrivateKey, ID);
+}
+
+FString FWalletHandle::GetPrivateKey() const
+{
+	return Thirdweb::private_key_wallet_export(ID).GetOutput();
+}
+
+bool FWalletHandle::CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error)
+{
+	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
+	{
+		if (Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(Settings->ClientID),
+			TO_RUST_STRING(Settings->BundleID),
+			TO_RUST_STRING(Settings->SecretKey),
+			TO_RUST_STRING(Email),
+			TO_RUST_STRING(Settings->GetStorageDirectory()),
+			nullptr
+		).AssignResult(Error))
+		{
+			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Error.Empty();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FWalletHandle::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error)
+{
+	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
+	{
+		if (Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(Settings->ClientID),
+			TO_RUST_STRING(Settings->BundleID),
+			TO_RUST_STRING(Settings->SecretKey),
+			nullptr,
+			TO_RUST_STRING(Settings->GetStorageDirectory()),
+			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
+		).AssignResult(Error))
+		{
+			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Error.Empty();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FWalletHandle::CreateSmartWallet(const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, FWalletHandle& SmartWallet, FString& Error)
+{
+	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
+	{
+		if (Thirdweb::create_smart_wallet(
+			TO_RUST_STRING(Settings->ClientID),
+			TO_RUST_STRING(Settings->BundleID),
+			TO_RUST_STRING(Settings->SecretKey),
+			ID,
+			TO_RUST_STRING(FString::Printf(TEXT("%lld"), ChainID)),
+			bGasless,
+			TO_RUST_STRING(Factory),
+			TO_RUST_STRING(AccountOverride)
+		).AssignResult(Error))
+		{
+			SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
+			Error.Empty();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool FWalletHandle::IsDeployed(bool& bDeployed, FString& Error)
@@ -67,7 +146,7 @@ bool FWalletHandle::VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error
 {
 	if (Type == InApp)
 	{
-		return Thirdweb::in_app_wallet_verify_otp(ID, StringCast<ANSICHAR>(*OTP).Get()).AssignRetryResult(CanRetry, Error, true);
+		return Thirdweb::in_app_wallet_verify_otp(ID, TO_RUST_STRING(OTP)).AssignRetryResult(CanRetry, Error, true);
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OTP action");
 	return false;
@@ -85,7 +164,8 @@ bool FWalletHandle::SendOTP(FString& Error)
 
 bool FWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error)
 {
-	UE_LOG(LogTemp, Warning, TEXT("FWalletHandle::FetchOAuthLoginURL::WalletInfo:Type=%s|Id=%lld"), Type == InApp ? TEXT("InApp") : Type == PrivateKey ? TEXT("PrivateKey") : Type == Smart ? TEXT("Smart") : TEXT("WTF??"), ID);
+	UE_LOG(LogTemp, Warning, TEXT("FWalletHandle::FetchOAuthLoginURL::WalletInfo:Type=%s|Id=%lld"),
+	       Type == InApp ? TEXT("InApp") : Type == PrivateKey ? TEXT("PrivateKey") : Type == Smart ? TEXT("Smart") : TEXT("WTF??"), ID);
 	if (Type == InApp)
 	{
 		if (Thirdweb::in_app_wallet_fetch_oauth_login_link(ID, TO_RUST_STRING(RedirectUrl)).AssignResult(Error))
@@ -115,9 +195,15 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 	return false;
 }
 
-bool FWalletHandle::CreateSessionKey(const FString& Signer, const TArray<FString>& ApprovedTargets, const FString& NativeTokenLimitPerTransactionInWei,
-                                     const FDateTime& PermissionStart, const FDateTime& PermissionEnd, const FDateTime& RequestValidityStart, const FDateTime& RequestValidityEnd,
-                                     FString& TransactionHash, FString& Error)
+bool FWalletHandle::CreateSessionKey(const FString& Signer,
+                                     const TArray<FString>& ApprovedTargets,
+                                     const FString& NativeTokenLimitPerTransactionInWei,
+                                     const FDateTime& PermissionStart,
+                                     const FDateTime& PermissionEnd,
+                                     const FDateTime& RequestValidityStart,
+                                     const FDateTime& RequestValidityEnd,
+                                     FString& TransactionHash,
+                                     FString& Error)
 {
 	if (Type != Smart)
 	{
@@ -125,7 +211,7 @@ bool FWalletHandle::CreateSessionKey(const FString& Signer, const TArray<FString
 		return false;
 	}
 	FDateTime TenYearsFromNow = FDateTime::UtcNow() + FTimespan::FromDays(10 * 365);
-	
+
 	TArray<const char*> ApprovedTargetsCArray;
 	for (const FString& Target : ApprovedTargets)
 	{
@@ -137,10 +223,10 @@ bool FWalletHandle::CreateSessionKey(const FString& Signer, const TArray<FString
 		ApprovedTargets.IsEmpty() ? nullptr : ApprovedTargetsCArray.GetData(),
 		ApprovedTargetsCArray.Num(),
 		TO_RUST_STRING(NativeTokenLimitPerTransactionInWei),
-		PermissionStart == FDateTime::MinValue() ? 0 : PermissionStart.ToUnixTimestamp(),
-		PermissionEnd == FDateTime::MinValue() ? TenYearsFromNow.ToUnixTimestamp() : PermissionEnd.ToUnixTimestamp(),
-		RequestValidityStart == FDateTime::MinValue() ? 0 : RequestValidityStart.ToUnixTimestamp(),
-		RequestValidityEnd == FDateTime::MinValue() ? TenYearsFromNow.ToUnixTimestamp() : RequestValidityEnd.ToUnixTimestamp()
+		TO_RUST_TIMESTAMP(PermissionStart),
+		TO_RUST_TIMESTAMP(PermissionEnd),
+		TO_RUST_TIMESTAMP(RequestValidityStart),
+		TO_RUST_TIMESTAMP(RequestValidityEnd)
 	).AssignResult(Error))
 	{
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
@@ -215,7 +301,7 @@ bool FWalletHandle::RevokeSessionKey(const FString& Signer, FString& Error)
 		Error = TEXT("Not a smart wallet");
 		return false;
 	}
-	if (Thirdweb::smart_wallet_revoke_session_key(ID, Signer.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Signer)).AssignResult(Error))
+	if (Thirdweb::smart_wallet_revoke_session_key(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
 	{
 		Error.Empty();
 		return true;
@@ -230,7 +316,7 @@ bool FWalletHandle::AddAdmin(const FString& Signer, FString& Error)
 		Error = TEXT("Not a smart wallet");
 		return false;
 	}
-	if (Thirdweb::smart_wallet_add_admin(ID, Signer.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Signer)).AssignResult(Error))
+	if (Thirdweb::smart_wallet_add_admin(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
 	{
 		Error.Empty();
 		return true;
@@ -245,7 +331,7 @@ bool FWalletHandle::RemoveAdmin(const FString& Signer, FString& Error)
 		Error = TEXT("Not a smart wallet");
 		return false;
 	}
-	if (Thirdweb::smart_wallet_remove_admin(ID, Signer.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Signer)).AssignResult(Error))
+	if (Thirdweb::smart_wallet_remove_admin(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
 	{
 		Error.Empty();
 		return true;
@@ -253,4 +339,4 @@ bool FWalletHandle::RemoveAdmin(const FString& Signer, FString& Error)
 	return false;
 }
 
-FString FWalletHandle::Sign(const FString& Message) const { return Thirdweb::sign_message(ID, StringCast<ANSICHAR>(*Message).Get()).GetOutput(); }
+FString FWalletHandle::Sign(const FString& Message) const { return Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).GetOutput(); }

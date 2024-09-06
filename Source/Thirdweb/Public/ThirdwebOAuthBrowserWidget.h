@@ -5,9 +5,13 @@
 #if WITH_CEF
 #include "SWebBrowser.h"
 #endif
-#include "Components/Widget.h"
 #include "ThirdwebWalletHandle.h"
+
+#include "Components/Widget.h"
+
 #include "ThirdwebOAuthBrowserWidget.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUrlChanged, FString, InUrl);
 
 UCLASS()
 class THIRDWEB_API UThirdwebOAuthBrowserWidget : public UWidget
@@ -25,25 +29,24 @@ public:
 
 	virtual void HandleUrlChanged(const FText& InUrl);
 	bool IsPageLoaded() const;
-	
+
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
 	void Authenticate(const FString& OAuthLoginUrl);
-	
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void OnWidgetRebuilt() override;
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUrlChanged,const FString&, InUrl);
 	FOnUrlChanged OnUrlChanged;
-	
+
 	static const FString DummyUrl;
-	
+
 private:
 	FString InitialUrl;
 	bool bSupportsTransparency = false;
 	bool bShowInitialThrobber = false;
-	
+
 #if WITH_CEF
 	TSharedPtr<SWebBrowser> Browser;
 #endif

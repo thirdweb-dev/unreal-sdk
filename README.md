@@ -46,17 +46,14 @@ Additionally, you need to add `bCompileCEF3 = true;` to your build target
 | Platform | x64 | arm64 |
 |----------|:---:|:-----:|
 | Windows  |  ✅  |   ➖   |
-| Linux    |  ✅  |   ✅   |
+| Linux    |  ✅  |   ❌   |
 | Mac      |  ✅  |   ✅   |
-| IOS      |  ➖  |   ❌   |
-| TVOS     |  ➖  |   ❌   |
-| VisionOS |  ➖  |   ❌   |
+| IOS      |  ➖  |   ✅   |
+| TVOS     |  ➖  |   ✅   |
+| VisionOS |  ➖  |   ✅   |
 | Android  |  ➖  |   ❌   |
 
 Legend: ✅ Supported | ❌ Unsupported | ➖ Not applicable
-
-
-
 
 ## Documentation
 

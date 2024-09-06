@@ -3,11 +3,13 @@
 #include "ThirdwebOAuthBrowserUserWidget.h"
 
 #include "ThirdwebLog.h"
+#include "ThirdwebOAuthBrowserWidget.h"
+
 #include "Blueprint/WidgetTree.h"
-#include "Components/PanelWidget.h"
+
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
-#include "ThirdwebOAuthBrowserWidget.h"
+#include "Components/PanelWidget.h"
 
 const FString UThirdwebOAuthBrowserUserWidget::BackendUrlPrefix = TEXT("https://embedded-wallet.thirdweb.com/");
 
@@ -75,7 +77,8 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWal
 	}
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
+// ReSharper disable once CppPassValueParameterByConstReference
+void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(FString Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
 	if (Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix))

@@ -3,7 +3,11 @@
 #include "ThirdwebOAuthBrowserWidget.h"
 
 #include "ThirdwebLog.h"
+
+#include "Async//Async.h"
+
 #include "GenericPlatform/GenericPlatformHttp.h"
+
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #if WITH_CEF
@@ -11,7 +15,6 @@
 #endif
 
 const FString UThirdwebOAuthBrowserWidget::DummyUrl = TEXT("about:blank");
-
 
 bool UThirdwebOAuthBrowserWidget::IsPageLoaded() const
 {
@@ -54,7 +57,21 @@ void UThirdwebOAuthBrowserWidget::Authenticate(const FString& OAuthLoginUrl)
 void UThirdwebOAuthBrowserWidget::HandleUrlChanged(const FText& InUrl)
 {
 #if WITH_CEF
-	OnUrlChanged.Broadcast(FGenericPlatformHttp::UrlDecode(InUrl.ToString()));
+	FString Url = InUrl.ToString();
+	TW_LOG(Log, TEXT("UThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
+	if (Url.IsEmpty())
+	{
+		Url = Browser->GetUrl();
+	}
+	TW_LOG(Log, TEXT("UThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
+	// Ensure this code runs on the game thread
+	AsyncTask(ENamedThreads::GameThread, [&, Url]()
+	{
+		if (IsInGameThread())
+		{
+			OnUrlChanged.Broadcast(FGenericPlatformHttp::UrlDecode(Url));
+		}
+	});
 #endif
 }
 
@@ -79,9 +96,7 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserWidget::RebuildWidget()
 		];
 }
 
-
 void UThirdwebOAuthBrowserWidget::OnWidgetRebuilt()
 {
 	Super::OnWidgetRebuilt();
 }
-

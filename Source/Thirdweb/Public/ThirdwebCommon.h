@@ -1,11 +1,12 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #pragma once
-#include "HAL/Platform.h"
-#include "Internationalization/Internationalization.h"
-#include "ThirdwebCommon.generated.h"
 
-#define LOCTEXT_NAMESPACE "Thirdweb"
+#include "HAL/Platform.h"
+
+#include "Internationalization/Internationalization.h"
+
+#include "ThirdwebCommon.generated.h"
 
 UENUM()
 enum class EFunctionResult : uint8
@@ -38,20 +39,9 @@ enum class EThirdwebOAuthProvider : uint8
 	Facebook UMETA(DisplayName="Facebook")
 };
 
-inline FText ToText(const EThirdwebOAuthProvider Provider)
+UENUM()
+enum class EThirdwebAuthenticationMethod : uint8
 {
-	static TMap<EThirdwebOAuthProvider, FText> Map = {
-		{EThirdwebOAuthProvider::Google, LOCTEXT("Google", "Google")},
-		{EThirdwebOAuthProvider::Apple, LOCTEXT("Apple", "Apple")},
-		{EThirdwebOAuthProvider::Facebook, LOCTEXT("Facebook", "Facebook")}
-	};
-	return Map.Contains(Provider) ? Map[Provider] : FText::FromString(TEXT("Invalid"));
-}
-
-inline FString ToString(const EThirdwebOAuthProvider Provider)
-{
-	return ToText(Provider).ToString();
-}
-
-#undef LOCTEXT_NAMESPACE
-
+	ClientID UMETA(DisplayName="Client ID"),
+	SecretKey UMETA(DisplayName="Secret Key"),
+};
