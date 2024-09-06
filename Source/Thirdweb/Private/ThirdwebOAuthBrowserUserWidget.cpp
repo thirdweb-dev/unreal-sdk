@@ -77,7 +77,8 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWal
 	}
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
+// ReSharper disable once CppPassValueParameterByConstReference
+void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(FString Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
 	if (Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix))

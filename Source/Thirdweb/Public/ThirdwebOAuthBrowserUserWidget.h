@@ -39,7 +39,7 @@ private:
 	FWalletHandle Wallet;
 
 	UFUNCTION()
-	void HandleUrlChanged(const FString& Url);
+	void HandleUrlChanged(FString Url);
 	
 	static const FString BackendUrlPrefix;
 
