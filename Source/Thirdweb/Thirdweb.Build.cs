@@ -8,13 +8,18 @@ public class Thirdweb : ModuleRules
 	private bool IsWin64 => Target.Platform.Equals(UnrealTargetPlatform.Win64);
 
 	private bool IsIOSIsh =>
-		Target.Platform.IsInGroup(UnrealPlatformGroup.IOS); // || Target.Platform.Equals(UnrealTargetPlatform.VisionOS);
+		Target.Platform.IsInGroup(UnrealPlatformGroup.IOS)
+#if UE_5_4_OR_LATER
+		|| Target.Platform.Equals(UnrealTargetPlatform.VisionOS)
+#endif
+	;
 
 	private bool IsApple => Target.Platform.IsInGroup(UnrealPlatformGroup.Apple);
 
 	private bool IsMobile => IsIOSIsh || Target.Platform.Equals(UnrealTargetPlatform.Android);
 
-	private string LibExt => IsWin64 ? ".lib" : Target.Architecture == UnrealArch.IOSSimulator ? ".sim.a" : ".a";
+	private string LibExt =>
+		IsWin64 ? ".lib" : Target.Architectures.Contains(UnrealArch.IOSSimulator) ? ".sim.a" : ".a";
 
 	private string LibDir => Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"),
 		IsIOSIsh ? "IOS" : Target.Platform.ToString());
