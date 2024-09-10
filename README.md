@@ -51,7 +51,7 @@ Additionally, you need to add `bCompileCEF3 = true;` to your build target
 | IOS      |  ➖  |   ✅   |
 | TVOS     |  ➖  |   ✅   |
 | VisionOS |  ➖  |   ✅   |
-| Android  |  ➖  |   ❌   |
+| Android  |  ➖  |   ✅   |
 
 Legend: ✅ Supported | ❌ Unsupported | ➖ Not applicable
 
