@@ -23,6 +23,7 @@
 				"Win64",
 				"Mac",
 				"Linux",
+				"Android",
 				"IOS",
 				"VisionOS"
 			]
