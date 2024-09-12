@@ -15,8 +15,10 @@ public class Thirdweb : ModuleRules
 	;
 
 	private bool IsApple => Target.Platform.IsInGroup(UnrealPlatformGroup.Apple);
+	
+	private bool IsAndroid => Target.Platform.Equals(UnrealTargetPlatform.Android);
 
-	private bool IsMobile => IsIOSIsh || Target.Platform.Equals(UnrealTargetPlatform.Android);
+	private bool IsMobile => IsIOSIsh || IsAndroid;
 
 	private string LibExt =>
 		IsWin64 ? ".lib" : Target.Architectures.Contains(UnrealArch.IOSSimulator) ? ".sim.a" : ".a";
@@ -26,7 +28,7 @@ public class Thirdweb : ModuleRules
 
 	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] { "Boost" });
+		PrivateDependencyModuleNames.AddRange(new [] { "Boost" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 #if UE_5_3_OR_LATER
@@ -35,8 +37,21 @@ public class Thirdweb : ModuleRules
 
 #if UE_5_0_OR_LATER
 		PublicDefinitions.Add("WITH_CEF=1");
-		PublicDependencyModuleNames.Add("WebBrowserWidget");
 		PrivateDependencyModuleNames.Add("WebBrowser");
+		
+		// Copied from WebBrowserWidget
+		if (target.bBuildEditor || IsAndroid || IsIOSIsh)
+		{
+			// WebBrowserTexture required for cooking Android
+			PrivateIncludePathModuleNames.AddRange(new [] { "WebBrowserTexture" });
+			PrivateDependencyModuleNames.AddRange(new [] {  "WebBrowserTexture" });
+
+			if (IsAndroid)
+			{
+				var PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, target.RelativeEnginePath);
+				AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Thirdweb_UPL.xml"));
+			}
+		}
 #else
 		PublicDefinitions.Add("WITH_CEF=0");
 #endif
@@ -68,7 +83,7 @@ public class Thirdweb : ModuleRules
 		{
 			PrivateDependencyModuleNames.Add("Launch");
 		}
-
+		
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			// Standard deps
@@ -87,5 +102,14 @@ public class Thirdweb : ModuleRules
 			"Slate",
 			"SlateCore"
 		});
+		
+		// Copied from WebBrowserWidget
+		if (target.bBuildEditor)
+		{
+			// @TODO: UnrealEd Needed for the triangulation code used for sprites (but only in editor mode)
+			// @TOOD: Try to move the code dependent on the triangulation code to the editor-only module
+			PrivateIncludePathModuleNames.AddRange(new [] { "UnrealEd" });
+			PrivateDependencyModuleNames.AddRange(new [] { "EditorFramework", "UnrealEd" });
+		}
 	}
 }

@@ -29,11 +29,5 @@
 				"VisionOS"
 			]
 		}
-	],
-	"Plugins": [
-		{
-			"Name": "WebBrowserWidget",
-			"Enabled": true
-		}
 	]
 }
