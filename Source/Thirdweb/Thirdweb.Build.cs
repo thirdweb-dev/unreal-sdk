@@ -24,7 +24,6 @@ public class Thirdweb : ModuleRules
 	private string LibDir => Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"),
 		IsIOSIsh ? "IOS" : Target.Platform.ToString());
 
-
 	public Thirdweb(ReadOnlyTargetRules target) : base(target)
 	{
 		PrivateDependencyModuleNames.AddRange(new string[] { "Boost" });
