@@ -26,6 +26,7 @@
 				"LinuxArm64",
 				"Android",
 				"IOS",
+				"TVOS",
 				"VisionOS"
 			]
 		}
