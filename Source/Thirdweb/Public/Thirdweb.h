@@ -88,5 +88,6 @@ namespace Thirdweb
 		FFIResult is_valid_address(const char* address, bool check_checksum);
 		FFIResult to_checksummed_address(const char* address);
 		FFIResult is_valid_private_key(const char* private_key);
+		FFIResult compute_client_id_from_secret_key(const char *secret_key);
 	}
 }

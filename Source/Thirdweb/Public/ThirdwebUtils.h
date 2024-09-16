@@ -49,7 +49,7 @@ namespace ThirdwebUtils
 	 * @param Provider The EThirdwebOAuthProvider enum value to convert.
 	 * @return The FText representation of the specified EThirdwebOAuthProvider, or "Invalid" if the provider is not recognized.
 	 */
-	inline FText ToText(const EThirdwebOAuthProvider Provider)
+	static FText ToText(const EThirdwebOAuthProvider Provider)
 	{
 		static TMap<EThirdwebOAuthProvider, FText> Map = {
 			{EThirdwebOAuthProvider::Google, LOCTEXT("Google", "Google")},
@@ -65,7 +65,15 @@ namespace ThirdwebUtils
 	 * @param Provider The EThirdwebOAuthProvider enum value to convert.
 	 * @return The string representation of the specified EThirdwebOAuthProvider.
 	 */
-	inline FString ToString(const EThirdwebOAuthProvider Provider) { return ToText(Provider).ToString(); }
+	static FString ToString(const EThirdwebOAuthProvider Provider) { return ToText(Provider).ToString(); }
+
+	/**
+	 * Derives a client ID from the provided secret key.
+	 *
+	 * @param SecretKey The secret key used to compute the client ID.
+	 * @return The computed client ID.
+	 */
+	static FString GetClientIdFromSecretKey(const FString& SecretKey) { return Thirdweb::compute_client_id_from_secret_key(TO_RUST_STRING(SecretKey)).GetOutput(); }
 	
 }
 
