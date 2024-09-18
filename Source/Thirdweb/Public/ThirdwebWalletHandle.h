@@ -9,7 +9,7 @@ struct FSigner;
 
 /** Unique handle that can be used to distinguish wallets */
 USTRUCT(BlueprintType, Blueprintable)
-struct FWalletHandle
+struct THIRDWEB_API FWalletHandle
 {
 	GENERATED_BODY()
 
