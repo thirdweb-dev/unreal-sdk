@@ -46,7 +46,7 @@ void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& 
 	Request->SetHeader("Content-Type", "application/json");
 	Request->SetHeader("x-sdk-name", "UnrealEngineSDK");
 	Request->SetHeader("x-sdk-os", UGameplayStatics::GetPlatformName());
-	Request->SetHeader("x-sdk-platform", "UnrealEngine");
+	Request->SetHeader("x-sdk-platform", "unreal-engine");
 	Request->SetHeader("x-sdk-version", GetPluginVersion());
 	if (!Settings->SecretKey.IsEmpty())
 	{
