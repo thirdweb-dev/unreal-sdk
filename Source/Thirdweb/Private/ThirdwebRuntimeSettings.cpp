@@ -7,4 +7,5 @@
 UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 {
 	AuthenticationMethod = EThirdwebAuthenticationMethod::ClientID;
+	bSendAnalytics = true;
 }

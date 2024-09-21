@@ -4,6 +4,7 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
+#include "ThirdwebInternal.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebSigner.h"
@@ -62,7 +63,7 @@ bool FWalletHandle::CreateInAppEmailWallet(const FString& Email, FWalletHandle& 
 			nullptr
 		).AssignResult(Error))
 		{
-			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Wallet = FWalletHandle(InApp, Error);
 			Error.Empty();
 			return true;
 		}
@@ -83,7 +84,7 @@ bool FWalletHandle::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider
 			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
 		).AssignResult(Error))
 		{
-			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Wallet = FWalletHandle(InApp, Error);
 			Error.Empty();
 			return true;
 		}
@@ -106,7 +107,8 @@ bool FWalletHandle::CreateSmartWallet(const int64 ChainID, const bool bGasless, 
 			TO_RUST_STRING(AccountOverride)
 		).AssignResult(Error))
 		{
-			SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
+			SmartWallet = FWalletHandle(Smart, Error);
+			FThirdwebAnalytics::SendConnectEvent(SmartWallet.ToAddress(), SmartWallet.GetTypeString());
 			Error.Empty();
 			return true;
 		}
@@ -146,7 +148,12 @@ bool FWalletHandle::VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error
 {
 	if (Type == InApp)
 	{
-		return Thirdweb::in_app_wallet_verify_otp(ID, TO_RUST_STRING(OTP)).AssignRetryResult(CanRetry, Error, true);
+		if (Thirdweb::in_app_wallet_verify_otp(ID, TO_RUST_STRING(OTP)).AssignRetryResult(CanRetry, Error, true))
+		{
+			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+			return true;
+		}
+		return false;
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OTP action");
 	return false;
@@ -189,7 +196,13 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 		{
 			Result = FGenericPlatformHttp::UrlDecode(AuthResult);
 		}
-		return Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error);
+
+		if (Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error))
+		{
+			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+			return true;
+		}
+		return false;
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
 	return false;

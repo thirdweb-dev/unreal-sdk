@@ -1,12 +1,14 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "ThirdwebOAuthBrowserUserWidget.h"
+#include "Browser/ThirdwebOAuthBrowserUserWidget.h"
 
 #include "ThirdwebLog.h"
-#include "ThirdwebOAuthBrowserWidget.h"
 
 #include "Blueprint/WidgetTree.h"
 
+#include "Browser/ThirdwebOAuthBrowserWidget.h"
+
+#include "Components/Button.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/PanelWidget.h"
@@ -20,23 +22,25 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 
 	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
 
+	// Construct root widget if needed
 	if (!RootWidget)
 	{
 		RootWidget = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass(), TEXT("RootWidget"));
 		WidgetTree->RootWidget = RootWidget;
 	}
 
+	// Construct children
 	if (RootWidget)
 	{
+		// Construct browser widget
 		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
-		Browser->OnUrlChanged.AddUniqueDynamic(this, &ThisClass::HandleUrlChanged);
+		Browser->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
+		Browser->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
 		UPanelSlot* PanelSlot = RootWidget->AddChild(Browser);
 		if (UOverlaySlot* RootWidgetSlot = Cast<UOverlaySlot>(PanelSlot))
 		{
-			TW_LOG(Warning, TEXT("ThirdwebOAuthBrowserUserWidget::RebuildWidget()"));
 			RootWidgetSlot->SetHorizontalAlignment(HAlign_Fill);
 			RootWidgetSlot->SetVerticalAlignment(VAlign_Fill);
-			
 		}
 	}
 
@@ -60,11 +64,11 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWal
 {
 	if (!InAppWallet.IsValid())
 	{
-		TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet invalid"));\
+		TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet invalid"));
 		return OnError.Broadcast(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-	
+
 	if (Browser)
 	{
 		FString Error;
@@ -77,8 +81,15 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWal
 	}
 }
 
-// ReSharper disable once CppPassValueParameterByConstReference
-void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(FString Url)
+
+bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
+{
+	FString Url = Browser->GetUrl();
+
+	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
 	if (Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix))
@@ -91,17 +102,19 @@ void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(FString Url)
 		FString Left, Right;
 		if (Url.Split(TEXT("authResult="), &Left, &Right, ESearchCase::IgnoreCase))
 		{
-			FString Error;
-			if (Wallet.SignInWithOAuth(Right, Error))
-			{
-				return OnSuccess.Broadcast();
-			}
-			return OnError.Broadcast(Error);
+			return OnAuthenticated.Broadcast(Right);
 		}
 		return OnError.Broadcast(TEXT("Failed to match AuthResult in url"));
-		
 	}
-	SetVisible(true);
+	bShouldBeVisible = true;
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
+{
+	if (bShouldBeVisible)
+	{
+		SetVisible(true);
+	}
 }
 
 void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)
@@ -109,18 +122,25 @@ void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)
 	// Mobile webview needs to be visible to work
 	if (bVisible)
 	{
+		if (bCollapseWhenBlank)
+		{
 #if PLATFORM_IOS | PLATFORM_ANDROID
-		SetRenderOpacity(1.0f);
+			SetRenderOpacity(1.0f);
 #else
-		SetVisibility(ESlateVisibility::Visible);
+			SetVisibility(ESlateVisibility::Visible);
 #endif
+		}
 	}
 	else
 	{
+		bShouldBeVisible = false;
+		if (bCollapseWhenBlank)
+		{
 #if PLATFORM_IOS | PLATFORM_ANDROID
-		SetRenderOpacity(0.01f);
+			SetRenderOpacity(0.01f);
 #else
-		SetVisibility(ESlateVisibility::Hidden);
+			SetVisibility(ESlateVisibility::Collapsed);
 #endif
+		}
 	}
 }

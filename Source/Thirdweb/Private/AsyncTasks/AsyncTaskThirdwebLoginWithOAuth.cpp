@@ -3,10 +3,11 @@
 #include "AsyncTasks/AsyncTaskThirdwebLoginWithOAuth.h"
 
 #include "ThirdwebLog.h"
-#include "ThirdwebOAuthBrowserUserWidget.h"
 #include "TimerManager.h"
 
 #include "Blueprint/UserWidget.h"
+
+#include "Browser/ThirdwebOAuthBrowserUserWidget.h"
 
 #include "Engine/World.h"
 
@@ -16,7 +17,7 @@
 
 void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 {
-	Browser->OnSuccess.AddDynamic(this, &ThisClass::HandleSuccess);
+	Browser->OnAuthenticated.AddDynamic(this, &ThisClass::HandleAuthenticated);
 	Browser->OnError.AddDynamic(this, &ThisClass::HandleFailed);
 	Browser->AddToViewport(10000);
 	Browser->Authenticate(Wallet);
@@ -42,9 +43,14 @@ void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
 	SetReadyToDestroy();
 }
 
-void UAsyncTaskThirdwebLoginWithOAuth::HandleSuccess()
+void UAsyncTaskThirdwebLoginWithOAuth::HandleAuthenticated(const FString& AuthResult)
 {
+	if (FString Error; !Wallet.SignInWithOAuth(AuthResult, Error))
+	{
+		return HandleFailed(Error);
+	}
 	Success.Broadcast(TEXT(""));
 	Browser->RemoveFromParent();
 	SetReadyToDestroy();
 }
+
