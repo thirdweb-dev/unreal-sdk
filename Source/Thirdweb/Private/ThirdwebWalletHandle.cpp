@@ -4,6 +4,7 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
+#include "ThirdwebInternal.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebSigner.h"
@@ -62,7 +63,8 @@ bool FWalletHandle::CreateInAppEmailWallet(const FString& Email, FWalletHandle& 
 			nullptr
 		).AssignResult(Error))
 		{
-			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Wallet = FWalletHandle(InApp, Error);
+			FThirdwebAnalytics::SendConnectEvent(Wallet.ToAddress(), Wallet.GetTypeString());
 			Error.Empty();
 			return true;
 		}
@@ -83,7 +85,8 @@ bool FWalletHandle::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider
 			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
 		).AssignResult(Error))
 		{
-			Wallet = FWalletHandle(FWalletHandle::InApp, Error);
+			Wallet = FWalletHandle(InApp, Error);
+			FThirdwebAnalytics::SendConnectEvent(Wallet.ToAddress(), Wallet.GetTypeString());
 			Error.Empty();
 			return true;
 		}
@@ -106,7 +109,8 @@ bool FWalletHandle::CreateSmartWallet(const int64 ChainID, const bool bGasless, 
 			TO_RUST_STRING(AccountOverride)
 		).AssignResult(Error))
 		{
-			SmartWallet = FWalletHandle(FWalletHandle::Smart, Error);
+			SmartWallet = FWalletHandle(Smart, Error);
+			FThirdwebAnalytics::SendConnectEvent(SmartWallet.ToAddress(), SmartWallet.GetTypeString());
 			Error.Empty();
 			return true;
 		}

@@ -11,9 +11,9 @@
 
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUrlChanged, FString, InUrl);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSimpleStringDelegate, const FString&);
 
-UCLASS()
+UCLASS(NotBlueprintable, NotBlueprintType, Hidden)
 class THIRDWEB_API UThirdwebOAuthBrowserWidget : public UWidget
 {
 	GENERATED_BODY()
@@ -28,8 +28,10 @@ public:
 	//~ End Public Overrides
 
 	virtual void HandleUrlChanged(const FText& InUrl);
+	virtual void HandleOnLoadComplete();
 	bool IsPageLoaded() const;
-
+	FString GetUrl() const;
+	
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
 	void Authenticate(const FString& OAuthLoginUrl);
 
@@ -38,8 +40,9 @@ protected:
 	virtual void OnWidgetRebuilt() override;
 
 public:
-	FOnUrlChanged OnUrlChanged;
-
+	FSimpleStringDelegate OnUrlChanged;
+	FSimpleStringDelegate OnPageLoaded;
+	
 	static const FString DummyUrl;
 
 private:

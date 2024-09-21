@@ -44,5 +44,5 @@ private:
 	void HandleFailed(const FString& Error);
 
 	UFUNCTION()
-	void HandleSuccess();
+	void HandleAuthenticated(const FString& AuthResult);
 };

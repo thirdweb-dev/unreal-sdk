@@ -92,6 +92,7 @@ public class Thirdweb : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"Projects",
 			// plugin settings deps
 			"DeveloperSettings",
 			// Thirdweb Engine call deps

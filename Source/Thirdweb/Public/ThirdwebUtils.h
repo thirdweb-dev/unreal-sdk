@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Thirdweb.h"
+#include "ThirdwebCommon.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
 

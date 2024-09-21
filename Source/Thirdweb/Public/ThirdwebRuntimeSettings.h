@@ -45,6 +45,10 @@ public:
     /** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	TArray<FString> EngineSigners;
+
+	/** Optional array of engine signers stored globally for convenience */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	bool bSendAnalytics;
 	
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }

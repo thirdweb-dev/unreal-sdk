@@ -56,7 +56,7 @@ struct THIRDWEB_API FWalletHandle
 
 	/** Get the private key of this handle (PrivateKey wallet only) */
 	FString GetPrivateKey() const;
-	
+
 	/**
 	 * Creates an in-app email wallet.
 	 *
@@ -140,7 +140,6 @@ struct THIRDWEB_API FWalletHandle
 
 	/** Get the active signers of a smart wallet */
 	bool GetActiveSigners(TArray<FSigner>& Signers, FString& Error);
-
 	/** sign a message */
 	FString Sign(const FString& Message) const;
 
@@ -154,20 +153,11 @@ struct THIRDWEB_API FWalletHandle
 		return Type != Other.Type || ID != Other.ID;
 	}
 
-	FString ToString() const
+	FString ToString() const { return IsValid() ? FString::Printf(TEXT("%sWallet:%lld"), GetTypeString(), ID) : TEXT("INVALID"); }
+
+	const TCHAR* GetTypeString() const
 	{
-		return IsValid()
-			       ? FString::Printf(
-				       TEXT("%sWallet:%lld"),
-				       Type == PrivateKey
-					       ? TEXT("PrivateKey")
-					       : Type == InApp
-					       ? TEXT("InApp")
-					       : Type == Smart
-					       ? TEXT("Smart")
-					       : TEXT("Unknown"),
-				       ID)
-			       : TEXT("INVALID");
+		return IsValid() ? Type == PrivateKey ? TEXT("privateKey") : Type == InApp ? TEXT("inApp") : Type == Smart ? TEXT("smart") : TEXT("unknown") : TEXT("invalid");
 	}
 
 private:
@@ -177,7 +167,7 @@ private:
 	// The wallet handle id
 	UPROPERTY(Transient)
 	int64 ID = 0;
-
+	
 	friend uint32 GetTypeHash(const FWalletHandle& InHandle)
 	{
 		return GetTypeHash(InHandle.ID);
