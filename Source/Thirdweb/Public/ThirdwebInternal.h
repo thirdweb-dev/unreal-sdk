@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "Containers/UnrealString.h"
+
+#include "Templates/SharedPointer.h"
+
 // Created as a struct instead of a namespaces so the functions are not exported.
 struct FThirdwebAnalytics
 {
