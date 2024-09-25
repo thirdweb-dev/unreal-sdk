@@ -60,7 +60,7 @@ void UThirdwebOAuthBrowserUserWidget::OnWidgetRebuilt()
 	SetVisible(false);
 }
 
-void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWallet)
+void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InAppWallet)
 {
 	if (!InAppWallet.IsValid())
 	{

@@ -46,14 +46,18 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	TArray<FString> EngineSigners;
 
+	/** Encryption key - Required for custom auth methods */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Encryption)
+	FString EncryptionKey;
+	
 	/** Optional array of engine signers stored globally for convenience */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
 	bool bSendAnalytics;
 	
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
-	
-	UFUNCTION(BlueprintPure, Category="Thirdweb")
+
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
 	static TArray<FString> GetThirdwebGlobalEngineSigners()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -63,8 +67,19 @@ public:
 		return {};
 	}
 
+	
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
+	static FString GetEncryptionKey()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EncryptionKey;
+		}
+		return TEXT("");
+	}
+
 	/** Gets the first global engine signer in the array, if any */
-	UFUNCTION(BlueprintPure, Category="Thirdweb", meta=(ReturnDisplayName="Signers"))
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signers"))
 	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
 	{
 		bFound = false;

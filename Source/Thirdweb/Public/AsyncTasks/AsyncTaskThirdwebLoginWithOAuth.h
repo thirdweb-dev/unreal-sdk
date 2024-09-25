@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ThirdwebWalletHandle.h"
+#include "Wallets/ThirdwebInAppWalletHandle.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 
@@ -23,7 +23,7 @@ public:
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|In App")
-	static UAsyncTaskThirdwebLoginWithOAuth* LoginWithOAuth(UObject* WorldContextObject, const FWalletHandle& Wallet);
+	static UAsyncTaskThirdwebLoginWithOAuth* LoginWithOAuth(UObject* WorldContextObject, const FInAppWalletHandle& Wallet);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOAuthDelegate, const FString&, Message);
 	UPROPERTY(BlueprintAssignable)
@@ -37,7 +37,7 @@ protected:
 	UThirdwebOAuthBrowserUserWidget* Browser;
 	
 	UPROPERTY(Transient)
-	FWalletHandle Wallet;
+	FInAppWalletHandle Wallet;
 	
 private:
 	UFUNCTION()

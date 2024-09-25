@@ -23,7 +23,7 @@ void UAsyncTaskThirdwebLoginWithOAuth::Activate()
 	Browser->Authenticate(Wallet);
 }
 
-UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAuth(UObject* WorldContextObject, const FWalletHandle& Wallet)
+UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAuth(UObject* WorldContextObject, const FInAppWalletHandle& Wallet)
 {
 	if (!WorldContextObject)
 	{

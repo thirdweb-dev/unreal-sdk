@@ -36,7 +36,13 @@ enum class EThirdwebOAuthProvider : uint8
 {
 	Google UMETA(DisplayName="Google"),
 	Apple UMETA(DisplayName="Apple"),
-	Facebook UMETA(DisplayName="Facebook")
+	Facebook UMETA(DisplayName="Facebook"),
+	Discord UMETA(DisplayName="Discord"),
+	Farcaster UMETA(DisplayName="Farcaster"),
+	Telegram UMETA(DisplayName="Telegram"),
+	Line UMETA(DisplayName="Line"),
+	X UMETA(DisplayName="X"),
+	None UMETA(Hidden)
 };
 
 UENUM()

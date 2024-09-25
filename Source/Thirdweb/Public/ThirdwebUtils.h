@@ -11,6 +11,8 @@
 
 namespace ThirdwebUtils
 {
+	static const TCHAR* ZeroAddress = TEXT("0x0000000000000000000000000000000000000000");
+
 	/**
 	 * Checks if the provided Ethereum address is checksummed.
 	 *
@@ -27,15 +29,7 @@ namespace ThirdwebUtils
 	 * @return True if the address is valid, false otherwise.
 	 */
 	static bool IsValidAddress(const FString& Address, const bool bWithChecksum = false) { return Thirdweb::is_valid_address(TO_RUST_STRING(Address), bWithChecksum).GetOutput().ToBool(); }
-
-	/**
-	 * Determines if the provided string is a valid private key.
-	 *
-	 * @param PrivateKey The string to check.
-	 * @return True if the string is a valid private key, false otherwise.
-	 */
-	static bool IsValidPrivateKey(const FString& PrivateKey) { return Thirdweb::is_valid_private_key(TO_RUST_STRING(PrivateKey)).GetOutput().ToBool(); }
-
+	
 	/**
 	 * Converts the provided Ethereum address to a checksummed address.
 	 *
@@ -55,7 +49,12 @@ namespace ThirdwebUtils
 		static TMap<EThirdwebOAuthProvider, FText> Map = {
 			{EThirdwebOAuthProvider::Google, LOCTEXT("Google", "Google")},
 			{EThirdwebOAuthProvider::Apple, LOCTEXT("Apple", "Apple")},
-			{EThirdwebOAuthProvider::Facebook, LOCTEXT("Facebook", "Facebook")}
+			{EThirdwebOAuthProvider::Facebook, LOCTEXT("Facebook", "Facebook")},
+			{EThirdwebOAuthProvider::Discord, LOCTEXT("Discord", "Discord")},
+			{EThirdwebOAuthProvider::Farcaster, LOCTEXT("Farcaster", "Farcaster")},
+			{EThirdwebOAuthProvider::Telegram, LOCTEXT("Telegram", "Telegram")},
+			{EThirdwebOAuthProvider::Line, LOCTEXT("Line", "Line")},
+			{EThirdwebOAuthProvider::X, LOCTEXT("X", "X")}
 		};
 		return Map.Contains(Provider) ? Map[Provider] : FText::FromString(TEXT("Invalid"));
 	}
@@ -75,7 +74,6 @@ namespace ThirdwebUtils
 	 * @return The computed client ID.
 	 */
 	static FString GetClientIdFromSecretKey(const FString& SecretKey) { return Thirdweb::compute_client_id_from_secret_key(TO_RUST_STRING(SecretKey)).GetOutput(); }
-	
 }
 
 #undef LOCTEXT_NAMESPACE

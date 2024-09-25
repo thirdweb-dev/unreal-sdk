@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ThirdwebWalletHandle.h"
+#include "Wallets/ThirdwebInAppWalletHandle.h"
 
 #include "Blueprint/UserWidget.h"
 
@@ -39,7 +39,7 @@ protected:
 	bool bAuthenticateOnConstruct = false;
 	
 	UPROPERTY(BlueprintReadOnly, Transient, Category="Internal", meta=(ExposeOnSpawn=true))
-	FWalletHandle Wallet;
+	FInAppWalletHandle Wallet;
 	
 private:
 	UPROPERTY(Transient)
@@ -63,7 +63,7 @@ protected:
 	
 public:
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
-	void Authenticate(const FWalletHandle& InAppWallet);
+	void Authenticate(const FInAppWalletHandle& InAppWallet);
 
 	/** Returns true if the page content is blank. Normally the case at startup, and mid-oauth flow */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")

@@ -8,17 +8,10 @@
 #include "ThirdwebCommon.h"
 #include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
-#include "ThirdwebWalletHandle.h"
 
-FWalletHandle UThirdwebFunctionLibrary::Conv_StringToWalletHandle(FString PrivateKey)
-{
-	return FWalletHandle::FromPrivateKey(PrivateKey);
-}
-
-FString UThirdwebFunctionLibrary::BP_GetPrivateKeyString(const FWalletHandle& Wallet)
-{
-	return Wallet.GetPrivateKey();
-}
+#include "Wallets/ThirdwebInAppWalletHandle.h"
+#include "Wallets/ThirdwebSmartWalletHandle.h"
+#include "Wallets/ThirdwebWalletHandle.h"
 
 bool UThirdwebFunctionLibrary::EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B)
 {
@@ -30,40 +23,57 @@ bool UThirdwebFunctionLibrary::NotEqual_WalletHandleWalletHandle(FWalletHandle A
 	return A != B;
 }
 
-FWalletHandle UThirdwebFunctionLibrary::BP_GenerateWallet()
-{
-	return FWalletHandle::GeneratePrivateKey();
-}
-
 FString UThirdwebFunctionLibrary::Conv_WalletHandleToString(FWalletHandle Wallet)
 {
 	return Wallet.ToAddress();
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppEmailWallet(const FString& Email, FWalletHandle& Wallet, FString& Error)
+FText UThirdwebFunctionLibrary::Conv_WalletHandleToText(FWalletHandle Wallet)
 {
-	return FWalletHandle::CreateInAppEmailWallet(Email, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return FText::FromString(Conv_WalletHandleToString(Wallet));
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FWalletHandle::CreateInAppOAuthWallet(Provider, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return FInAppWalletHandle::CreateEmailWallet(Email, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppPhoneWallet(const FString& Phone, FWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FWalletHandle::CreateInAppPhoneWallet(Phone, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return FInAppWalletHandle::CreateOAuthWallet(Provider, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWallet(FWalletHandle PersonalWallet,
-                                                               FWalletHandle& SmartWallet,
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppPhoneWallet(const FString& Phone, FInAppWalletHandle& Wallet, FString& Error)
+{
+	return FInAppWalletHandle::CreatePhoneWallet(Phone, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppJwtWallet(FInAppWalletHandle& Wallet, FString& Error)
+{
+	return FInAppWalletHandle::CreateJwtWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppAuthEndpointWallet(FInAppWalletHandle& Wallet, FString& Error)
+{
+	return FInAppWalletHandle::CreateAuthEndpointWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppGuestWallet(FInAppWalletHandle& Wallet, FString& Error)
+{
+	return FInAppWalletHandle::CreateGuestWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWallet(const FInAppWalletHandle PersonalWallet,
+                                                               FSmartWalletHandle& SmartWallet,
                                                                FString& Error,
                                                                const int64 ChainID,
                                                                const bool bGasless,
                                                                const FString& Factory,
                                                                const FString& AccountOverride)
 {
-	return PersonalWallet.CreateSmartWallet(ChainID, bGasless, Factory, AccountOverride, SmartWallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	bool bSuccessful;
+	FSmartWalletHandle SmartWalletHandle = FSmartWalletHandle::Create(PersonalWallet, ChainID, bGasless, Factory, AccountOverride, bSuccessful, Error);
+	return bSuccessful ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
 FString UThirdwebFunctionLibrary::BP_SignMessage(const FWalletHandle& Wallet, const FString& Message)
@@ -71,17 +81,17 @@ FString UThirdwebFunctionLibrary::BP_SignMessage(const FWalletHandle& Wallet, co
 	return Wallet.Sign(Message);
 }
 
-bool UThirdwebFunctionLibrary::BP_WalletIsConnected(const FWalletHandle& Wallet)
+bool UThirdwebFunctionLibrary::BP_WalletIsConnected(const FInAppWalletHandle& Wallet)
 {
 	return Wallet.IsConnected();
 }
 
-void UThirdwebFunctionLibrary::BP_DisconnectWallet(const FWalletHandle& Wallet)
+void UThirdwebFunctionLibrary::BP_DisconnectWallet(const FInAppWalletHandle& Wallet)
 {
 	return Wallet.Disconnect();
 }
 
-EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, const FString& OTP, FString& Error)
+EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(const EThirdwebOTPMethod Method, FInAppWalletHandle Wallet, const FString& OTP, FString& Error)
 {
 	bool bCanRetry = false;
 	if (Wallet.VerifyOTP(Method, OTP, Error))
@@ -91,17 +101,17 @@ EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(const EThi
 	return bCanRetry ? EOTPVerificationFunctionResult::Retry : EOTPVerificationFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(const EThirdwebOTPMethod Method, FInAppWalletHandle Wallet, FString& Error)
 {
 	return Wallet.SendOTP(Method, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FInAppWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error)
 {
 	return Wallet.FetchOAuthLoginURL(RedirectUrl, LoginLink, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithOAuth(FWalletHandle Wallet, const FString& AuthResult, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithOAuth(FInAppWalletHandle Wallet, const FString& AuthResult, FString& Error)
 {
 	return Wallet.SignInWithOAuth(AuthResult, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
@@ -111,7 +121,7 @@ bool UThirdwebFunctionLibrary::BP_WalletIsValid(const FWalletHandle& Wallet)
 	return Wallet.IsValid();
 }
 
-ESmartWalletDeployedFunctionResult UThirdwebFunctionLibrary::BP_IsSmartWalletDeployed(FWalletHandle Wallet, FString& Error)
+ESmartWalletDeployedFunctionResult UThirdwebFunctionLibrary::BP_IsSmartWalletDeployed(FSmartWalletHandle Wallet, FString& Error)
 {
 	if (bool bDeployed; Wallet.IsDeployed(bDeployed, Error))
 	{
@@ -120,7 +130,7 @@ ESmartWalletDeployedFunctionResult UThirdwebFunctionLibrary::BP_IsSmartWalletDep
 	return ESmartWalletDeployedFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWalletSessionKey(FWalletHandle Wallet,
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWalletSessionKey(FSmartWalletHandle Wallet,
                                                                          const FString& Signer,
                                                                          const TArray<FString>& ApprovedTargets,
                                                                          const FString& NativeTokenLimitPerTransactionInWei,
@@ -136,27 +146,27 @@ EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWalletSessionKey(FWallet
 		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletAdmins(FWalletHandle Wallet, TArray<FString>& Admins, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletAdmins(FSmartWalletHandle Wallet, TArray<FString>& Admins, FString& Error)
 {
 	return Wallet.GetAdmins(Admins, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletActiveSigners(FWalletHandle Wallet, TArray<FSigner>& Signers, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_GetSmartWalletActiveSigners(FSmartWalletHandle Wallet, TArray<FSigner>& Signers, FString& Error)
 {
 	return Wallet.GetActiveSigners(Signers, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_RevokeSmartWalletSessionKey(FWalletHandle Wallet, const FString& Signer, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_RevokeSmartWalletSessionKey(FSmartWalletHandle Wallet, const FString& Signer, FString& Error)
 {
 	return Wallet.RevokeSessionKey(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_AddSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_AddSmartWalletAdmin(FSmartWalletHandle Wallet, const FString& Signer, FString& Error)
 {
 	return Wallet.AddAdmin(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_RemoveSmartWalletAdmin(FWalletHandle Wallet, const FString& Signer, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_RemoveSmartWalletAdmin(FSmartWalletHandle Wallet, const FString& Signer, FString& Error)
 {
 	return Wallet.RemoveAdmin(Signer, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
@@ -181,11 +191,6 @@ bool UThirdwebFunctionLibrary::BP_IsStringChecksummedAddress(const FString& Addr
 	return ThirdwebUtils::IsChecksummedAddress(Address);
 }
 
-bool UThirdwebFunctionLibrary::BP_IsStringValidPrivateKey(const FString& PrivateKey)
-{
-	return ThirdwebUtils::IsValidPrivateKey(PrivateKey);
-}
-
 FString UThirdwebFunctionLibrary::Conv_StringAddressToStringChecksummedAddress(const FString& Address)
 {
 	return ThirdwebUtils::ToChecksummedAddress(Address);
@@ -201,17 +206,12 @@ bool UThirdwebFunctionLibrary::BP_IsTextChecksummedAddress(const FText& Address)
 	return !Address.IsEmpty() && ThirdwebUtils::IsChecksummedAddress(Address.ToString());
 }
 
-bool UThirdwebFunctionLibrary::BP_IsTextValidPrivateKey(const FText& PrivateKey)
-{
-	return !PrivateKey.IsEmpty() && ThirdwebUtils::IsValidPrivateKey(PrivateKey.ToString());
-}
-
 FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const FText& Address)
 {
 	return Address.IsEmpty() ? FText::GetEmpty() : FText::FromString(ThirdwebUtils::ToChecksummedAddress(Address.ToString()));
 }
 
-bool UThirdwebFunctionLibrary::BP_IsActiveSigner(FWalletHandle Wallet, const FString& BackendWallet)
+bool UThirdwebFunctionLibrary::BP_IsActiveSigner(FSmartWalletHandle Wallet, const FString& BackendWallet)
 {
 	FString Error;
 	if (bool bDeployed; Wallet.IsDeployed(bDeployed, Error))

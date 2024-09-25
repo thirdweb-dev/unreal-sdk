@@ -52,7 +52,7 @@ namespace Thirdweb
 		                               const char* email,
 		                               const char* phone,
 		                               const char* storage_directory_path,
-		                               const char* oauth_provider);
+		                               const char* auth_provider);
 		FFIResult in_app_wallet_send_otp_email(uintptr_t handle_id);
 		FFIResult in_app_wallet_verify_otp_email(uintptr_t handle_id, const char* otp);
 		FFIResult in_app_wallet_send_otp_phone(uintptr_t handle_id);

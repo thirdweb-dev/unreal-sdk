@@ -5,9 +5,9 @@
 #if WITH_CEF
 #include "SWebBrowser.h"
 #endif
-#include "ThirdwebWalletHandle.h"
-
 #include "Components/Widget.h"
+
+#include "Wallets/ThirdwebInAppWalletHandle.h"
 
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
