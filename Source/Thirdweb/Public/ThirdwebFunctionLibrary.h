@@ -52,11 +52,11 @@ public:
 	static FWalletHandle BP_GenerateWallet();
 
 	/** Gets the public address of a wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="To String (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address", BlueprintAutocast), Category="Utilities|Wallet")
 	static FString Conv_WalletHandleToString(FWalletHandle Wallet);
 
 	/** Gets the public address of a wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="To Text (Wallet)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FText Conv_WalletHandleToText(FWalletHandle Wallet) { return FText::FromString(Conv_WalletHandleToString(Wallet)); }
 	
 	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
@@ -65,6 +65,9 @@ public:
 	UFUNCTION(BlueprintCallable, DisplayName="Create OAuth Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error);
 
+	UFUNCTION(BlueprintCallable, DisplayName="Create Phone Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppPhoneWallet(const FString& Phone, FWalletHandle& Wallet, FString& Error);
+	
 	UFUNCTION(BlueprintCallable, DisplayName="Create Smart Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride", AutoCreateRefTerm="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart Wallet")
 	static EFunctionResult BP_CreateSmartWallet(FWalletHandle PersonalWallet, FWalletHandle& SmartWallet, FString& Error, const int64 ChainID, const bool bGasless = true, const FString& Factory = "", const FString& AccountOverride = "");
 	
@@ -82,11 +85,11 @@ public:
 
 	/** Verifies an OTP for the in-app wallet */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Verify OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EOTPVerificationFunctionResult BP_VerifyOTP(FWalletHandle Wallet, const FString& OTP, FString& Error);
+	static EOTPVerificationFunctionResult BP_VerifyOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, const FString& OTP, FString& Error);
 
 	/** Sends an OTP for the in-app wallet */
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Send OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SendOTP(FWalletHandle Wallet, FString& Error);
+	static EFunctionResult BP_SendOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, FString& Error);
 
 	// Fetch OAuth login link
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Fetch OAuth Login Link", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")

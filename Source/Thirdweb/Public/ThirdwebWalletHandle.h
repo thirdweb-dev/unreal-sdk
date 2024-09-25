@@ -4,6 +4,7 @@
 
 #include "ThirdwebWalletHandle.generated.h"
 
+enum class EThirdwebOTPMethod : uint8;
 enum class EThirdwebOAuthProvider : uint8;
 struct FSigner;
 
@@ -78,6 +79,16 @@ struct THIRDWEB_API FWalletHandle
 	static bool CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FWalletHandle& Wallet, FString& Error);
 
 	/**
+	 * Creates an in-app phone wallet.
+	 *
+	 * @param Phone The phone number to associate with the wallet.
+	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
+	 * @param Error An output parameter that will hold any error message in case of a failure.
+	 * @return True if the wallet creation is successful, false otherwise.
+	 */
+	static bool CreateInAppPhoneWallet(const FString& Phone, FWalletHandle& Wallet, FString& Error);
+
+	/**
 	 * Creates a smart wallet associated with the specified blockchain network.
 	 *
 	 * @param ChainID The ID of the blockchain to associate with the smart wallet.
@@ -107,12 +118,15 @@ struct THIRDWEB_API FWalletHandle
 	/** Get the public address of the current wallet */
 	FString ToAddress() const;
 
-	bool VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error);
-	bool SendOTP(FString& Error);
-
+	bool VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error);
+	bool SendOTP(const EThirdwebOTPMethod Method, FString& Error);
+	
 	bool FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error);
 	bool SignInWithOAuth(const FString& AuthResult, FString& Error);
-
+	bool SignInWithJwt(const FString& Jwt, const FString& EncryptionKey, FString& Error);
+	bool SignInWithEndpoint(const FString& Payload, const FString& EncryptionKey, FString& Error);
+	bool SignInWithGuest(const FString& SessionId, FString& Error);
+	
 	/** Create a session key for a smart wallet */
 	bool CreateSessionKey(
 		const FString& Signer,

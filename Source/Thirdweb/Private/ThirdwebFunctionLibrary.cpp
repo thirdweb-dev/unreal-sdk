@@ -50,6 +50,11 @@ EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppOAuthWallet(const EThird
 	return FWalletHandle::CreateInAppOAuthWallet(Provider, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppPhoneWallet(const FString& Phone, FWalletHandle& Wallet, FString& Error)
+{
+	return FWalletHandle::CreateInAppPhoneWallet(Phone, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
 EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWallet(FWalletHandle PersonalWallet,
                                                                FWalletHandle& SmartWallet,
                                                                FString& Error,
@@ -76,19 +81,19 @@ void UThirdwebFunctionLibrary::BP_DisconnectWallet(const FWalletHandle& Wallet)
 	return Wallet.Disconnect();
 }
 
-EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(FWalletHandle Wallet, const FString& OTP, FString& Error)
+EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, const FString& OTP, FString& Error)
 {
 	bool bCanRetry = false;
-	if (Wallet.VerifyOTP(OTP, bCanRetry, Error))
+	if (Wallet.VerifyOTP(Method, OTP, Error))
 	{
 		return EOTPVerificationFunctionResult::Verified;
 	}
 	return bCanRetry ? EOTPVerificationFunctionResult::Retry : EOTPVerificationFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(FWalletHandle Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(const EThirdwebOTPMethod Method, FWalletHandle Wallet, FString& Error)
 {
-	return Wallet.SendOTP(Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return Wallet.SendOTP(Method, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
 EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error)

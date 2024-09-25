@@ -31,7 +31,7 @@ enum class EOTPVerificationFunctionResult : uint8
 	Failed
 };
 
-UENUM(Blueprintable)
+UENUM(BlueprintType, DisplayName="OAuth Provider")
 enum class EThirdwebOAuthProvider : uint8
 {
 	Google UMETA(DisplayName="Google"),
@@ -44,4 +44,11 @@ enum class EThirdwebAuthenticationMethod : uint8
 {
 	ClientID UMETA(DisplayName="Client ID"),
 	SecretKey UMETA(DisplayName="Secret Key"),
+};
+
+UENUM(BlueprintType, DisplayName="OTP Method")
+enum class EThirdwebOTPMethod : uint8
+{
+	Email UMETA(DisplayName="Email"),
+	Phone UMETA(DisplayName="Phone"),
 };

@@ -59,6 +59,7 @@ bool FWalletHandle::CreateInAppEmailWallet(const FString& Email, FWalletHandle& 
 			TO_RUST_STRING(Settings->BundleID),
 			TO_RUST_STRING(Settings->SecretKey),
 			TO_RUST_STRING(Email),
+			nullptr,
 			TO_RUST_STRING(Settings->GetStorageDirectory()),
 			nullptr
 		).AssignResult(Error))
@@ -80,8 +81,31 @@ bool FWalletHandle::CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider
 			TO_RUST_STRING(Settings->BundleID),
 			TO_RUST_STRING(Settings->SecretKey),
 			nullptr,
+			nullptr,
 			TO_RUST_STRING(Settings->GetStorageDirectory()),
 			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
+		).AssignResult(Error))
+		{
+			Wallet = FWalletHandle(InApp, Error);
+			Error.Empty();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FWalletHandle::CreateInAppPhoneWallet(const FString& Phone, FWalletHandle& Wallet, FString& Error)
+{
+	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
+	{
+		if (Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(Settings->ClientID),
+			TO_RUST_STRING(Settings->BundleID),
+			TO_RUST_STRING(Settings->SecretKey),
+			nullptr,
+			TO_RUST_STRING(Phone),
+			TO_RUST_STRING(Settings->GetStorageDirectory()),
+			nullptr
 		).AssignResult(Error))
 		{
 			Wallet = FWalletHandle(InApp, Error);
@@ -144,14 +168,28 @@ void FWalletHandle::Disconnect() const
 
 FString FWalletHandle::ToAddress() const { return Thirdweb::get_wallet_address(ID).GetOutput(); }
 
-bool FWalletHandle::VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error)
+bool FWalletHandle::VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error)
 {
 	if (Type == InApp)
 	{
-		if (Thirdweb::in_app_wallet_verify_otp(ID, TO_RUST_STRING(OTP)).AssignRetryResult(CanRetry, Error, true))
+		switch (Method)
 		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
+		case EThirdwebOTPMethod::Phone:
+			{
+				if (Thirdweb::in_app_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+				{
+					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+					return true;
+				}
+			}
+		case EThirdwebOTPMethod::Email:
+			{
+				if (Thirdweb::in_app_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+				{
+					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -159,11 +197,16 @@ bool FWalletHandle::VerifyOTP(const FString& OTP, bool& CanRetry, FString& Error
 	return false;
 }
 
-bool FWalletHandle::SendOTP(FString& Error)
+bool FWalletHandle::SendOTP(const EThirdwebOTPMethod Method, FString& Error)
 {
 	if (Type == InApp)
 	{
-		return Thirdweb::in_app_wallet_send_otp(ID).AssignResult(Error, true);
+		switch (Method)
+		{
+		case EThirdwebOTPMethod::Phone: return Thirdweb::in_app_wallet_send_otp_phone(ID).AssignResult(Error, true);
+		case EThirdwebOTPMethod::Email: return Thirdweb::in_app_wallet_send_otp_email(ID).AssignResult(Error, true);
+		}
+		return false;
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OTP action");
 	return false;
@@ -197,7 +240,7 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 			Result = FGenericPlatformHttp::UrlDecode(AuthResult);
 		}
 
-		if (Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error))
+		if (Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error, true))
 		{
 			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 			return true;
@@ -205,6 +248,51 @@ bool FWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
 		return false;
 	}
 	Error = TEXT("Wallet type must be InAppWallet for OAuth action");
+	return false;
+}
+
+bool FWalletHandle::SignInWithJwt(const FString& Jwt, const FString& EncryptionKey, FString& Error)
+{
+	if (Type == InApp)
+	{
+		if (Thirdweb::in_app_wallet_sign_in_with_jwt(ID, TO_RUST_STRING(Jwt), TO_RUST_STRING(EncryptionKey)).AssignResult(Error, true))
+		{
+			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+			return true;
+		}
+		return false;
+	}
+	Error = TEXT("Wallet type must be InAppWallet for JWT action");
+	return false;
+}
+
+bool FWalletHandle::SignInWithEndpoint(const FString& Payload, const FString& EncryptionKey, FString& Error)
+{
+	if (Type == InApp)
+	{
+		if (Thirdweb::in_app_wallet_sign_in_with_auth_endpoint(ID, TO_RUST_STRING(Payload), TO_RUST_STRING(EncryptionKey)).AssignResult(Error, true))
+		{
+			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+			return true;
+		}
+		return false;
+	}
+	Error = TEXT("Wallet type must be InAppWallet for Auth Endpoint action");
+	return false;
+}
+
+bool FWalletHandle::SignInWithGuest(const FString& SessionId, FString& Error)
+{
+	if (Type == InApp)
+	{
+		if (Thirdweb::in_app_wallet_sign_in_with_guest(ID, TO_RUST_STRING(SessionId)).AssignResult(Error, true))
+		{
+			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+			return true;
+		}
+		return false;
+	}
+	Error = TEXT("Wallet type must be InAppWallet for Auth Endpoint action");
 	return false;
 }
 
