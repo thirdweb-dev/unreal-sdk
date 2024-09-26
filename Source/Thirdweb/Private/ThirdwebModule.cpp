@@ -29,7 +29,7 @@ public:
 				if (!WebBrowserModule.CustomInitialize(WebBrowserInitSettings))
 				{
 					UE_LOG(LogThirdweb, Error, TEXT("ThirdwebModule::Could not initialize WebBrowserModule with custom User-Agent! Singleton already exists"))
-				};
+				}
 				IWebBrowserSingleton* WebBrowserSingleton = WebBrowserModule.GetSingleton();
 				if (WebBrowserSingleton)
 				{
@@ -43,10 +43,9 @@ public:
 	virtual void ShutdownModule() override
 	{
 	}
-	
+
 private:
 	UThirdwebAssetManager* ThirdwebAssetManager = nullptr;
 };
 
 IMPLEMENT_MODULE(FThirdwebModule, Thirdweb);
-
