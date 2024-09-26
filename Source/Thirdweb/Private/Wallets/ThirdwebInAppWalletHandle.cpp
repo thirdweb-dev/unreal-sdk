@@ -55,6 +55,12 @@ FInAppWalletHandle::FInAppWalletHandle(const EThirdwebOAuthProvider InProvider, 
 	ID = InID;
 }
 
+bool FInAppWalletHandle::IsValid() const
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s::%lld::%s"), GetSourceString(), ID, GetTypeString())
+	return Super::IsValid() && Source != InvalidSource;
+}
+
 bool FInAppWalletHandle::CreateEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
 {
 	if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
@@ -91,7 +97,7 @@ bool FInAppWalletHandle::CreateOAuthWallet(const EThirdwebOAuthProvider Provider
 			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
 		).AssignResult(Error))
 		{
-			Wallet = FInAppWalletHandle(OAuthProvider, Error);
+			Wallet = FInAppWalletHandle(Provider, Error);
 			Error.Empty();
 			return true;
 		}
@@ -123,7 +129,7 @@ bool FInAppWalletHandle::CreatePhoneWallet(const FString& Phone, FInAppWalletHan
 
 bool FInAppWalletHandle::CreateCustomAuthWallet(const EInAppSource Source, FInAppWalletHandle& Wallet, FString& Error)
 {
-	if (Source != Jwt || Source != AuthEndpoint || Source != Guest)
+	if (Source != Jwt && Source != AuthEndpoint && Source != Guest)
 	{
 		Error = TEXT("Invalid custom auth source");
 		return false;

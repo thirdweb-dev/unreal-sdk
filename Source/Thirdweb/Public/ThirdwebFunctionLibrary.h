@@ -8,7 +8,6 @@
 
 
 struct FInAppWalletHandle;
-struct FWalletHandle;
 struct FSmartWalletHandle;
 enum class EFunctionResult : uint8;
 enum class EThirdwebOAuthProvider : uint8;
@@ -26,20 +25,36 @@ class THIRDWEB_API UThirdwebFunctionLibrary : public UBlueprintFunctionLibrary
 
 public:
 	/** Returns true if A is equal to B (A == B) */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
-	static bool EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B);
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (InApp Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
+	static bool EqualEqual_InAppWalletHandleInAppWalletHandle(FInAppWalletHandle A, FInAppWalletHandle B);
 
 	/** Returns true if A is not equal to B (A != B) */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Not Equal (Wallet)", CompactNodeTitle="!=", Keywords="!= not equal"), Category="Utilities|Operators")
-	static bool NotEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B);
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Not Equal (InApp Wallet)", CompactNodeTitle="!=", Keywords="!= not equal"), Category="Utilities|Operators")
+	static bool NotEqual_InAppWalletHandleInAppWalletHandle(FInAppWalletHandle A, FInAppWalletHandle B);
+	
+	/** Returns true if A is equal to B (A == B) */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Equal (Smart Wallet)", CompactNodeTitle="==", Keywords="== equal"), Category="Utilities|Operators")
+	static bool EqualEqual_SmartWalletHandleSmartWalletHandle(FSmartWalletHandle A, FSmartWalletHandle B);
 
-	/** Gets the public address of a wallet handle */
+	/** Returns true if A is not equal to B (A != B) */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Not Equal (Smart Wallet)", CompactNodeTitle="!=", Keywords="!= not equal"), Category="Utilities|Operators")
+	static bool NotEqual_SmartWalletHandleSmartWalletHandle(FSmartWalletHandle A, FSmartWalletHandle B);
+
+	/** Gets the public address of an InApp wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address", BlueprintAutocast), Category="Utilities|Wallet")
-	static FString Conv_WalletHandleToString(FWalletHandle Wallet);
+	static FString Conv_InAppWalletHandleToString(FInAppWalletHandle Wallet);
 
-	/** Gets the public address of a wallet handle */
+	/** Gets the public address of a smart wallet handle */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address", BlueprintAutocast), Category="Utilities|Wallet")
+	static FString Conv_SmartWalletHandleToString(FSmartWalletHandle Wallet);
+
+	/** Gets the public address of an InApp wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
-	static FText Conv_WalletHandleToText(FWalletHandle Wallet);
+	static FText Conv_InAppWalletHandleToText(FInAppWalletHandle Wallet);
+
+	/** Gets the public address of a smart wallet handle */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	static FText Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet);
 
 	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_CreateInAppEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error);
@@ -69,9 +84,13 @@ public:
 	                                            const FString& Factory = "",
 	                                            const FString& AccountOverride = "");
 
-	/** Signs an arbitrary message */
+	/** Signs an arbitrary message with an InApp wallet */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
-	static FString BP_SignMessage(const FWalletHandle& Wallet, const FString& Message);
+	static FString BP_SignInAppMessage(const FInAppWalletHandle& Wallet, const FString& Message);
+	
+	/** Signs an arbitrary message with a smart wallet */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
+	static FString BP_SignSmartMessage(const FSmartWalletHandle& Wallet, const FString& Message);
 
 	/** Check if the wallet handle is connected to a session */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Connected"), Category="Thirdweb|Wallets")
@@ -97,9 +116,25 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With OAuth", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_SignInWithOAuth(FInAppWalletHandle Wallet, const FString& AuthResult, FString& Error);
 
-	/** Check if a wallet handle is valid */
+	// Sign in with the oauth payload received from your login flow
+	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With JWT", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_SignInWithJwt(FInAppWalletHandle Wallet, const FString& Jwt, FString& Error);
+
+	// Sign in with the oauth payload received from your login flow
+	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With Auth Endpoint", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_SignInWithAuthEndpoint(FInAppWalletHandle Wallet, const FString& Payload, FString& Error);
+
+	// Sign in with the oauth payload received from your login flow
+	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With Guest", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_SignInWithGuest(FInAppWalletHandle Wallet, FString& Error);
+	
+	/** Check if an InApp wallet handle is valid */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets")
-	static bool BP_WalletIsValid(const FWalletHandle& Wallet);
+	static bool BP_InAppWalletIsValid(const FInAppWalletHandle& Wallet);
+	
+	/** Check if a smart wallet handle is valid */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets")
+	static bool BP_SmartWalletIsValid(const FSmartWalletHandle& Wallet);
 
 	/** Check if a smart wallet is deployed */
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart Wallet", DisplayName="Is Deployed", meta=(ExpandEnumAsExecs="ReturnValue"))

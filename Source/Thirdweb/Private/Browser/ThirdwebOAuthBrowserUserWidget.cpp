@@ -36,6 +36,7 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
 		Browser->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
 		Browser->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
+		Browser->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
 		UPanelSlot* PanelSlot = RootWidget->AddChild(Browser);
 		if (UOverlaySlot* RootWidgetSlot = Cast<UOverlaySlot>(PanelSlot))
 		{
@@ -89,6 +90,15 @@ bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
 	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
 }
 
+FString UThirdwebOAuthBrowserUserWidget::GetUrl() const
+{
+	if (Browser)
+	{
+		return Browser->GetUrl();
+	}
+	return TEXT("");
+}
+
 void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
@@ -115,6 +125,11 @@ void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
 	{
 		SetVisible(true);
 	}
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, const FString& Frame)
+{
+	return OnPopup.Broadcast(Url, Frame);
 }
 
 void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)

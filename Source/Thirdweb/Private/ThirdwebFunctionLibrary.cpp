@@ -13,24 +13,44 @@
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
 
-bool UThirdwebFunctionLibrary::EqualEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B)
+bool UThirdwebFunctionLibrary::EqualEqual_InAppWalletHandleInAppWalletHandle(FInAppWalletHandle A, FInAppWalletHandle B)
 {
 	return A == B;
 }
 
-bool UThirdwebFunctionLibrary::NotEqual_WalletHandleWalletHandle(FWalletHandle A, FWalletHandle B)
+bool UThirdwebFunctionLibrary::NotEqual_InAppWalletHandleInAppWalletHandle(FInAppWalletHandle A, FInAppWalletHandle B)
 {
 	return A != B;
 }
 
-FString UThirdwebFunctionLibrary::Conv_WalletHandleToString(FWalletHandle Wallet)
+bool UThirdwebFunctionLibrary::EqualEqual_SmartWalletHandleSmartWalletHandle(FSmartWalletHandle A, FSmartWalletHandle B)
+{
+	return A == B;
+}
+
+bool UThirdwebFunctionLibrary::NotEqual_SmartWalletHandleSmartWalletHandle(FSmartWalletHandle A, FSmartWalletHandle B)
+{
+	return A != B;
+}
+
+FString UThirdwebFunctionLibrary::Conv_InAppWalletHandleToString(FInAppWalletHandle Wallet)
 {
 	return Wallet.ToAddress();
 }
 
-FText UThirdwebFunctionLibrary::Conv_WalletHandleToText(FWalletHandle Wallet)
+FString UThirdwebFunctionLibrary::Conv_SmartWalletHandleToString(FSmartWalletHandle Wallet)
 {
-	return FText::FromString(Conv_WalletHandleToString(Wallet));
+	return Wallet.ToAddress();
+}
+
+FText UThirdwebFunctionLibrary::Conv_InAppWalletHandleToText(FInAppWalletHandle Wallet)
+{
+	return FText::FromString(Conv_InAppWalletHandleToString(Wallet));
+}
+
+FText UThirdwebFunctionLibrary::Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet)
+{
+	return FText::FromString(Conv_SmartWalletHandleToString(Wallet));
 }
 
 EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
@@ -76,7 +96,12 @@ EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWallet(const FInAppWalle
 	return bSuccessful ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-FString UThirdwebFunctionLibrary::BP_SignMessage(const FWalletHandle& Wallet, const FString& Message)
+FString UThirdwebFunctionLibrary::BP_SignInAppMessage(const FInAppWalletHandle& Wallet, const FString& Message)
+{
+	return Wallet.Sign(Message);
+}
+
+FString UThirdwebFunctionLibrary::BP_SignSmartMessage(const FSmartWalletHandle& Wallet, const FString& Message)
 {
 	return Wallet.Sign(Message);
 }
@@ -116,7 +141,27 @@ EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithOAuth(FInAppWalletHandle 
 	return Wallet.SignInWithOAuth(AuthResult, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-bool UThirdwebFunctionLibrary::BP_WalletIsValid(const FWalletHandle& Wallet)
+EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithJwt(FInAppWalletHandle Wallet, const FString& Jwt, FString& Error)
+{
+	return Wallet.SignInWithJwt(Jwt, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithAuthEndpoint(FInAppWalletHandle Wallet, const FString& Payload, FString& Error)
+{
+	return Wallet.SignInWithAuthEndpoint(Payload, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithGuest(FInAppWalletHandle Wallet, FString& Error)
+{
+	return Wallet.SignInWithGuest(Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+}
+
+bool UThirdwebFunctionLibrary::BP_InAppWalletIsValid(const FInAppWalletHandle& Wallet)
+{
+	return Wallet.IsValid();
+}
+
+bool UThirdwebFunctionLibrary::BP_SmartWalletIsValid(const FSmartWalletHandle& Wallet)
 {
 	return Wallet.IsValid();
 }

@@ -4,8 +4,7 @@
 
 #include "ThirdwebWalletHandle.generated.h"
 
-/** Abstract base class for Wallets. Not intended to be used directly */
-USTRUCT(BlueprintType)
+USTRUCT()
 struct THIRDWEB_API FWalletHandle
 {
 	GENERATED_BODY()
@@ -50,7 +49,7 @@ struct THIRDWEB_API FWalletHandle
 
 	const TCHAR* GetTypeString() const
 	{
-		return IsValid() ? Type == InApp ? TEXT("inApp") : Type == Smart ? TEXT("smart") : TEXT("unknown") : TEXT("invalid");
+		return Type == InApp ? TEXT("inApp") : Type == Smart ? TEXT("smart") : TEXT("invalid");
 	}
 
 	bool operator==(const FWalletHandle& Other) const

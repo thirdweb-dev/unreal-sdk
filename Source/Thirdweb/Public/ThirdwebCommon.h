@@ -42,6 +42,7 @@ enum class EThirdwebOAuthProvider : uint8
 	Telegram UMETA(DisplayName="Telegram"),
 	Line UMETA(DisplayName="Line"),
 	X UMETA(DisplayName="X"),
+	Coinbase UMETA(DisplayName="Coinbase"),
 	None UMETA(Hidden)
 };
 

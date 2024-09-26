@@ -24,7 +24,7 @@ public:
 			{
 				IWebBrowserModule& WebBrowserModule = IWebBrowserModule::Get();
 				FWebBrowserInitSettings WebBrowserInitSettings;
-				// Needed to make google oauth happy...
+				// Needed to make google oauth happy on mobile
 				WebBrowserInitSettings.ProductVersion = TEXT("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
 				if (!WebBrowserModule.CustomInitialize(WebBrowserInitSettings))
 				{

@@ -29,6 +29,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
 	FUrlDelegate OnPageLoaded;
 	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPopupDelegate, const FString&, URL, const FString&, Frame);
+	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
+	FPopupDelegate OnPopup;
+	
 protected:
 	/** Automatically collapse the widget when the page is blank */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Browser")
@@ -60,6 +64,7 @@ protected:
 	void SetVisible(const bool bVisible);
 	virtual void HandleUrlChanged(const FString& Url);
 	virtual void HandlePageLoaded(const FString& Url);
+	virtual void HandleOnBeforePopup(const FString& Url, const FString& Frame);
 	
 public:
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
@@ -68,4 +73,7 @@ public:
 	/** Returns true if the page content is blank. Normally the case at startup, and mid-oauth flow */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")
 	bool IsBlank() const;
+	
+	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")
+	FString GetUrl() const;
 };

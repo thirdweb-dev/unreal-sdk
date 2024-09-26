@@ -12,7 +12,7 @@
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FSimpleStringDelegate, const FString&);
-
+DECLARE_MULTICAST_DELEGATE_TwoParams(FSimpleDoubleStringDelegate, const FString&, const FString&);
 UCLASS(NotBlueprintable, NotBlueprintType, Hidden)
 class THIRDWEB_API UThirdwebOAuthBrowserWidget : public UWidget
 {
@@ -29,6 +29,8 @@ public:
 
 	virtual void HandleUrlChanged(const FText& InUrl);
 	virtual void HandleOnLoadComplete();
+	virtual bool HandleOnBeforePopup(FString URL, FString Frame);
+	
 	bool IsPageLoaded() const;
 	FString GetUrl() const;
 	
@@ -38,10 +40,10 @@ public:
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void OnWidgetRebuilt() override;
-
 public:
 	FSimpleStringDelegate OnUrlChanged;
 	FSimpleStringDelegate OnPageLoaded;
+	FSimpleDoubleStringDelegate OnBeforePopup;
 	
 	static const FString DummyUrl;
 

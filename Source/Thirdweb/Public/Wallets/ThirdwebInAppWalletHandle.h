@@ -33,7 +33,7 @@ private:
 	explicit FInAppWalletHandle(const EThirdwebOAuthProvider InProvider, const FString& Int64String);
 
 public:
-	virtual bool IsValid() const override { return Super::IsValid() && Source != InvalidSource; }
+	virtual bool IsValid() const override;
 
 	/** Explicitly clear handle */
 	virtual void Invalidate() override
