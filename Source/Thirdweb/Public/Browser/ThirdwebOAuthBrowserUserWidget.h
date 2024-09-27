@@ -49,6 +49,9 @@ private:
 	UPROPERTY(Transient)
 	class UThirdwebOAuthBrowserWidget* Browser = nullptr;
 
+	UPROPERTY(Transient)
+	class UThirdwebOAuthExternalBrowser* ExternalBrowser = nullptr;
+	
 	static const FString BackendUrlPrefix;
 	bool bShouldBeVisible = false;
 	
@@ -65,6 +68,9 @@ protected:
 	virtual void HandleUrlChanged(const FString& Url);
 	virtual void HandlePageLoaded(const FString& Url);
 	virtual void HandleOnBeforePopup(const FString& Url, const FString& Frame);
+
+	virtual void HandleAuthenticated(const FString& AuthResult);
+	virtual void HandleError(const FString& Error);
 	
 public:
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")

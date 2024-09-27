@@ -47,6 +47,13 @@ enum class EThirdwebOAuthProvider : uint8
 };
 
 UENUM()
+enum class EThirdwebOAuthBrowserBackend : uint8
+{
+	Internal UMETA(DisplayName="Internal"),
+	External UMETA(DisplayName="External"),
+};
+
+UENUM()
 enum class EThirdwebAuthenticationMethod : uint8
 {
 	ClientID UMETA(DisplayName="Client ID"),

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Thirdweb.h"
+#include "ThirdwebCommon.h"
 #include "ThirdwebLog.h"
 
 #include "Engine/DeveloperSettings.h"
@@ -13,6 +14,8 @@
 
 #include "ThirdwebRuntimeSettings.generated.h"
 
+enum class EThirdwebOAuthBrowserBackend : uint8;
+enum class EThirdwebOAuthProvider : uint8;
 enum class EThirdwebAuthenticationMethod : uint8;
 
 /**
@@ -54,9 +57,18 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
 	bool bSendAnalytics;
 	
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
+	bool bOverrideOAuthBrowserProviderBackends;
+	
+	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
+	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
+	
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
+	UFUNCTION(CallInEditor, Category=Encryption)
+	void GenerateEncryptionKey();
+	
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
 	static TArray<FString> GetThirdwebGlobalEngineSigners()
 	{
@@ -99,6 +111,19 @@ public:
 		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "Thirdweb", "InAppWallet");
 		TW_LOG(Verbose, TEXT("StorageDir::%s"), *StorageDir)
 		return StorageDir;
+	}
+
+	static bool IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			if (Settings->bOverrideOAuthBrowserProviderBackends)
+			{
+				return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+			}
+			return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+		}
+		return false;
 	}
 };
 

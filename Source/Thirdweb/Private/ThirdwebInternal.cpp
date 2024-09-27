@@ -1,5 +1,7 @@
 #include "ThirdwebInternal.h"
 
+#include <random>
+
 #include "HttpModule.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
@@ -51,7 +53,8 @@ void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& 
 	if (!Settings->SecretKey.IsEmpty())
 	{
 		Request->SetHeader("x-client-id", ThirdwebUtils::GetClientIdFromSecretKey(Settings->SecretKey));
-	} else
+	}
+	else
 	{
 		Request->SetHeader("x-client-id", Settings->ClientID);
 		Request->SetHeader("x-bundle-id", Settings->BundleID);
@@ -65,4 +68,25 @@ void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& 
 	JsonObject->SetStringField(TEXT("walletType"), Type);
 	Request->SetContentAsString(JsonObjectToString(JsonObject));
 	Request->ProcessRequest();
+}
+
+// https://stackoverflow.com/a/58467162/12204515
+FString FThirdwebAnalytics::GenerateUUID()
+{
+	static std::random_device Device;
+	static std::mt19937 RNG(Device());
+
+	std::uniform_int_distribution<int> Distribution(0, 15);
+
+	const char* Options = "0123456789abcdef";
+	constexpr bool Dash[] = {false, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false};
+
+	std::string Result;
+	for (int i = 0; i < 16; i++)
+	{
+		if (Dash[i]) Result += "-";
+		Result += Options[Distribution(RNG)];
+		Result += Options[Distribution(RNG)];
+	}
+	return Result.c_str();
 }

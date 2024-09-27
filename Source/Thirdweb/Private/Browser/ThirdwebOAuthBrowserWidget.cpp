@@ -75,14 +75,29 @@ void UThirdwebOAuthBrowserWidget::HandleUrlChanged(const FText& InUrl)
 {
 #if WITH_CEF
 	ENSURE_VALID_BROWSER("HandleUrlChanged")
-	FString Url = InUrl.ToString();
-	if (Url.IsEmpty())
+	if (IsInGameThread())
 	{
-		Url = Browser->GetUrl();
+		FString Url = InUrl.ToString();
+        if (Url.IsEmpty())
+        {
+        	Url = Browser->GetUrl();
+        }
+        TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
+		OnUrlChanged.Broadcast(FGenericPlatformHttp::UrlDecode(Url));
 	}
-	TW_LOG(Log, TEXT("UThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
-	// Ensure this code runs on the game thread
-	AsyncTask(ENamedThreads::GameThread, [&, Url]() { if (IsInGameThread()) OnUrlChanged.Broadcast(FGenericPlatformHttp::UrlDecode(Url)); });
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UThirdwebOAuthBrowserWidget> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, InUrl]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleUrlChanged(InUrl);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
+	
 #endif
 }
 
@@ -92,6 +107,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadComplete()
 	ENSURE_VALID_BROWSER("HandleOnLoadComplete")
 	if (IsInGameThread())
 	{
+		TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadComplete:%s"), *Browser->GetUrl());
 		OnPageLoaded.Broadcast(FGenericPlatformHttp::UrlDecode(Browser->GetUrl()));
 	}
 	else
@@ -111,6 +127,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadComplete()
 
 bool UThirdwebOAuthBrowserWidget::HandleOnBeforePopup(FString URL, FString Frame)
 {
+	TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnBeforePopup::%s | %s"), *URL, *Frame)
 	if (OnBeforePopup.IsBound())
 	{
 		if (IsInGameThread())
@@ -134,6 +151,32 @@ bool UThirdwebOAuthBrowserWidget::HandleOnBeforePopup(FString URL, FString Frame
 	return false;
 }
 
+bool UThirdwebOAuthBrowserWidget::HandleOnCreateWindow(const TWeakPtr<IWebBrowserWindow>& Window, const TWeakPtr<IWebBrowserPopupFeatures>& Features)
+{
+	TW_LOG(Error, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadError"))
+	return false;
+}
+
+void UThirdwebOAuthBrowserWidget::HandleOnLoadError()
+{
+	TW_LOG(Error, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadError"))
+}
+
+bool UThirdwebOAuthBrowserWidget::HandleOnCloseWindow(const TWeakPtr<IWebBrowserWindow>& Window)
+{
+	TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnCloseWindow"))
+	RemoveFromParent();
+	return true;
+}
+
+void UThirdwebOAuthBrowserWidget::LoadUrl(const FString& Url)
+{
+#if WITH_CEF
+	ENSURE_VALID_BROWSER("LoadUrl")
+	Browser->LoadURL(Url);
+#endif
+}
+
 TSharedRef<SWidget> UThirdwebOAuthBrowserWidget::RebuildWidget()
 {
 #if WITH_CEF
@@ -142,11 +185,16 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserWidget::RebuildWidget()
 		Browser = SNew(SWebBrowser)
 			.InitialURL(InitialUrl)
 			.ShowControls(false)
+			.ShowAddressBar(false)
+			// .PopupMenuMethod(EPopupMethod::UseCurrentWindow)
 			.SupportsTransparency(bSupportsTransparency)
 			.ShowInitialThrobber(bShowInitialThrobber)
+			.OnCreateWindow(BIND_UOBJECT_DELEGATE(FOnCreateWindowDelegate ,HandleOnCreateWindow))
+			.OnLoadError(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadError))
+			.OnUrlChanged(BIND_UOBJECT_DELEGATE(FOnTextChanged, HandleUrlChanged))
 			.OnLoadCompleted(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadComplete))
-			.OnBeforePopup(BIND_UOBJECT_DELEGATE(FOnBeforePopupDelegate, HandleOnBeforePopup))
-			.OnUrlChanged(BIND_UOBJECT_DELEGATE(FOnTextChanged, HandleUrlChanged));
+			.OnCloseWindow(BIND_UOBJECT_DELEGATE(FOnCloseWindowDelegate, HandleOnCloseWindow))
+			.OnBeforePopup(BIND_UOBJECT_DELEGATE(FOnBeforePopupDelegate, HandleOnBeforePopup));
 
 		return Browser.ToSharedRef();
 	}
