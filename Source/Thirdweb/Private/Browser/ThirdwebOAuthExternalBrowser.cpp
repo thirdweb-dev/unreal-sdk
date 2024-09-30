@@ -2,9 +2,14 @@
 
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
 
+#include "HttpRequestHandler.h"
 #include "HttpServerModule.h"
 #include "IHttpRouter.h"
 #include "ThirdwebLog.h"
+
+#include "Delegates/DelegateSignatureImpl.inl"
+
+#include "HAL/Event.h"
 
 UThirdwebOAuthExternalBrowser::UThirdwebOAuthExternalBrowser()
 {
@@ -26,9 +31,9 @@ void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 	{
 		return HandleError(TEXT("Failed to get HTTP Router"));
 	}
-
+	
 	AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
-	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET, FHttpRequestHandler::CreateUObject(this, &ThisClass::CallbackRequestHandler));
+	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET,  FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::CallbackRequestHandler));
 
 	if (!RouteHandle.IsValid())
 	{

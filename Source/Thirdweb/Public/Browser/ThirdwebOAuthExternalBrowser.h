@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HttpRouteHandle.h"
+#include "Tickable.h"
 
 #include "UObject/Object.h"
 
@@ -13,8 +14,8 @@ class IHttpRouter;
 /**
  * 
  */
-UCLASS()
-class THIRDWEB_API UThirdwebOAuthExternalBrowser : public UObject, public FTickableGameObject
+UCLASS(NotBlueprintable, NotBlueprintType, MinimalAPI)
+class UThirdwebOAuthExternalBrowser : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 

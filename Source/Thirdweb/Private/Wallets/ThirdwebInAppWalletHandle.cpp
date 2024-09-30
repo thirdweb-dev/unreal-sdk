@@ -57,7 +57,6 @@ FInAppWalletHandle::FInAppWalletHandle(const EThirdwebOAuthProvider InProvider, 
 
 bool FInAppWalletHandle::IsValid() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s::%lld::%s"), GetSourceString(), ID, GetTypeString())
 	return Super::IsValid() && Source != InvalidSource;
 }
 
@@ -223,7 +222,6 @@ bool FInAppWalletHandle::CreateEcosystemCustomAuthWallet(const FString& PartnerI
 		Error = TEXT("Invalid custom auth source");
 		return false;
 	}
-	TW_LOG(Log, TEXT("FInAppWalletHandle::CreateEcosystemCustomAuthWallet::creating"))
 	if (Thirdweb::create_ecosystem_wallet(
 		TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
 		TO_RUST_STRING(PartnerId),
