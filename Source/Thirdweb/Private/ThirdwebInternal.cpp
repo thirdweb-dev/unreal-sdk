@@ -37,7 +37,7 @@ FString FThirdwebAnalytics::GetPluginVersion()
 void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& Type)
 {
 	const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get();
-	if (!Settings->bSendAnalytics || (Settings->BundleID.IsEmpty() && Settings->ClientID.IsEmpty() && Settings->SecretKey.IsEmpty()))
+	if (!UThirdwebRuntimeSettings::AnalyticsEnabled() || UThirdwebRuntimeSettings::GetBundleId().IsEmpty() || UThirdwebRuntimeSettings::GetClientId().IsEmpty())
 	{
 		return;
 	}
@@ -50,15 +50,8 @@ void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& 
 	Request->SetHeader("x-sdk-os", UGameplayStatics::GetPlatformName());
 	Request->SetHeader("x-sdk-platform", "unreal-engine");
 	Request->SetHeader("x-sdk-version", GetPluginVersion());
-	if (!Settings->SecretKey.IsEmpty())
-	{
-		Request->SetHeader("x-client-id", ThirdwebUtils::GetClientIdFromSecretKey(Settings->SecretKey));
-	}
-	else
-	{
-		Request->SetHeader("x-client-id", Settings->ClientID);
-		Request->SetHeader("x-bundle-id", Settings->BundleID);
-	}
+	Request->SetHeader("x-client-id", Settings->ClientID);
+	Request->SetHeader("x-bundle-id", Settings->BundleID);
 	Request->SetTimeout(5.0f);
 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);

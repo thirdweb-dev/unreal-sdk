@@ -35,24 +35,21 @@ FSmartWalletHandle FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppW
 	bSuccess = false;
 	if (InInAppWallet.IsValid())
 	{
-		if (const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get())
-		{
-			if (bSuccess = Thirdweb::create_smart_wallet(
-				TO_RUST_STRING(Settings->ClientID),
-				TO_RUST_STRING(Settings->BundleID),
-				TO_RUST_STRING(Settings->SecretKey),
+		if (bSuccess = Thirdweb::create_smart_wallet(
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+				nullptr,
 				InInAppWallet.GetID(),
 				TO_RUST_STRING(FString::Printf(TEXT("%lld"), ChainID)),
 				bGasless,
 				TO_RUST_STRING(Factory),
 				TO_RUST_STRING(AccountOverride)
 			).AssignResult(Error); bSuccess)
-			{
-				FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
-				FThirdwebAnalytics::SendConnectEvent(SmartWallet.ToAddress(), SmartWallet.GetTypeString());
-				Error.Empty();
-				return SmartWallet;
-			}
+		{
+			FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
+			FThirdwebAnalytics::SendConnectEvent(SmartWallet.ToAddress(), SmartWallet.GetTypeString());
+			Error.Empty();
+			return SmartWallet;
 		}
 	} else
 	{

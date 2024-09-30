@@ -28,22 +28,16 @@ class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 
 public:
 	UThirdwebRuntimeSettings();
-
-	/** Toggles configuration between ClientID + BundleID and SecretKey. Thirdweb recommends using ClientID over SecretKey for security. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	EThirdwebAuthenticationMethod AuthenticationMethod;
+	
 
 	/** Stores the client identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	FString ClientID;
 
 	/** Stores the bundle identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
 	FString BundleID;
-
-	/** Stores the secret key. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::SecretKey", EditConditionHides))
-	FString SecretKey;
+	
 
 	/** Encryption key - Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|InApp Wallets")
@@ -158,12 +152,12 @@ public:
 		return TEXT("");
 	}
 
-	static FString GetSecretKey()
+	static bool AnalyticsEnabled()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
 		{
-			return Settings->BundleID.TrimStartAndEnd();
+			return Settings->bSendAnalytics;
 		}
-		return TEXT("");
+		return false;
 	}
 };

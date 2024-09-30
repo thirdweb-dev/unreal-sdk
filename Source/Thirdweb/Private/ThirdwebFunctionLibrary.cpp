@@ -100,6 +100,7 @@ EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppAuthEndpointWallet(const
 
 EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppGuestWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
+	UE_LOG(LogTemp, Log, TEXT("UThirdwebFunctionLibrary::BP_CreateInAppGuestWallet::IsEcosystem::%s"), UThirdwebRuntimeSettings::IsEcosystem() ? TEXT("TRUE") : TEXT("FALSE"))
 	return (UThirdwebRuntimeSettings::IsEcosystem()
 		        ? FInAppWalletHandle::CreateEcosystemGuestWallet(PartnerId, Wallet, Error)
 		        : FInAppWalletHandle::CreateGuestWallet(Wallet, Error))

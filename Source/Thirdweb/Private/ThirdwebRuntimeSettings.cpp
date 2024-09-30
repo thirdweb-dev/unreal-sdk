@@ -7,7 +7,6 @@
 
 UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 {
-	AuthenticationMethod = EThirdwebAuthenticationMethod::ClientID;
 	bSendAnalytics = true;
 	bOverrideOAuthBrowserProviderBackends = false;
 	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Google)] = EThirdwebOAuthBrowserBackend::External;
