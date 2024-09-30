@@ -63,6 +63,26 @@ namespace Thirdweb
 		FFIResult in_app_wallet_sign_in_with_auth_endpoint(uintptr_t handle_id, const char* payload, const char* encryption_key);
 		FFIResult in_app_wallet_sign_in_with_guest(uintptr_t handle_id, const char* session_id);
 
+		// In App (Ecosystem) Wallets
+		FFIResult create_ecosystem_wallet(const char* ecosystem_id,
+		                                  const char* ecosystem_partner_id,
+		                                  const char* client_id,
+		                                  const char* bundle_id,
+		                                  const char* secret_key,
+		                                  const char* email,
+		                                  const char* phone,
+		                                  const char* storage_directory_path,
+		                                  const char* auth_provider);
+		FFIResult ecosystem_wallet_send_otp_email(uintptr_t handle_id);
+		FFIResult ecosystem_wallet_verify_otp_email(uintptr_t handle_id, const char* otp);
+		FFIResult ecosystem_wallet_send_otp_phone(uintptr_t handle_id);
+		FFIResult ecosystem_wallet_verify_otp_phone(uintptr_t handle_id, const char* otp);
+		FFIResult ecosystem_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char* redirect_url);
+		FFIResult ecosystem_wallet_sign_in_with_oauth(uintptr_t handle_id, const char* auth_result);
+		FFIResult ecosystem_wallet_sign_in_with_jwt(uintptr_t handle_id, const char* jwt);
+		FFIResult ecosystem_wallet_sign_in_with_auth_endpoint(uintptr_t handle_id, const char* payload);
+		FFIResult ecosystem_wallet_sign_in_with_guest(uintptr_t handle_id, const char* session_id);
+
 		// Smart Wallet management
 
 		FFIResult create_smart_wallet(const char* client_id,

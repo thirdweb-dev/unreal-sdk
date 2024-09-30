@@ -56,23 +56,23 @@ public:
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
 	static FText Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppEmailWallet(const FString& Email, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create OAuth Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create OAuth Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create Phone Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppPhoneWallet(const FString& Phone, FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create Phone Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppPhoneWallet(const FString& Phone, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create JWT Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppJwtWallet(FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create JWT Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppJwtWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create Auth Endpoint Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppAuthEndpointWallet(FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create Auth Endpoint Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppAuthEndpointWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create Guest Wallet", meta=(ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppGuestWallet(FInAppWalletHandle& Wallet, FString& Error);
+	UFUNCTION(BlueprintCallable, DisplayName="Create Guest Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
+	static EFunctionResult BP_CreateInAppGuestWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
 
 	UFUNCTION(BlueprintCallable, DisplayName="Create Smart Wallet",
 		meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride", AutoCreateRefTerm="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart Wallet")

@@ -54,7 +54,8 @@ namespace ThirdwebUtils
 			{EThirdwebOAuthProvider::Farcaster, LOCTEXT("Farcaster", "Farcaster")},
 			{EThirdwebOAuthProvider::Telegram, LOCTEXT("Telegram", "Telegram")},
 			{EThirdwebOAuthProvider::Line, LOCTEXT("Line", "Line")},
-			{EThirdwebOAuthProvider::X, LOCTEXT("X", "X")}
+			{EThirdwebOAuthProvider::X, LOCTEXT("X", "X")},
+			{EThirdwebOAuthProvider::Coinbase, LOCTEXT("Coinbase", "Coinbase")}
 		};
 		return Map.Contains(Provider) ? Map[Provider] : FText::FromString(TEXT("Invalid"));
 	}

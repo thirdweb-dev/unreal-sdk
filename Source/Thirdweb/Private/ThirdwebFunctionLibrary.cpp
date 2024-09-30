@@ -53,34 +53,58 @@ FText UThirdwebFunctionLibrary::Conv_SmartWalletHandleToText(FSmartWalletHandle 
 	return FText::FromString(Conv_SmartWalletHandleToString(Wallet));
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppEmailWallet(const FString& Email, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreateEmailWallet(Email, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemEmailWallet(PartnerId, Email, Wallet, Error)
+		        : FInAppWalletHandle::CreateEmailWallet(Email, Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreateOAuthWallet(Provider, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemOAuthWallet(PartnerId, Provider, Wallet, Error)
+		        : FInAppWalletHandle::CreateOAuthWallet(Provider, Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppPhoneWallet(const FString& Phone, FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppPhoneWallet(const FString& Phone, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreatePhoneWallet(Phone, Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemPhoneWallet(PartnerId, Phone, Wallet, Error)
+		        : FInAppWalletHandle::CreatePhoneWallet(Phone, Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppJwtWallet(FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppJwtWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreateJwtWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemJwtWallet(PartnerId, Wallet, Error)
+		        : FInAppWalletHandle::CreateJwtWallet(Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppAuthEndpointWallet(FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppAuthEndpointWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreateAuthEndpointWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemAuthEndpointWallet(PartnerId, Wallet, Error)
+		        : FInAppWalletHandle::CreateAuthEndpointWallet(Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppGuestWallet(FInAppWalletHandle& Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_CreateInAppGuestWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error)
 {
-	return FInAppWalletHandle::CreateGuestWallet(Wallet, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return (UThirdwebRuntimeSettings::IsEcosystem()
+		        ? FInAppWalletHandle::CreateEcosystemGuestWallet(PartnerId, Wallet, Error)
+		        : FInAppWalletHandle::CreateGuestWallet(Wallet, Error))
+		       ? EFunctionResult::Success
+		       : EFunctionResult::Failed;
 }
 
 EFunctionResult UThirdwebFunctionLibrary::BP_CreateSmartWallet(const FInAppWalletHandle PersonalWallet,
