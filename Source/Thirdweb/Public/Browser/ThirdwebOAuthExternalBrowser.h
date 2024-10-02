@@ -52,5 +52,4 @@ private:
 	FHttpRouteHandle RouteHandle;
 	TSharedPtr<IHttpRouter> Router;
 	EState State;
-	
 };

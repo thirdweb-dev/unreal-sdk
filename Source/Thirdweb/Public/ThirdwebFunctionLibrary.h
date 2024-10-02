@@ -49,11 +49,11 @@ public:
 	static FString Conv_SmartWalletHandleToString(FSmartWalletHandle Wallet);
 
 	/** Gets the public address of an InApp wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", BlueprintAutocast), Category="Utilities|Wallet")
 	static FText Conv_InAppWalletHandleToText(FInAppWalletHandle Wallet);
 
 	/** Gets the public address of a smart wallet handle */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Wallet")
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address (Text)", BlueprintAutocast), Category="Utilities|Wallet")
 	static FText Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet);
 
 	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
