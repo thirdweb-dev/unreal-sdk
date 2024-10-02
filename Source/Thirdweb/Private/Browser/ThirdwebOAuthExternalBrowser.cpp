@@ -11,6 +11,8 @@
 
 #include "HAL/Event.h"
 
+#include "Misc/EngineVersionComparison.h"
+
 UThirdwebOAuthExternalBrowser::UThirdwebOAuthExternalBrowser()
 {
 	AuthEvent = nullptr;
@@ -33,7 +35,21 @@ void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 	}
 	
 	AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
-	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET,  FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::CallbackRequestHandler));
+
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	FHttpRequestHandler Handler = [WeakThis = MakeWeakObjectPtr(this)](const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
+	{
+		if (WeakThis.IsValid())
+		{
+			return WeakThis->CallbackRequestHandler(Request, OnComplete);
+		}
+		return false;
+	};
+#else
+	FHttpRequestHandler Handler = FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::CallbackRequestHandler);
+#endif
+	
+	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET, Handler);
 
 	if (!RouteHandle.IsValid())
 	{
