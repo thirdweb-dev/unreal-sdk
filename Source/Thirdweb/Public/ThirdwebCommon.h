@@ -31,12 +31,26 @@ enum class EOTPVerificationFunctionResult : uint8
 	Failed
 };
 
-UENUM(Blueprintable)
+UENUM(BlueprintType, DisplayName="OAuth Provider")
 enum class EThirdwebOAuthProvider : uint8
 {
 	Google UMETA(DisplayName="Google"),
 	Apple UMETA(DisplayName="Apple"),
-	Facebook UMETA(DisplayName="Facebook")
+	Facebook UMETA(DisplayName="Facebook"),
+	Discord UMETA(DisplayName="Discord"),
+	Farcaster UMETA(DisplayName="Farcaster"),
+	Telegram UMETA(DisplayName="Telegram"),
+	Line UMETA(DisplayName="Line"),
+	X UMETA(DisplayName="X"),
+	Coinbase UMETA(DisplayName="Coinbase"),
+	None UMETA(Hidden)
+};
+
+UENUM()
+enum class EThirdwebOAuthBrowserBackend : uint8
+{
+	Internal UMETA(DisplayName="Internal"),
+	External UMETA(DisplayName="External"),
 };
 
 UENUM()
@@ -44,4 +58,11 @@ enum class EThirdwebAuthenticationMethod : uint8
 {
 	ClientID UMETA(DisplayName="Client ID"),
 	SecretKey UMETA(DisplayName="Secret Key"),
+};
+
+UENUM(BlueprintType, DisplayName="OTP Method")
+enum class EThirdwebOTPMethod : uint8
+{
+	Email UMETA(DisplayName="Email"),
+	Phone UMETA(DisplayName="Phone"),
 };

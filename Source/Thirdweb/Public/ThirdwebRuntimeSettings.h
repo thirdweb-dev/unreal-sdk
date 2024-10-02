@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Thirdweb.h"
+#include "ThirdwebCommon.h"
 #include "ThirdwebLog.h"
 
 #include "Engine/DeveloperSettings.h"
@@ -13,6 +14,8 @@
 
 #include "ThirdwebRuntimeSettings.generated.h"
 
+enum class EThirdwebOAuthBrowserBackend : uint8;
+enum class EThirdwebOAuthProvider : uint8;
 enum class EThirdwebAuthenticationMethod : uint8;
 
 /**
@@ -26,34 +29,45 @@ class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 public:
 	UThirdwebRuntimeSettings();
 	
-	/** Toggles configuration between ClientID + BundleID and SecretKey. Thirdweb recommends using ClientID over SecretKey for security. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	EThirdwebAuthenticationMethod AuthenticationMethod;
-	
+
 	/** Stores the client identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
-	FString ClientID;
-	
-	/** Stores the bundle identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::ClientID", EditConditionHides))
-	FString BundleID;
-
-	/** Stores the secret key. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config, meta=(EditCondition="AuthenticationMethod==EThirdwebAuthenticationMethod::SecretKey", EditConditionHides))
-	FString SecretKey;
-
-    /** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
-	TArray<FString> EngineSigners;
+	FString ClientID;
+
+	/** Stores the bundle identifier. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	FString BundleID;
+	
+
+	/** Encryption key - Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|InApp Wallets")
+	FString EncryptionKey;
 
 	/** Optional array of engine signers stored globally for convenience */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|Smart Wallets")
+	TArray<FString> EngineSigners;
+
+	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|Ecosystem Wallets")
+	FString EcosystemId;
+
+	/** Optional array of engine signers stored globally for convenience */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
 	bool bSendAnalytics;
-	
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
+	bool bOverrideOAuthBrowserProviderBackends;
+
+	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
+	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
+
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
-	
-	UFUNCTION(BlueprintPure, Category="Thirdweb")
+
+	UFUNCTION(CallInEditor, Category=Encryption)
+	void GenerateEncryptionKey();
+
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
 	static TArray<FString> GetThirdwebGlobalEngineSigners()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -63,8 +77,18 @@ public:
 		return {};
 	}
 
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
+	static FString GetEncryptionKey()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EncryptionKey;
+		}
+		return TEXT("");
+	}
+
 	/** Gets the first global engine signer in the array, if any */
-	UFUNCTION(BlueprintPure, Category="Thirdweb", meta=(ReturnDisplayName="Signers"))
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signers"))
 	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
 	{
 		bFound = false;
@@ -85,5 +109,55 @@ public:
 		TW_LOG(Verbose, TEXT("StorageDir::%s"), *StorageDir)
 		return StorageDir;
 	}
-};
 
+	static bool IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			if (Settings->bOverrideOAuthBrowserProviderBackends)
+			{
+				return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+			}
+			return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+		}
+		return false;
+	}
+
+	static FString GetEcosystemId()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EcosystemId.TrimStartAndEnd();
+		}
+		return TEXT("");
+	}
+
+	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }
+
+	static FString GetClientId()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->ClientID.TrimStartAndEnd();
+		}
+		return TEXT("");
+	}
+
+	static FString GetBundleId()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->BundleID.TrimStartAndEnd();
+		}
+		return TEXT("");
+	}
+
+	static bool AnalyticsEnabled()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->bSendAnalytics;
+		}
+		return false;
+	}
+};

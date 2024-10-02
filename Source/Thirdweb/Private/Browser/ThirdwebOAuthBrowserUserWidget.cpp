@@ -3,10 +3,12 @@
 #include "Browser/ThirdwebOAuthBrowserUserWidget.h"
 
 #include "ThirdwebLog.h"
+#include "ThirdwebRuntimeSettings.h"
 
 #include "Blueprint/WidgetTree.h"
 
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
+#include "Browser/ThirdwebOAuthExternalBrowser.h"
 
 #include "Components/Button.h"
 #include "Components/Overlay.h"
@@ -36,12 +38,18 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
 		Browser->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
 		Browser->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
+		Browser->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
 		UPanelSlot* PanelSlot = RootWidget->AddChild(Browser);
 		if (UOverlaySlot* RootWidgetSlot = Cast<UOverlaySlot>(PanelSlot))
 		{
 			RootWidgetSlot->SetHorizontalAlignment(HAlign_Fill);
 			RootWidgetSlot->SetVerticalAlignment(VAlign_Fill);
 		}
+
+		// Construct External browser
+		ExternalBrowser = NewObject<UThirdwebOAuthExternalBrowser>(this);
+		ExternalBrowser->OnAuthenticated.BindUObject(this, &ThisClass::HandleAuthenticated);
+		ExternalBrowser->OnError.BindUObject(this, &ThisClass::HandleError);
 	}
 
 	return Super::RebuildWidget();
@@ -60,25 +68,30 @@ void UThirdwebOAuthBrowserUserWidget::OnWidgetRebuilt()
 	SetVisible(false);
 }
 
-void UThirdwebOAuthBrowserUserWidget::Authenticate(const FWalletHandle& InAppWallet)
+void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InAppWallet)
 {
+	// Validate Wallet
 	if (!InAppWallet.IsValid())
 	{
 		TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet invalid"));
-		return OnError.Broadcast(TEXT("Invalid Wallet"));
+		return HandleError(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-
-	if (Browser)
+	
+	// Get Login URL
+	FString Link;
+	if (FString Error; !Wallet.FetchOAuthLoginURL(Browser->DummyUrl, Link, Error))
 	{
-		FString Error;
-		if (FString Link; Wallet.FetchOAuthLoginURL(Browser->DummyUrl, Link, Error))
-		{
-			TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
-			return Browser->Authenticate(Link);
-		}
-		OnError.Broadcast(Error);
+		return HandleError(Error);
 	}
+	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
+
+	// Check Browser Type
+	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))
+	{
+		return ExternalBrowser->Authenticate(Link);
+	}
+	return Browser->Authenticate(Link);
 }
 
 
@@ -89,10 +102,19 @@ bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
 	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
 }
 
+FString UThirdwebOAuthBrowserUserWidget::GetUrl() const
+{
+	if (Browser)
+	{
+		return Browser->GetUrl();
+	}
+	return TEXT("");
+}
+
 void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
-	if (Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix))
+	if (Url.IsEmpty() || (Url.StartsWith(BackendUrlPrefix) && !Url.StartsWith(BackendUrlPrefix + TEXT("sdk/oauth"))))
 	{
 		return SetVisible(false);
 	}
@@ -102,9 +124,9 @@ void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 		FString Left, Right;
 		if (Url.Split(TEXT("authResult="), &Left, &Right, ESearchCase::IgnoreCase))
 		{
-			return OnAuthenticated.Broadcast(Right);
+			return HandleAuthenticated(Right);
 		}
-		return OnError.Broadcast(TEXT("Failed to match AuthResult in url"));
+		return HandleError(TEXT("Failed to match AuthResult in url"));
 	}
 	bShouldBeVisible = true;
 }
@@ -115,6 +137,32 @@ void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
 	{
 		SetVisible(true);
 	}
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, const FString& Frame)
+{
+
+	if (UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget()))
+	{
+		// Construct browser widget
+		UThirdwebOAuthBrowserWidget* Popup = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOAuthBrowserPopUp"));
+		Popup->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
+		Popup->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
+		Popup->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
+		RootWidget->AddChild(Popup);
+		Popup->LoadUrl(Url);
+	}
+	return OnPopup.Broadcast(Url, Frame);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString& AuthResult)
+{
+	OnAuthenticated.Broadcast(AuthResult);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)
+{
+	OnError.Broadcast(Error);
 }
 
 void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)

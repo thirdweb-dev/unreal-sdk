@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ThirdwebWalletHandle.h"
+#include "Wallets/ThirdwebInAppWalletHandle.h"
 
 #include "Blueprint/UserWidget.h"
 
@@ -29,6 +29,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
 	FUrlDelegate OnPageLoaded;
 	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPopupDelegate, const FString&, URL, const FString&, Frame);
+	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
+	FPopupDelegate OnPopup;
+	
 protected:
 	/** Automatically collapse the widget when the page is blank */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Browser")
@@ -39,12 +43,15 @@ protected:
 	bool bAuthenticateOnConstruct = false;
 	
 	UPROPERTY(BlueprintReadOnly, Transient, Category="Internal", meta=(ExposeOnSpawn=true))
-	FWalletHandle Wallet;
+	FInAppWalletHandle Wallet;
 	
 private:
 	UPROPERTY(Transient)
 	class UThirdwebOAuthBrowserWidget* Browser = nullptr;
 
+	UPROPERTY(Transient)
+	class UThirdwebOAuthExternalBrowser* ExternalBrowser = nullptr;
+	
 	static const FString BackendUrlPrefix;
 	bool bShouldBeVisible = false;
 	
@@ -60,12 +67,19 @@ protected:
 	void SetVisible(const bool bVisible);
 	virtual void HandleUrlChanged(const FString& Url);
 	virtual void HandlePageLoaded(const FString& Url);
+	virtual void HandleOnBeforePopup(const FString& Url, const FString& Frame);
+
+	virtual void HandleAuthenticated(const FString& AuthResult);
+	virtual void HandleError(const FString& Error);
 	
 public:
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
-	void Authenticate(const FWalletHandle& InAppWallet);
+	void Authenticate(const FInAppWalletHandle& InAppWallet);
 
 	/** Returns true if the page content is blank. Normally the case at startup, and mid-oauth flow */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")
 	bool IsBlank() const;
+	
+	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")
+	FString GetUrl() const;
 };

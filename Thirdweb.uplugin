@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 130,
-	"VersionName": "1.3.0",
+	"Version": 140,
+	"VersionName": "1.4.0",
 	"FriendlyName": "Thirdweb",
 	"Description": "Unreal Integration of Thirdweb Wallets",
 	"Category": "Thirdweb",
@@ -19,7 +19,7 @@
 		{
 			"Name": "Thirdweb",
 			"Type": "Runtime",
-			"LoadingPhase": "PreDefault",
+			"LoadingPhase": "PreLoadingScreen",
 			"PlatformAllowList": [
 				"Win64",
 				"Mac",
@@ -30,6 +30,11 @@
 				"TVOS",
 				"VisionOS"
 			]
+		},
+		{
+			"Name": "ThirdwebEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	]
 }
