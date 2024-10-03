@@ -21,11 +21,19 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-
 FString FWalletHandle::ToAddress() const
 {
 	FString Result;
 	return Thirdweb::get_wallet_address(ID).AssignResult(Result) ? Result : ThirdwebUtils::ZeroAddress;
 }
 
-FString FWalletHandle::Sign(const FString& Message) const { return Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).GetOutput(); }
+void FWalletHandle::Sign(const FString& Message, const FStringDelegate& ResponseDelegate) const
+{
+	if (ResponseDelegate.IsBound())
+	{
+		UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Message, ResponseDelegate]
+		{
+			ResponseDelegate.Execute(Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).GetOutput());
+		});
+	}
+}

@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Cajun Pro LLC. All Rights Reserved.
+﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #pragma once
 
@@ -16,4 +16,6 @@ class THIRDWEBUNCOOKEDONLY_API UK2Node_VerifyOTP : public UK2Node_ThirdwebBaseCa
 
 public:
 	UK2Node_VerifyOTP(const FObjectInitializer& ObjectInitializer);
+
+	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 };

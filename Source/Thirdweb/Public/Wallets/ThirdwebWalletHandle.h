@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ThirdwebMacros.h"
 #include "ThirdwebWalletHandle.generated.h"
 
 USTRUCT()
@@ -46,12 +47,12 @@ struct THIRDWEB_API FWalletHandle
 	virtual FString ToAddress() const;
 
 	/**
-	 * Sign a message using the wallet handle.
+	 * Signs the provided message using the wallet handle.
 	 *
-	 * @param Message The message to be signed.
-	 * @return The signed message.
+	 * @param Message The message to be signed as a string.
+	 * @param ResponseDelegate A delegate to handle the response containing the signed message.
 	 */
-	virtual FString Sign(const FString& Message) const;
+	virtual void Sign(const FString& Message, const FStringDelegate& ResponseDelegate) const;
 
 	/**
 	 * Get the type of wallet handle.

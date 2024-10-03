@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Cajun Pro LLC. All Rights Reserved.
+﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #pragma once
 

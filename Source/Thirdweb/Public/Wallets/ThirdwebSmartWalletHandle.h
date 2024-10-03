@@ -13,6 +13,8 @@ struct THIRDWEB_API FSmartWalletHandle : public FWalletHandle
 {
 	GENERATED_BODY()
 
+	DECLARE_DELEGATE_OneParam(FCreateSmartWalletDelegate, FSmartWalletHandle);
+	
 	FSmartWalletHandle()
 	{
 		Type = Smart;
@@ -51,7 +53,7 @@ public:
 	 * @param Error Output parameter that will hold the error message if the creation fails.
 	 * @return A new instance of FSmartWalletHandle.
 	 */
-	static FSmartWalletHandle Create(const FInAppWalletHandle& InInAppWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, bool& bSuccess, FString& Error);
+	static void Create(const FInAppWalletHandle& InInAppWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, const FCreateSmartWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Check if the smart wallet is deployed */
 	bool IsDeployed(bool& bDeployed, FString& Error);

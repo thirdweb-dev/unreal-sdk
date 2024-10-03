@@ -15,7 +15,8 @@ public class ThirdwebUncookedOnly : ModuleRules
 			"Core",
 			"Thirdweb",
 			"DeveloperSettings",
-			"BlueprintGraph"
+			"BlueprintGraph",
+			"UnrealEd"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
