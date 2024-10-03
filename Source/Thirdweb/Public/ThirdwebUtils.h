@@ -38,15 +38,9 @@ namespace ThirdwebUtils
 	 */
 	static FString ToChecksummedAddress(const FString& Address) { return Thirdweb::to_checksummed_address(TO_RUST_STRING(Address)).GetOutput(); }
 
-	/**
-	 * Converts an EThirdwebOAuthProvider enum value to its corresponding FText representation.
-	 *
-	 * @param Provider The EThirdwebOAuthProvider enum value to convert.
-	 * @return The FText representation of the specified EThirdwebOAuthProvider, or "Invalid" if the provider is not recognized.
-	 */
-	static FText ToText(const EThirdwebOAuthProvider Provider)
+	namespace Maps
 	{
-		static TMap<EThirdwebOAuthProvider, FText> Map = {
+		static const TMap<EThirdwebOAuthProvider, FText> OAuthProviderToText = {
 			{EThirdwebOAuthProvider::Google, LOCTEXT("Google", "Google")},
 			{EThirdwebOAuthProvider::Apple, LOCTEXT("Apple", "Apple")},
 			{EThirdwebOAuthProvider::Facebook, LOCTEXT("Facebook", "Facebook")},
@@ -57,7 +51,16 @@ namespace ThirdwebUtils
 			{EThirdwebOAuthProvider::X, LOCTEXT("X", "X")},
 			{EThirdwebOAuthProvider::Coinbase, LOCTEXT("Coinbase", "Coinbase")}
 		};
-		return Map.Contains(Provider) ? Map[Provider] : FText::FromString(TEXT("Invalid"));
+	}
+	/**
+	 * Converts an EThirdwebOAuthProvider enum value to its corresponding FText representation.
+	 *
+	 * @param Provider The EThirdwebOAuthProvider enum value to convert.
+	 * @return The FText representation of the specified EThirdwebOAuthProvider, or "Invalid" if the provider is not recognized.
+	 */
+	static FText ToText(const EThirdwebOAuthProvider Provider)
+	{
+		return Maps::OAuthProviderToText.Contains(Provider) ? Maps::OAuthProviderToText[Provider] : FText::FromString(TEXT("Invalid"));
 	}
 
 	/**
@@ -69,12 +72,31 @@ namespace ThirdwebUtils
 	static FString ToString(const EThirdwebOAuthProvider Provider) { return ToText(Provider).ToString(); }
 
 	/**
-	 * Derives a client ID from the provided secret key.
+	 * Converts the given FText to its corresponding EThirdwebOAuthProvider enum value.
 	 *
-	 * @param SecretKey The secret key used to compute the client ID.
-	 * @return The computed client ID.
+	 * @param Text The FText representation of the OAuth provider to convert.
+	 * @return The corresponding EThirdwebOAuthProvider enum value, or EThirdwebOAuthProvider::None if the provider is not recognized.
 	 */
-	static FString GetClientIdFromSecretKey(const FString& SecretKey) { return Thirdweb::compute_client_id_from_secret_key(TO_RUST_STRING(SecretKey)).GetOutput(); }
+	static EThirdwebOAuthProvider ToOAuthProvider(const FText& Text)
+	{
+		for (const auto& It : Maps::OAuthProviderToText)
+		{
+			if (It.Value.EqualToCaseIgnored(Text))
+			{
+				return It.Key;
+			} 
+		}
+		return EThirdwebOAuthProvider::None;
+	}
+
+	/**
+	 * Converts the given FString to its corresponding EThirdwebOAuthProvider enum value.
+	 *
+	 * @param String The FString representation of the OAuth provider to convert.
+	 * @return The corresponding EThirdwebOAuthProvider enum value, or EThirdwebOAuthProvider::None if the provider is not recognized.
+	 */
+	static EThirdwebOAuthProvider ToOAuthProvider(const FString& String) { return ToOAuthProvider(FText::FromString(String)); }
+	
 }
 
 #undef LOCTEXT_NAMESPACE

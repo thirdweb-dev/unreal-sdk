@@ -39,7 +39,7 @@ public:
 	FString BundleID;
 	
 
-	/** Encryption key - Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
+	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|InApp Wallets")
 	FString EncryptionKey;
 
@@ -51,10 +51,11 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|Ecosystem Wallets")
 	FString EcosystemId;
 
-	/** Optional array of engine signers stored globally for convenience */
+	/** Opt in or out of connect analytics */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
 	bool bSendAnalytics;
 
+	/** Edit Condition for overriding OAuth Browser Provider Backends */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
 	bool bOverrideOAuthBrowserProviderBackends;
 
@@ -77,16 +78,6 @@ public:
 		return {};
 	}
 
-	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
-	static FString GetEncryptionKey()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->EncryptionKey;
-		}
-		return TEXT("");
-	}
-
 	/** Gets the first global engine signer in the array, if any */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signers"))
 	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
@@ -103,6 +94,18 @@ public:
 		return TEXT("");
 	}
 
+	/** Static accessor to get EncryptionKey */
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
+	static FString GetEncryptionKey()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EncryptionKey;
+		}
+		return TEXT("");
+	}
+	
+	/** Static accessor to retrieve the absolute path of the thirdweb InAppWallet platform */
 	static FString GetStorageDirectory()
 	{
 		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "Thirdweb", "InAppWallet");
@@ -110,6 +113,7 @@ public:
 		return StorageDir;
 	}
 
+	/** Static accessor to get the resolved backend of an OAuth provider */
 	static bool IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -123,6 +127,7 @@ public:
 		return false;
 	}
 
+	/** Static accessor to get EcosystemId */
 	static FString GetEcosystemId()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -132,8 +137,10 @@ public:
 		return TEXT("");
 	}
 
+	/** Static accessor to check EcosystemId validity */
 	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }
 
+	/** Static accessor to get ClientId */
 	static FString GetClientId()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -142,7 +149,8 @@ public:
 		}
 		return TEXT("");
 	}
-
+	
+	/** Static accessor to get BundleId */
 	static FString GetBundleId()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())
@@ -151,7 +159,8 @@ public:
 		}
 		return TEXT("");
 	}
-
+	
+	/** Static accessor to check Analytics Opt-In status */
 	static bool AnalyticsEnabled()
 	{
 		if (const UThirdwebRuntimeSettings* Settings = Get())

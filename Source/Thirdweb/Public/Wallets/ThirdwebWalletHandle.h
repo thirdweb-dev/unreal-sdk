@@ -22,31 +22,67 @@ struct THIRDWEB_API FWalletHandle
 	{
 	}
 
-	/** True if this handle was ever initialized */
+	/**
+	 * Checks if the wallet handle is valid.
+	 *
+	 * @return True if the wallet handle is valid, i.e., its type is not invalid and its ID is not zero.
+	 */
 	virtual bool IsValid() const { return Type != InvalidHandle && ID != 0; }
 
-	/** Explicitly clear handle */
+	/**
+	 * Invalidates the wallet handle, setting its ID to zero and marking its type as invalid.
+	 */
 	virtual void Invalidate()
 	{
 		ID = 0;
 		Type = InvalidHandle;
 	}
 
-	/** Get the public address of the current wallet */
+	/**
+	 * Retrieves the wallet address associated with this handle.
+	 *
+	 * @return The wallet address as a string. Returns a zero address if the handle is invalid.
+	 */
 	virtual FString ToAddress() const;
 
-	/** sign a message */
+	/**
+	 * Sign a message using the wallet handle.
+	 *
+	 * @param Message The message to be signed.
+	 * @return The signed message.
+	 */
 	virtual FString Sign(const FString& Message) const;
 
+	/**
+	 * Get the type of wallet handle.
+	 * @return The type of the current wallet handle.
+	 */
 	EWalletHandleType GetType() const { return Type; }
 
+	/**
+	 * Gets the ID of the wallet handle.
+	 *
+	 * @return The ID of the wallet handle as an int64.
+	 */
 	int64 GetID() const { return ID; }
 
+	/**
+	 * Retrieves the debug display name of the wallet handle.
+	 *
+	 * @return A string representing the display name of the wallet handle.
+	 * If the wallet handle is valid, the name includes the type of the wallet and its ID.
+	 * Returns "INVALID" if the wallet handle is not valid.
+	 */
 	virtual FString GetDisplayName() const
 	{
 		return IsValid() ? FString::Printf(TEXT("%sWallet::%lld"), GetTypeString(), ID) : TEXT("INVALID");
 	}
 
+	/**
+	 * Retrieves the type of the wallet handle as a string.
+	 *
+	 * @return A string representing the type of the wallet handle. Possible values are "inApp", "smart", or "invalid".
+	 */
 	const TCHAR* GetTypeString() const
 	{
 		return Type == InApp ? TEXT("inApp") : Type == Smart ? TEXT("smart") : TEXT("invalid");

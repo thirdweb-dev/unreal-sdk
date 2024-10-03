@@ -25,8 +25,6 @@ namespace Thirdweb
 
 		// Assign's result to variables and then frees the underlying FFIResult
 		bool AssignResult(FString& Output, const bool bErrorOnlyResult = false) const;
-		// Assign's result to variables including retry and then frees the underlying FFIResult
-		bool AssignRetryResult(bool& bCanRetry, FString& Output, const bool bErrorOnlyResult = false) const;
 		// Frees the FFI Result for functions that have no relevant output
 		void Free() const;
 		// Convenience function to log the FFIResult

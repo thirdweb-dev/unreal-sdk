@@ -99,6 +99,7 @@ bool FInAppWalletHandle::CreateEcosystemEmailWallet(const FString& PartnerId, co
 	).AssignResult(Error))
 	{
 		Wallet = FInAppWalletHandle(EInAppSource::Email, Error);
+		Wallet.EcosystemPartnerId = PartnerId;
 		Error.Empty();
 		return true;
 	}
@@ -144,6 +145,7 @@ bool FInAppWalletHandle::CreateEcosystemOAuthWallet(const FString& PartnerId, co
 	).AssignResult(Error))
 	{
 		Wallet = FInAppWalletHandle(Provider, Error);
+		Wallet.EcosystemPartnerId = PartnerId;
 		Error.Empty();
 		return true;
 	}
@@ -184,6 +186,7 @@ bool FInAppWalletHandle::CreateEcosystemPhoneWallet(const FString& PartnerId, co
 	).AssignResult(Error))
 	{
 		Wallet = FInAppWalletHandle(EInAppSource::Phone, Error);
+		Wallet.EcosystemPartnerId = PartnerId;
 		Error.Empty();
 		return true;
 	}
@@ -235,6 +238,7 @@ bool FInAppWalletHandle::CreateEcosystemCustomAuthWallet(const FString& PartnerI
 	).AssignResult(Error))
 	{
 		Wallet = FInAppWalletHandle(Source, Error);
+		Wallet.EcosystemPartnerId = PartnerId;
 		Error.Empty();
 		return true;
 	}
@@ -251,45 +255,47 @@ void FInAppWalletHandle::Disconnect() const
 	Thirdweb::disconnect(ID).Free();
 }
 
-bool FInAppWalletHandle::VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error)
+bool FInAppWalletHandle::VerifyOTP(const FString& OTP, FString& Error)
 {
 	if (!IsValid())
 	{
 		Error = TEXT("Invalid wallet handle");
 		return false;
 	}
-	if (Source != Email)
-	{
-		Error = TEXT("Wallet handle is not email source");
-		return false;
-	}
 	if (UThirdwebRuntimeSettings::IsEcosystem())
 	{
-		switch (Method)
+		switch (Source)
 		{
-		case EThirdwebOTPMethod::Phone:
+		case Phone:
 			{
 				if (Thirdweb::ecosystem_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
 					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 					return true;
 				}
+				break;
 			}
-		case EThirdwebOTPMethod::Email:
+		case Email:
 			{
 				if (Thirdweb::ecosystem_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
 					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 					return true;
 				}
+				break;
+			}
+		default:
+			{
+				Error = TEXT("Wallet handle is not email/phone source");
+				return false;
 			}
 		}
 	}
 	else
 	{
-		switch (Method)
+		switch (Source)
 		{
-		case EThirdwebOTPMethod::Phone:
+		case Phone:
 			{
 				if (Thirdweb::in_app_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
@@ -297,7 +303,7 @@ bool FInAppWalletHandle::VerifyOTP(const EThirdwebOTPMethod Method, const FStrin
 					return true;
 				}
 			}
-		case EThirdwebOTPMethod::Email:
+		case Email:
 			{
 				if (Thirdweb::in_app_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
@@ -305,42 +311,47 @@ bool FInAppWalletHandle::VerifyOTP(const EThirdwebOTPMethod Method, const FStrin
 					return true;
 				}
 			}
+		default:
+			{
+				Error = TEXT("Wallet handle is not email/phone source");
+				return false;
+			}
 		}
 	}
 
 	return false;
 }
 
-bool FInAppWalletHandle::SendOTP(const EThirdwebOTPMethod Method, FString& Error)
+bool FInAppWalletHandle::SendOTP(FString& Error)
 {
 	if (!IsValid())
 	{
 		Error = TEXT("Invalid wallet handle");
 		return false;
 	}
-	if (Source != Email)
-	{
-		Error = TEXT("Wallet handle is not email source");
-		return false;
-	}
 	if (UThirdwebRuntimeSettings::IsEcosystem())
 	{
-		switch (Method)
+		switch (Source)
 		{
-		case EThirdwebOTPMethod::Phone: return Thirdweb::ecosystem_wallet_send_otp_phone(ID).AssignResult(Error, true);
-		case EThirdwebOTPMethod::Email: return Thirdweb::ecosystem_wallet_send_otp_email(ID).AssignResult(Error, true);
+		case Phone: return Thirdweb::ecosystem_wallet_send_otp_phone(ID).AssignResult(Error, true);
+		case Email: return Thirdweb::ecosystem_wallet_send_otp_email(ID).AssignResult(Error, true);
+		default:
+			{
+				Error = TEXT("Wallet handle is not email/phone source");
+				return false;
+			}
 		}
 	}
-	else
+	switch (Source)
 	{
-		switch (Method)
+	case Phone: return Thirdweb::in_app_wallet_send_otp_phone(ID).AssignResult(Error, true);
+	case Email: return Thirdweb::in_app_wallet_send_otp_email(ID).AssignResult(Error, true);
+	default:
 		{
-		case EThirdwebOTPMethod::Phone: return Thirdweb::in_app_wallet_send_otp_phone(ID).AssignResult(Error, true);
-		case EThirdwebOTPMethod::Email: return Thirdweb::in_app_wallet_send_otp_email(ID).AssignResult(Error, true);
+			Error = TEXT("Wallet handle is not email/phone source");
+			return false;
 		}
 	}
-
-	return false;
 }
 
 bool FInAppWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error)
@@ -478,7 +489,8 @@ bool FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, FString&
 		if (UThirdwebRuntimeSettings::GetEncryptionKey().IsEmpty())
 		{
 			Error = TEXT("No encryption key set");
-		} else
+		}
+		else
 		{
 			if (Thirdweb::in_app_wallet_sign_in_with_auth_endpoint(ID, TO_RUST_STRING(Payload), TO_RUST_STRING(UThirdwebRuntimeSettings::GetEncryptionKey())).AssignResult(Error, true))
 			{

@@ -159,21 +159,19 @@ public:
 	/**
 	 * Verifies a One Time Password (OTP) for the in-app wallet handle.
 	 *
-	 * @param Method The method by which the OTP was sent (e.g., Phone, Email).
 	 * @param OTP The One Time Password to verify.
 	 * @param Error Output parameter that will contain an error message if the verification fails.
 	 * @return True if the OTP is successfully verified, false otherwise.
 	 */
-	bool VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error);
+	bool VerifyOTP(const FString& OTP, FString& Error);
 
 	/**
-	 * Sends a One-Time Password (OTP) via the specified method (Phone or Email).
+	 * Sends a One-Time Password (OTP) for the in-app wallet handle.
 	 *
-	 * @param Method The method to be used for sending the OTP (Phone or Email).
 	 * @param Error Returns an error message if the OTP sending fails.
 	 * @return True if the OTP was sent successfully, false otherwise.
 	 */
-	bool SendOTP(const EThirdwebOTPMethod Method, FString& Error);
+	bool SendOTP(FString& Error);
 
 	/**
 	 * Fetches the OAuth login URL for the in-app wallet.
@@ -195,7 +193,7 @@ public:
 	bool SignInWithOAuth(const FString& AuthResult, FString& Error);
 	
 	/**
-	 * Signs in using a JSON Web Token (JWT) and an encryption key.
+	 * Signs in using a JSON Web Token (JWT).
 	 *
 	 * @param Jwt The JSON Web Token post-authenticating the user. This is any OIDC compatible JWT. The token should be a string starting with ey.
 	 * @param Error An output parameter that will hold any error message in case of a failure.
@@ -258,9 +256,9 @@ public:
 	virtual FString GetDisplayName() const override;
 
 	/**
-	 * Retrieves the current OAuth provider.
+	 * Retrieves the configured OAuth provider.
 	 *
-	 * @return The current OAuth provider.
+	 * @return The configured OAuth provider.
 	 */
 	EThirdwebOAuthProvider GetOAuthProvider() const { return Provider; }
 

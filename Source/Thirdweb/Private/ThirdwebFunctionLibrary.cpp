@@ -140,19 +140,14 @@ void UThirdwebFunctionLibrary::BP_DisconnectWallet(const FInAppWalletHandle& Wal
 	return Wallet.Disconnect();
 }
 
-EOTPVerificationFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(const EThirdwebOTPMethod Method, FInAppWalletHandle Wallet, const FString& OTP, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_VerifyOTP(FInAppWalletHandle Wallet, const FString& OTP, FString& Error)
 {
-	bool bCanRetry = false;
-	if (Wallet.VerifyOTP(Method, OTP, Error))
-	{
-		return EOTPVerificationFunctionResult::Verified;
-	}
-	return bCanRetry ? EOTPVerificationFunctionResult::Retry : EOTPVerificationFunctionResult::Failed;
+	return Wallet.VerifyOTP(OTP, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(const EThirdwebOTPMethod Method, FInAppWalletHandle Wallet, FString& Error)
+EFunctionResult UThirdwebFunctionLibrary::BP_SendOTP(FInAppWalletHandle Wallet, FString& Error)
 {
-	return Wallet.SendOTP(Method, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
+	return Wallet.SendOTP(Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
 EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FInAppWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error)
@@ -250,6 +245,16 @@ FString UThirdwebFunctionLibrary::Conv_ThirdwebOAuthProviderToString(EThirdwebOA
 	return ThirdwebUtils::ToString(Provider);
 }
 
+EThirdwebOAuthProvider UThirdwebFunctionLibrary::Conv_TextToThirdwebOAuthProvider(FText Text)
+{
+	return ThirdwebUtils::ToOAuthProvider(Text);
+}
+
+EThirdwebOAuthProvider UThirdwebFunctionLibrary::Conv_StringToThirdwebOAuthProvider(FString String)
+{
+	return ThirdwebUtils::ToOAuthProvider(String);
+}
+
 bool UThirdwebFunctionLibrary::BP_IsStringValidAddress(const FString& Address, const bool bWithChecksum)
 {
 	return ThirdwebUtils::IsValidAddress(Address, bWithChecksum);
@@ -265,12 +270,12 @@ FString UThirdwebFunctionLibrary::Conv_StringAddressToStringChecksummedAddress(c
 	return ThirdwebUtils::ToChecksummedAddress(Address);
 }
 
-bool UThirdwebFunctionLibrary::BP_IsTextValidAddress(const FText& Address, const bool bWithChecksum)
+bool UThirdwebFunctionLibrary::BP_IsTextValidAddress(const FText Address, const bool bWithChecksum)
 {
 	return !Address.IsEmpty() && ThirdwebUtils::IsValidAddress(Address.ToString(), bWithChecksum);
 }
 
-bool UThirdwebFunctionLibrary::BP_IsTextChecksummedAddress(const FText& Address)
+bool UThirdwebFunctionLibrary::BP_IsTextChecksummedAddress(const FText Address)
 {
 	return !Address.IsEmpty() && ThirdwebUtils::IsChecksummedAddress(Address.ToString());
 }
@@ -278,6 +283,11 @@ bool UThirdwebFunctionLibrary::BP_IsTextChecksummedAddress(const FText& Address)
 FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const FText& Address)
 {
 	return Address.IsEmpty() ? FText::GetEmpty() : FText::FromString(ThirdwebUtils::ToChecksummedAddress(Address.ToString()));
+}
+
+FString UThirdwebFunctionLibrary::BP_ZeroAddress()
+{
+	return ThirdwebUtils::ZeroAddress;
 }
 
 bool UThirdwebFunctionLibrary::BP_IsActiveSigner(FSmartWalletHandle Wallet, const FString& BackendWallet)
