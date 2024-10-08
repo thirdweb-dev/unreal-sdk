@@ -14,6 +14,7 @@ struct THIRDWEB_API FSmartWalletHandle : public FWalletHandle
 	GENERATED_BODY()
 
 	DECLARE_DELEGATE_OneParam(FCreateSmartWalletDelegate, FSmartWalletHandle);
+	DECLARE_DELEGATE_OneParam(FGetActiveSignersDelegate, const TArray<FSigner>&);
 	
 	FSmartWalletHandle()
 	{
@@ -56,10 +57,10 @@ public:
 	static void Create(const FInAppWalletHandle& InInAppWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, const FCreateSmartWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Check if the smart wallet is deployed */
-	bool IsDeployed(bool& bDeployed, FString& Error);
+	void IsDeployed(const FBoolDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 	
 	/** Create a session key for a smart wallet */
-	bool CreateSessionKey(
+	void CreateSessionKey(
 		const FString& Signer,
 		const TArray<FString>& ApprovedTargets,
 		const FString& NativeTokenLimitPerTransactionInWei,
@@ -67,24 +68,24 @@ public:
 		const FDateTime& PermissionEnd,
 		const FDateTime& RequestValidityStart,
 		const FDateTime& RequestValidityEnd,
-		FString& TransactionHash,
-		FString& Error
+		const FStringDelegate& SuccessDelegate,
+		const FStringDelegate& ErrorDelegate
 	);
 
 	/** Revoke a session key for a smart wallet */
-	bool RevokeSessionKey(const FString& Signer, FString& Error);
+	void RevokeSessionKey(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Get the admins of a smart wallet */
-	bool GetAdmins(TArray<FString>& Admins, FString& Error);
+	void GetAdmins(const FStringArrayDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Add an admin to a smart wallet */
-	bool AddAdmin(const FString& Signer, FString& Error);
+	void AddAdmin(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Remove an admin from a smart wallet */
-	bool RemoveAdmin(const FString& Signer, FString& Error);
+	void RemoveAdmin(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/** Get the active signers of a smart wallet */
-	bool GetActiveSigners(TArray<FSigner>& Signers, FString& Error);
+	void GetActiveSigners(const FGetActiveSignersDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 private:
 	FInAppWalletHandle InAppWallet;
