@@ -8,7 +8,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(NotBlueprintable, Abstract)
 class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebBaseAsyncTask : public UK2Node_BaseAsyncTask
 {
 	GENERATED_BODY()

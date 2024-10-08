@@ -100,14 +100,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Disconnect"), Category="Thirdweb|Wallets|In App")
 	static void BP_DisconnectWallet(const FInAppWalletHandle& Wallet);
 
-	/** Verifies an OTP for the in-app wallet */
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Verify OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_VerifyOTP(FInAppWalletHandle Wallet, const FString& OTP, FString& Error);
-
-	/** Sends an OTP for the in-app wallet */
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Send OTP", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SendOTP(FInAppWalletHandle Wallet, FString& Error);
-
 	// Fetch OAuth login link
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Fetch OAuth Login Link", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_FetchOAuthLoginLink(FInAppWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error);
@@ -135,45 +127,6 @@ public:
 	/** Check if a smart wallet handle is valid */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets|Smart")
 	static bool BP_SmartWalletIsValid(const FSmartWalletHandle& Wallet);
-
-	/** Check if a smart wallet is deployed */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Is Deployed", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static ESmartWalletDeployedFunctionResult BP_IsSmartWalletDeployed(FSmartWalletHandle Wallet, FString& Error);
-
-	/** Create a session key for a smart wallet */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Create Session Key",
-		meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd", AutoCreateRefTerm=
-			"PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd,ApprovedTargets,Signer,NativeTokenLimitPerTransactionInWei"))
-	static EFunctionResult BP_CreateSmartWalletSessionKey(FSmartWalletHandle Wallet,
-	                                                      const FString& Signer,
-	                                                      const TArray<FString>& ApprovedTargets,
-	                                                      const FString& NativeTokenLimitPerTransactionInWei,
-	                                                      const FDateTime& PermissionStart,
-	                                                      const FDateTime& PermissionEnd,
-	                                                      const FDateTime& RequestValidityStart,
-	                                                      const FDateTime& RequestValidityEnd,
-	                                                      FString& TransactionHash,
-	                                                      FString& Error);
-
-	/** Get all admins of a smart wallet */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Get Admins", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static EFunctionResult BP_GetSmartWalletAdmins(FSmartWalletHandle Wallet, TArray<FString>& Admins, FString& Error);
-
-	/** Get all active signers of a smart wallet */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Get Active Signers", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static EFunctionResult BP_GetSmartWalletActiveSigners(FSmartWalletHandle Wallet, TArray<FSigner>& Signers, FString& Error);
-
-	/** Revoke the session key of a smart wallet signer */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Revoke Session Key", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static EFunctionResult BP_RevokeSmartWalletSessionKey(FSmartWalletHandle Wallet, const FString& Signer, FString& Error);
-
-	/** Add an admin signer to a smart wallet */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Add Admin", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static EFunctionResult BP_AddSmartWalletAdmin(FSmartWalletHandle Wallet, const FString& Signer, FString& Error);
-
-	/** Remove an admin signer from a smart wallet */
-	UFUNCTION(BlueprintCallable, Category="Thirdweb|Wallets|Smart", DisplayName="Remove Admin", meta=(ExpandEnumAsExecs="ReturnValue"))
-	static EFunctionResult BP_RemoveSmartWalletAdmin(FSmartWalletHandle Wallet, const FString& Signer, FString& Error);
 
 	/** Convert a Thirdweb OAuth Provider to Text */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To Text (Thirdweb OAuth Provider)", CompactNodeTitle="->", BlueprintAutocast), Category="Utilities|Text")
@@ -217,7 +170,4 @@ public:
 
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
 	static FString BP_ZeroAddress();
-
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Active Signer"), Category="Thirdweb|Wallets|Smart")
-	static bool BP_IsActiveSigner(FSmartWalletHandle Wallet, const FString& BackendWallet);
 };

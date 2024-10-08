@@ -29,28 +29,28 @@ UAsyncTaskThirdwebLoginWithOAuth* UAsyncTaskThirdwebLoginWithOAuth::LoginWithOAu
 	{
 		return nullptr;
 	}
-	UAsyncTaskThirdwebLoginWithOAuth* Task = NewObject<UAsyncTaskThirdwebLoginWithOAuth>(WorldContextObject);
+	NEW_TASK
 	Task->Wallet = Wallet;
 	Task->Browser = CreateWidget<UThirdwebOAuthBrowserUserWidget>(UGameplayStatics::GetGameInstance(WorldContextObject), UThirdwebOAuthBrowserUserWidget::StaticClass());
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
 }
 
-void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
-{
-	Failed.Broadcast(Error);
-	Browser->RemoveFromParent();
-	SetReadyToDestroy();
-}
-
 void UAsyncTaskThirdwebLoginWithOAuth::HandleAuthenticated(const FString& AuthResult)
 {
-	if (FString Error; !Wallet.SignInWithOAuth(AuthResult, Error))
-	{
-		return HandleFailed(Error);
-	}
+	Wallet.SignInWithOAuth(AuthResult, BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleSignedIn), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
+}
+
+void UAsyncTaskThirdwebLoginWithOAuth::HandleSignedIn()
+{
 	Success.Broadcast(TEXT(""));
 	Browser->RemoveFromParent();
 	SetReadyToDestroy();
 }
 
+void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
+{
+	Browser->RemoveFromParent();
+	Success.Broadcast(TEXT(""));
+	SetReadyToDestroy();
+}
