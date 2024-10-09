@@ -68,7 +68,8 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 {
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebWalletType>(), CwPins::Type);
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source);
+	UEdGraphPin* SourcePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source);
+
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::PartnerId);
 	
@@ -85,7 +86,11 @@ void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, U
 	
 	const UEdGraphSchema_K2* Schema = CompilerContext.GetSchema();
 	bool bIsErrorFree = true;
+	EThirdwebWalletType Type = EThirdwebWalletType::Smart;
 
+	UK2Node_CreateWallet* AsyncTask = CompilerContext.SpawnIntermediateNode<UK2Node_CreateWallet>(this, SourceGraph);
+	AsyncTask->AllocateDefaultPins();
+	GetSourcePin()->SafeSetHidden(Type != EThirdwebWalletType::InApp);
 	//UK2Node_CallFunction* const IsValidProxyObjectNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	//IsValidProxyObjectNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UKismetSystemLibrary, IsValid), UKismetSystemLibrary::StaticClass());
 	//IsValidProxyObjectNode->AllocateDefaultPins();
@@ -122,7 +127,7 @@ void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, U
 	//}
 //
 	////No idea why you have to do this step, yet. Will update when I do.
-	//BreakAllNodeLinks();
+	BreakAllNodeLinks();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -43,16 +43,15 @@ public:
 	}
 
 	/**
-	 * Creates a new FSmartWalletHandle instance.
+	 * Create a smart wallet handle.
 	 *
-	 * @param ChainID The ID of the blockchain to connect to.
-	 * @param InInAppWallet The InApp Wallet signer.
-	 * @param bGasless A boolean indicating if the wallet should operate without gas fees.
-	 * @param Factory The factory contract address for wallet creation.
-	 * @param AccountOverride Optional account address to override the default.
-	 * @param bSuccess Output parameter that will be set to true if the wallet creation is successful, false otherwise.
-	 * @param Error Output parameter that will hold the error message if the creation fails.
-	 * @return A new instance of FSmartWalletHandle.
+	 * @param InInAppWallet Reference to an in-app wallet handle.
+	 * @param ChainID Identifier of the blockchain.
+	 * @param bGasless Boolean indicating whether the transaction is gasless.
+	 * @param Factory String identifying the factory contract.
+	 * @param AccountOverride String for account override.
+	 * @param SuccessDelegate Delegate to call upon successful creation of the smart wallet.
+	 * @param ErrorDelegate Delegate to call if there is an error during creation.
 	 */
 	static void Create(const FInAppWalletHandle& InInAppWallet, const int64 ChainID, const bool bGasless, const FString& Factory, const FString& AccountOverride, const FCreateSmartWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "K2Node.h"
+#include "K2Node_BaseAsyncTask.h"
 
 #include "GameFramework/GameMode.h"
 
@@ -21,11 +22,12 @@ namespace CwPins
 }
 
 UCLASS()
-class THIRDWEBUNCOOKEDONLY_API UK2Node_CreateWallet : public UK2Node
+class THIRDWEBUNCOOKEDONLY_API UK2Node_CreateWallet : public UK2Node_BaseAsyncTask
 {
 	GENERATED_BODY()
 
 public:
+	
 	// UEdGraphNode interface implementation
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
@@ -40,5 +42,24 @@ public:
 	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
 	virtual void AllocateDefaultPins() override;
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
-	
+
+protected:
+	UEdGraphPin* GetTypePin() const
+	{
+		UEdGraphPin* Pin = FindPin(CwPins::Type);
+		check(Pin == NULL || Pin->Direction == EGPD_Input);
+		return Pin;
+	}
+	UEdGraphPin* GetSourcePin() const
+	{
+		UEdGraphPin* Pin = FindPin(CwPins::Source);
+		check(Pin == NULL || Pin->Direction == EGPD_Input);
+		return Pin;
+	}
+	UEdGraphPin* GetProviderPin() const
+	{
+		UEdGraphPin* Pin = FindPin(CwPins::Provider);
+		check(Pin == NULL || Pin->Direction == EGPD_Input);
+		return Pin;
+	}
 };
