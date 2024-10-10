@@ -81,6 +81,9 @@ namespace Thirdweb
 		FFIResult ecosystem_wallet_sign_in_with_auth_endpoint(uintptr_t handle_id, const char* payload);
 		FFIResult ecosystem_wallet_sign_in_with_guest(uintptr_t handle_id, const char* session_id);
 
+		FFIResult ecosystem_wallet_link_account(uintptr_t handle_id, uintptr_t wallet_to_link_handle_id, const char* otp, const char* oauth_result, const char* jwt, const char* payload);
+		FFIResult ecosystem_wallet_get_linked_accounts(uintptr_t handle_id);
+
 		// Smart Wallet management
 
 		FFIResult create_smart_wallet(const char* client_id,

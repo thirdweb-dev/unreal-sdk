@@ -170,15 +170,6 @@ public:
 	void Disconnect() const;
 
 	/**
-	 * Verifies the One-Time Password (OTP) for the in-app wallet handle.
-	 *
-	 * @param OTP The one-time password to be verified.
-	 * @param SuccessDelegate The delegate to execute upon successful verification.
-	 * @param ErrorDelegate The delegate to execute if verification fails or an error occurs.
-	 */
-	void VerifyOTP(const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-
-	/**
 	 * Sends a one-time password (OTP) to the wallet handle's associated phone or email.
 	 *
 	 * @param SuccessDelegate Delegate to be executed on successful OTP sending.
@@ -186,6 +177,25 @@ public:
 	 *
 	 */
 	void SendOTP(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with a One-Time Password (OTP) for the in-app wallet handle.
+	 *
+	 * @param OTP The one-time password to be verified.
+	 * @param SuccessDelegate The delegate to execute upon successful verification.
+	 * @param ErrorDelegate The delegate to execute if verification fails or an error occurs.
+	 */
+	void SignInWithOTP(const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Links a One-Time Password (OTP) to the specified in-app wallet.
+	 *
+	 * @param Wallet The in-app wallet handle to which the OTP will be linked.
+	 * @param OTP The one-time password that will be linked to the wallet.
+	 * @param SuccessDelegate The delegate to be called upon successful linking of the OTP.
+	 * @param ErrorDelegate The delegate to be called if there is an error linking the OTP.
+	 */
+	void LinkOTP(const FInAppWalletHandle& Wallet, const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
 	 * Fetches the OAuth login URL for the in-app wallet.
@@ -198,7 +208,7 @@ public:
 	bool FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error);
 
 	/**
-	 * Performs sign-in using OAuth for the in-app wallet handle.
+	 * Sign in with OAuth for the in-app wallet handle.
 	 *
 	 * @param AuthResult The result string obtained from OAuth authentication.
 	 * @param SuccessDelegate Delegate to be executed upon successful sign-in.
@@ -206,6 +216,16 @@ public:
 	 */
 	void SignInWithOAuth(const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
+	/**
+	 * Links a new OAuth wallet to the existing in-app wallet.
+	 *
+	 * @param Wallet The in-app wallet handle that the OAuth account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param AuthResult The authentication result string containing the OAuth credentials.
+	 * @param SuccessDelegate A delegate that will be called upon successfully linking the OAuth account.
+	 * @param ErrorDelegate A delegate that will be called if there is an error during the linking process, providing an error message.
+	 */
+	void LinkOAuth(const FInAppWalletHandle& Wallet, const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
 	/**
 	 * Signs in with a JSON Web Token (JWT) for authentication.
 	 *
@@ -216,7 +236,17 @@ public:
 	void SignInWithJwt(const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Initiates the sign-in process with the authentication endpoint using the provided payload.
+ 	 * Links a JSON Web Token (JWT) for authentication.
+ 	 *
+	 * @param Wallet The in-app wallet handle that the JWT account will link with. Must be a valid handle. Must never have independently authenticated.
+ 	 * @param Jwt The JSON Web Token used for authentication; must be a valid JWT string.
+ 	 * @param SuccessDelegate Delegate to be executed upon successful authentication, must be bound.
+ 	 * @param ErrorDelegate Delegate to be executed if an error occurs during authentication.
+ 	 */
+	void LinkJwt(const FInAppWalletHandle& Wallet, const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with the authentication endpoint using the provided payload.
 	 *
 	 * @param Payload The authentication payload, must be a valid JSON string.
 	 * @param SuccessDelegate The delegate to be executed on successful sign-in, must be bound.
@@ -225,13 +255,39 @@ public:
 	void SignInWithAuthEndpoint(const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Initiates a sign-in process for a guest user for the in-app wallet.
+	 * links an authentication endpoint using the provided payload.
+	 *
+	 * @param Wallet The in-app wallet handle that the AuthEndpoint account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param Payload The authentication payload, must be a valid JSON string.
+	 * @param SuccessDelegate The delegate to be executed on successful sign-in, must be bound.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs, should be bound to handle error messages.
+	 */
+	void LinkAuthEndpoint(const FInAppWalletHandle& Wallet, const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with guest authentication.
 	 *
 	 * @param SuccessDelegate The delegate to execute on successful sign-in.
 	 * @param ErrorDelegate The delegate to execute if an error occurs during the sign-in process; will receive an error message.
 	 */
 	void SignInWithGuest(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
+	/**
+	 * Links guest authentication.
+	 *
+	 * @param Wallet The in-app wallet handle that the guest account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param SuccessDelegate The delegate to execute on successful sign-in.
+	 * @param ErrorDelegate The delegate to execute if an error occurs during the sign-in process; will receive an error message.
+	 */
+	void LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Retrieves the source of the in-app wallet.
+	 *
+	 * @return The source of the in-app wallet as an EInAppSource enum.
+	 */
+	EInAppSource GetSource() const { return Source; }
+	
 	/**
 	 * Retrieves the source string.
 	 *
