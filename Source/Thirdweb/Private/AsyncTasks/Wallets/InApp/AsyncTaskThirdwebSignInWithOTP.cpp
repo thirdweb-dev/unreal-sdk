@@ -1,13 +1,13 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebVerifyOTP.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignInWithOTP.h"
 
-void UAsyncTaskThirdwebVerifyOTP::Activate()
+void UAsyncTaskThirdwebSignInWithOTP::Activate()
 {
 	InAppWallet.SignInWithOTP(OTP, FStreamableDelegate::CreateUObject(this, &ThisClass::HandleResponse), FStringDelegate::CreateUObject(this, &ThisClass::HandleFailed));
 }
 
-UAsyncTaskThirdwebVerifyOTP* UAsyncTaskThirdwebVerifyOTP::VerifyOTP(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& OTP)
+UAsyncTaskThirdwebSignInWithOTP* UAsyncTaskThirdwebSignInWithOTP::SignInWithOTP(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& OTP)
 {
 	if (!WorldContextObject)
 	{
@@ -20,13 +20,13 @@ UAsyncTaskThirdwebVerifyOTP* UAsyncTaskThirdwebVerifyOTP::VerifyOTP(UObject* Wor
 	return Task;
 }
 
-void UAsyncTaskThirdwebVerifyOTP::HandleResponse()
+void UAsyncTaskThirdwebSignInWithOTP::HandleResponse()
 {
 	Success.Broadcast(TEXT(""));
 	SetReadyToDestroy();
 }
 
-void UAsyncTaskThirdwebVerifyOTP::HandleFailed(const FString& Error)
+void UAsyncTaskThirdwebSignInWithOTP::HandleFailed(const FString& Error)
 {
 	Failed.Broadcast(Error);
 	SetReadyToDestroy();

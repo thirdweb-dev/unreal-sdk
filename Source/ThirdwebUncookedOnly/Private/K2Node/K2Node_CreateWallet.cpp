@@ -8,6 +8,9 @@
 #include "KismetCompiler.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "TWUOCommon.h"
+#include "TWUOUtils.h"
+
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Styling/SlateIconFinder.h"
 
@@ -173,52 +176,57 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 
 void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
-	Super::ExpandNode(CompilerContext, SourceGraph);
+	bool bSmart = ResolvePinValue(GetTypePin()) == TEXT("Smart");
+	if (bSmart)
+	{
+		ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+		ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+		ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+	}
+	else
+	{
+		switch (ThirdwebUtils::ToInAppWalletSource(ResolvePinValue(GetSourcePin())))
+		{
+		case EThirdwebInAppWalletSource::OAuth:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		case EThirdwebInAppWalletSource::Email:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		case EThirdwebInAppWalletSource::Phone:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		case EThirdwebInAppWalletSource::Jwt:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		case EThirdwebInAppWalletSource::AuthEndpoint:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		case EThirdwebInAppWalletSource::Guest:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+			}
+		}
+	}
 
-	const UEdGraphSchema_K2* Schema = CompilerContext.GetSchema();
-	bool bIsErrorFree = true;
-	EThirdwebWalletType Type = EThirdwebWalletType::Smart;
-
-	UK2Node_CreateWallet* AsyncTask = CompilerContext.SpawnIntermediateNode<UK2Node_CreateWallet>(this, SourceGraph);
-	AsyncTask->AllocateDefaultPins();
-	GetSourcePin()->SafeSetHidden(Type != EThirdwebWalletType::InApp);
-	//UK2Node_CallFunction* const IsValidProxyObjectNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
-	//IsValidProxyObjectNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UKismetSystemLibrary, IsValid), UKismetSystemLibrary::StaticClass());
-	//IsValidProxyObjectNode->AllocateDefaultPins();
-	//
-	//UEdGraphPin* IsValidInputPin = IsValidProxyObjectNode->FindPinChecked(TEXT("Object"));
-	//bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*FindPin(NAME_ObjectToCheck), *IsValidInputPin).CanSafeConnect();
-	////End
-	//
-	////Luckily there is already a node for the Branch. We just have to spawn the node like we did earlier.
-	//UK2Node_IfThenElse* IfThenElseProxyNode = CompilerContext.SpawnIntermediateNode<UK2Node_IfThenElse>(this, SourceGraph);
-	//
-	////Let the Branch node add its pins.
-	//IfThenElseProxyNode->AllocateDefaultPins();
-	//
-	////Now we connect the ReturnValue pin from the spawned IsValid node to the Condition pin on the Branch.
-	////MovePinLinksToIntermediate is not used here to link pins. When you connect two spawned nodes with each other, use TryCreateConnection.
-	//bIsErrorFree &= Schema->TryCreateConnection(IsValidProxyObjectNode->GetReturnValuePin(), IfThenElseProxyNode->GetConditionPin());
-	//
-	////Now let's move all the pin links from our visual pins on the node to the pins on the spawned Branch node.
-	////First, we move the links on the ExecPin to the spawned Branch's ExecPin.
-	//bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*GetExecPin(), *IfThenElseProxyNode->GetExecPin()).CanSafeConnect();
-	//
-	////Second, we move the links on the IsValidExec pin to the spawned Branch's TrueExecPin.
-	//bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*FindPin(NAME_IsValidExec), *IfThenElseProxyNode->GetThenPin()).CanSafeConnect();
-	//
-	////Third, we move the links on the IsNotValidExec pin to the spawned Branch's FalseExecPin.
-	//bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*FindPin(NAME_IsNotValidExec), *IfThenElseProxyNode->GetElsePin()).CanSafeConnect();
-	//
-	////To make sure all actions were successful, we generate an error to the message log if that's not the case.
-	//if (!bIsErrorFree)
-	//{
-	//	//This is how you create compiler errors for Blueprint. I'll show more examples later.
-	//	CompilerContext.MessageLog.Error(*LOCTEXT("InternalConnectionError", "IsValidNode: Internal connection error. @@").ToString(), this);
-	//}
-	//
-	////No idea why you have to do this step, yet. Will update when I do.
-	BreakAllNodeLinks();
+	Super::ExpandNode(CompilerContext, SourceGraph);;
 }
 
 FString UK2Node_CreateWallet::ResolvePinValue(UEdGraphPin* Pin)

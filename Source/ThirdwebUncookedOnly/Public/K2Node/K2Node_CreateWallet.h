@@ -181,7 +181,8 @@ private:
 			{
 				AdvancedPinDisplay = ENodeAdvancedPins::Hidden;
 			}
-		} else
+		}
+		else
 		{
 			AdvancedPinDisplay = ENodeAdvancedPins::NoPins;
 		}
@@ -189,4 +190,5 @@ private:
 
 	static FString ResolvePinValue(UEdGraphPin* Pin);
 	void UpdatePins();
+
 };

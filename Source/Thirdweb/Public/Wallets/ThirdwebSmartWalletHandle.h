@@ -13,7 +13,7 @@ struct THIRDWEB_API FSmartWalletHandle : public FWalletHandle
 {
 	GENERATED_BODY()
 
-	DECLARE_DELEGATE_OneParam(FCreateSmartWalletDelegate, FSmartWalletHandle);
+	DECLARE_DELEGATE_OneParam(FCreateSmartWalletDelegate, const FSmartWalletHandle&);
 	DECLARE_DELEGATE_OneParam(FGetActiveSignersDelegate, const TArray<FSigner>&);
 	
 	FSmartWalletHandle()
