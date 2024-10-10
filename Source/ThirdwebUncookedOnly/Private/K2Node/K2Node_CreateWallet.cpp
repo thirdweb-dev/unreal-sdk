@@ -51,8 +51,7 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 			}
 			else
 			{
-				FString Source = ResolvePinValue(GetSourcePin());
-				if (Source == TEXT("OAuth") || Source == TEXT("Email") || Source == TEXT("Phone"))
+				if (FString Source = ResolvePinValue(GetSourcePin()); Source == TEXT("OAuth") || Source == TEXT("Email") || Source == TEXT("Phone"))
 				{
 					if (Source == TEXT("OAuth"))
 					{
@@ -78,23 +77,6 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 				}
 			}
 		}
-		// FString Type = "";
-		// if (GetValuePin())
-		// {
-		// 	if (GetValuePin()->PinType.PinCategory == UEdGraphSchema_K2::PC_Int)
-		// 	{
-		// 		FString DisplayType = FCustomNamePin::Deserialize(DisplayTypePin->DefaultValue);
-		// 		if (DisplayType == "Boost Number") Type = " Boost Number";
-		// 		else if (DisplayType == "Boost Percentage") Type = " Boost Percentage";
-		// 		else if (DisplayType == "Number") Type = " Simple Number";
-		// 		else Type = " Number";
-		// 	}
-		// 	else if (GetValuePin()->PinType.PinCategory == UEdGraphSchema_K2::PC_Real) Type = " Float";
-		// 	else if (GetValuePin()->PinType.PinCategory == UEdGraphSchema_K2::PC_String) Type = " String";
-		// 	else if (GetValuePin()->PinType.PinCategory == UEdGraphSchema_K2::PC_Struct) Type = " DateTime";
-		// }
-		// FString Title = FString::Printf(TEXT("Create%s Attribute"), *Type);
-		// CachedNodeTitle.SetCachedText(FText::FromString(Title), this);
 	}
 	return CachedNodeTitle;
 	// return LOCTEXT("K2Node_CreateWallet_NodeTitle", "Create In App Wallet");
