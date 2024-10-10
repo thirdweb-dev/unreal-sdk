@@ -4,7 +4,7 @@
 
 void UAsyncTaskThirdwebVerifyOTP::Activate()
 {
-	InAppWallet.VerifyOTP(OTP, FStreamableDelegate::CreateUObject(this, &ThisClass::HandleResponse), FStringDelegate::CreateUObject(this, &ThisClass::HandleFailed));
+	InAppWallet.SignInWithOTP(OTP, FStreamableDelegate::CreateUObject(this, &ThisClass::HandleResponse), FStringDelegate::CreateUObject(this, &ThisClass::HandleFailed));
 }
 
 UAsyncTaskThirdwebVerifyOTP* UAsyncTaskThirdwebVerifyOTP::VerifyOTP(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& OTP)

@@ -15,6 +15,7 @@ public class ThirdwebUncookedOnly : ModuleRules
 			"Core",
 			"Thirdweb",
 			"DeveloperSettings",
+			"KismetCompiler",
 			"BlueprintGraph",
 			"UnrealEd"
 		});
