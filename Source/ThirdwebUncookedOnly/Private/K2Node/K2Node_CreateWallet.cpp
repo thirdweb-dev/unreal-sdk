@@ -12,6 +12,8 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateSmartWallet.h"
 
+#include "K2Node/ThridwebK2NodeUtils.h"
+
 #include "Styling/SlateIconFinder.h"
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
@@ -32,12 +34,12 @@ namespace CwPins
 	const FName Error = FName(TEXT("Error"));
 
 	// Smart Wallet Pins
-	const FName InAppWallet = FName(TEXT("InApp Wallet"));
+	const FName InAppWallet = FName(TEXT("InAppWallet"));
 	const FName SmartWallet = FName(TEXT("Smart Wallet"));
-	const FName ChainID = FName(TEXT("Chain ID"));
-	const FName Gasless = FName(TEXT("Gasless"));
+	const FName ChainID = FName(TEXT("ChainID"));
+	const FName Gasless = FName(TEXT("bGasless"));
 	const FName Factory = FName(TEXT("Factory"));
-	const FName AccountOverride = FName(TEXT("Account Override"));
+	const FName AccountOverride = FName(TEXT("AccountOverride"));
 }
 
 FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
@@ -117,6 +119,18 @@ FText UK2Node_CreateWallet::GetMenuCategory() const
 	return LOCTEXT("K2Node_CreateWallet_Category", "Thirdweb|Wallets|InApp");
 }
 
+void UK2Node_CreateWallet::PostReconstructNode()
+{
+	Super::PostReconstructNode();
+	UpdatePins();
+}
+
+void UK2Node_CreateWallet::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
+{
+	Super::NotifyPinConnectionListChanged(Pin);
+	UpdatePins();
+}
+
 void UK2Node_CreateWallet::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const
 {
 	Super::GetMenuActions(ActionRegistrar);
@@ -155,7 +169,7 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 	// Smart Wallet Input Pins
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), CwPins::InAppWallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Int64, CwPins::ChainID);
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, CwPins::Gasless);
+	SetDefaultValue(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, CwPins::Gasless), true);
 	SetAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::Factory));
 	SetAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AccountOverride));
 

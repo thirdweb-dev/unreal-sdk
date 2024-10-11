@@ -26,7 +26,7 @@ public:
 	                                                              const FString& Factory = "",
 	                                                              const FString& AccountOverride = "");
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCreateSmartWalletDelegate, const FSmartWalletHandle&, Wallet, const FString&, Error);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCreateSmartWalletDelegate, const FSmartWalletHandle&, SmartWallet, const FString&, Error);
 
 	UPROPERTY(BlueprintAssignable)
 	FCreateSmartWalletDelegate Success;

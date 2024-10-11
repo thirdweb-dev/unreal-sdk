@@ -4,6 +4,7 @@
 
 #include "K2Node.h"
 #include "K2Node_BaseAsyncTask.h"
+#include "ThirdwebLog.h"
 
 #include "GameFramework/GameMode.h"
 
@@ -45,6 +46,8 @@ public:
 
 	// UK2Node interface implementation
 	virtual FText GetMenuCategory() const override;
+	virtual void PostReconstructNode() override;
+	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
 	// End of implementation
 
 	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
@@ -188,6 +191,28 @@ private:
 		}
 	}
 
+	template<typename T = FString>
+	static UEdGraphPin* SetDefaultValue(UEdGraphPin* Pin, const T& Value)
+	{
+		if constexpr (std::is_same_v<T, FString> || std::is_same_v<T, FStringView>)
+		{
+			Pin->DefaultValue = Value;
+		} else if constexpr (std::is_same_v<T, int32>)
+		{
+			Pin->DefaultValue = FString::Format(TEXT("%d"), Value);
+		} else if constexpr (std::is_same_v<T, int64>)
+		{
+			Pin->DefaultValue = FString::Format(TEXT("%lld"), Value);
+		} else if constexpr (std::is_same_v<T, bool>)
+		{
+			Pin->DefaultValue = static_cast<bool>(Value) ? TEXT("true") : TEXT("false");
+		} else
+		{
+			TW_LOG(Error, TEXT("UK2Node_CreateWallet::SetDefaultValue::Invalid Value Type"));
+		}
+		return Pin; 
+	}
+	
 	static FString ResolvePinValue(UEdGraphPin* Pin);
 	void UpdatePins();
 
