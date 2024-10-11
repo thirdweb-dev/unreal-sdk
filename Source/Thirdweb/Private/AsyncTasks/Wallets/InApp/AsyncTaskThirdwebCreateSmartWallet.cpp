@@ -6,20 +6,6 @@
 
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 
-void UAsyncTaskThirdwebCreateSmartWallet::Activate()
-{
-	FSmartWalletHandle::Create(
-		InAppWallet,
-		ChainID,
-		bGasless,
-		Factory,
-		AccountOverride,
-		BIND_UOBJECT_DELEGATE(FSmartWalletHandle::FCreateSmartWalletDelegate, HandleResponse),
-		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
-		);
-
-}
-
 UAsyncTaskThirdwebCreateSmartWallet* UAsyncTaskThirdwebCreateSmartWallet::CreateSmartWallet(UObject* WorldContextObject,
 	const FInAppWalletHandle& InAppWallet,
 	const int64 ChainID,
@@ -41,6 +27,20 @@ UAsyncTaskThirdwebCreateSmartWallet* UAsyncTaskThirdwebCreateSmartWallet::Create
 
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
+}
+
+void UAsyncTaskThirdwebCreateSmartWallet::Activate()
+{
+	FSmartWalletHandle::Create(
+		InAppWallet,
+		ChainID,
+		bGasless,
+		Factory,
+		AccountOverride,
+		BIND_UOBJECT_DELEGATE(FSmartWalletHandle::FCreateSmartWalletDelegate, HandleResponse),
+		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
+		);
+
 }
 
 void UAsyncTaskThirdwebCreateSmartWallet::HandleResponse(const FSmartWalletHandle& Wallet)

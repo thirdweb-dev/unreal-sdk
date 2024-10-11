@@ -56,34 +56,6 @@ public:
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address", BlueprintAutocast), Category="Utilities|Text|Smart Wallet")
 	static FText Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet);
 
-	UFUNCTION(BlueprintCallable, DisplayName="Create Email Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppEmailWallet(const FString& Email, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create OAuth Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppOAuthWallet(const EThirdwebOAuthProvider Provider, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create Phone Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppPhoneWallet(const FString& Phone, const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create JWT Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppJwtWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create Auth Endpoint Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppAuthEndpointWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create Guest Wallet", meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_CreateInAppGuestWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error);
-
-	UFUNCTION(BlueprintCallable, DisplayName="Create Smart Wallet",
-		meta=(ExpandEnumAsExecs="ReturnValue", AdvancedDisplay="bGasless,Factory,AccountOverride", AutoCreateRefTerm="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart")
-	static EFunctionResult BP_CreateSmartWallet(const FInAppWalletHandle PersonalWallet,
-	                                            FSmartWalletHandle& SmartWallet,
-	                                            FString& Error,
-	                                            const int64 ChainID,
-	                                            const bool bGasless = true,
-	                                            const FString& Factory = "",
-	                                            const FString& AccountOverride = "");
-
 	/** Signs an arbitrary message with an InApp wallet */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
 	static FString BP_SignInAppMessage(const FInAppWalletHandle& Wallet, const FString& Message);

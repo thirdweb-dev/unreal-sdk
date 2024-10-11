@@ -16,7 +16,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 {
 	GENERATED_BODY()
 
-	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, FInAppWalletHandle);
+	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
 
 	enum EInAppSource
 	{

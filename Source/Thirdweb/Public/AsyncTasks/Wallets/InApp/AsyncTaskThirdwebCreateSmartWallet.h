@@ -18,7 +18,7 @@ class THIRDWEB_API UAsyncTaskThirdwebCreateSmartWallet : public UAsyncTaskThirdw
 public:
 	virtual void Activate() override;
 
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|Smart")
+	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart")
 	static UAsyncTaskThirdwebCreateSmartWallet* CreateSmartWallet(UObject* WorldContextObject,
 	                                                              const FInAppWalletHandle& InAppWallet,
 	                                                              const int64 ChainID,

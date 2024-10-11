@@ -2,9 +2,11 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignInWithOTP.h"
 
+#include "Components/SlateWrapperTypes.h"
+
 void UAsyncTaskThirdwebSignInWithOTP::Activate()
 {
-	InAppWallet.SignInWithOTP(OTP, FStreamableDelegate::CreateUObject(this, &ThisClass::HandleResponse), FStringDelegate::CreateUObject(this, &ThisClass::HandleFailed));
+	InAppWallet.SignInWithOTP(OTP, BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 }
 
 UAsyncTaskThirdwebSignInWithOTP* UAsyncTaskThirdwebSignInWithOTP::SignInWithOTP(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& OTP)

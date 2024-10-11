@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "K2Node/K2Node_CreateWallet.h"
+#include "K2Node/K2Node_ThirdwebCreateWallet.h"
 
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
@@ -10,7 +10,14 @@
 #include "TWUOCommon.h"
 #include "TWUOUtils.h"
 
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateAuthEndpointWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateEmailWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateGuestWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateJwtWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateOAuthWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreatePhoneWallet.h"
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateSmartWallet.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignInWithOTP.h"
 
 #include "K2Node/ThridwebK2NodeUtils.h"
 
@@ -26,8 +33,8 @@ namespace CwPins
 	const FName Type = FName(TEXT("Type"));
 	const FName Source = FName(TEXT("Source"));
 	const FName Provider = FName(TEXT("Provider"));
-	const FName AuthInput = FName(TEXT("Auth Input"));
-	const FName PartnerId = FName(TEXT("Partner ID"));
+	const FName AuthInput = FName(TEXT("Input"));
+	const FName PartnerId = FName(TEXT("PartnerId"));
 	const FName Wallet = FName(TEXT("Wallet"));
 	const FName Success = FName(TEXT("Success"));
 	const FName Failed = FName(TEXT("Failed"));
@@ -35,11 +42,18 @@ namespace CwPins
 
 	// Smart Wallet Pins
 	const FName InAppWallet = FName(TEXT("InAppWallet"));
-	const FName SmartWallet = FName(TEXT("Smart Wallet"));
+	const FName SmartWallet = FName(TEXT("SmartWallet"));
 	const FName ChainID = FName(TEXT("ChainID"));
 	const FName Gasless = FName(TEXT("bGasless"));
 	const FName Factory = FName(TEXT("Factory"));
 	const FName AccountOverride = FName(TEXT("AccountOverride"));
+}
+
+UK2Node_CreateWallet::UK2Node_CreateWallet()
+{
+	ProxyClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
+	ProxyFactoryClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
+	ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateOAuthWallet, CreateOAuthWallet);
 }
 
 FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
@@ -110,6 +124,16 @@ void UK2Node_CreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
 	if (Pin == GetTypePin() || Pin == GetSourcePin() || Pin == GetProviderPin())
 	{
 		CachedNodeTitle.MarkDirty();
+		if (Pin == GetTypePin())
+		{
+			for (UEdGraphPin* P : Pins)
+			{
+				if (P->PinType.PinCategory != UEdGraphSchema_K2::PC_Exec && P->PinName != CwPins::Error)
+				{
+					P->BreakAllPinLinks();
+				}
+			}
+		}
 	}
 	UpdatePins();
 }
@@ -160,7 +184,7 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 
 	// In App Wallet Input Pins
 	SetNotConnectable(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source));
-	SetNotConnectable(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider));
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AuthInput);
 
 	// In App Wallet Output Pins
@@ -203,59 +227,58 @@ void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, U
 		{
 		case EThirdwebInAppWalletSource::OAuth:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateOAuthWallet, CreateOAuthWallet);
+				break;
 			}
 		case EThirdwebInAppWalletSource::Email:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreateEmailWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateEmailWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateEmailWallet, CreateEmailWallet);
+				break;
 			}
 		case EThirdwebInAppWalletSource::Phone:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreatePhoneWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreatePhoneWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreatePhoneWallet, CreatePhoneWallet);
+				break;
 			}
 		case EThirdwebInAppWalletSource::Jwt:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreateJwtWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateJwtWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateJwtWallet, CreateJwtWallet);
+				break;
 			}
 		case EThirdwebInAppWalletSource::AuthEndpoint:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreateAuthEndpointWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateAuthEndpointWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateAuthEndpointWallet, CreateAuthEndpointWallet);
+				break;
 			}
 		case EThirdwebInAppWalletSource::Guest:
 			{
-				ProxyClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryClass = UAsyncTaskThirdwebCreateSmartWallet::StaticClass();
-				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSmartWallet, CreateSmartWallet);
+				ProxyClass = UAsyncTaskThirdwebCreateGuestWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateGuestWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateGuestWallet, CreateGuestWallet);
+				break;
 			}
 		}
 	}
-
-	Super::ExpandNode(CompilerContext, SourceGraph);;
+	RemovePin(GetTypePin());
+	RemovePin(GetSourcePin());
+	K2NodeUtils::Pins::RemoveHidden(this);
+	
+	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
 FString UK2Node_CreateWallet::ResolvePinValue(UEdGraphPin* Pin)
 {
-	if (Pin)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ResolvePinValue::Pin=Exists|Connections=%d"), Pin->LinkedTo.Num())
-		if (UEdGraphPin* ConnectedPin = Pin->LinkedTo.Num() > 0 ? Pin->LinkedTo[0] : nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("ResolvePinValue::Connected Pin Exists"))
-			return ConnectedPin->DefaultValue;
-		}
-		return Pin->DefaultValue;
-	}
-	return FString();
+	return Pin ? Pin->LinkedTo.Num() > 0 ? Pin->LinkedTo[0]->DefaultValue : Pin->DefaultValue : FString();
 }
 
 void UK2Node_CreateWallet::UpdatePins()
@@ -265,7 +288,6 @@ void UK2Node_CreateWallet::UpdatePins()
 		bool bSmart = ResolvePinValue(Pin) == TEXT("Smart");
 		SetHasAdvanced(UThirdwebRuntimeSettings::IsEcosystem() || bSmart);
 		FString Source = ResolvePinValue(GetSourcePin());
-		UE_LOG(LogTemp, Warning, TEXT("DefaultValue of Type::%s"), *Source)
 		SetPinVisibility(GetSourcePin(), !bSmart);
 		SetPinVisibility(GetProviderPin(), !bSmart && Source == TEXT("OAuth"));
 		SetFriendlyName(
@@ -286,6 +308,7 @@ void UK2Node_CreateWallet::UpdatePins()
 		{
 			Graph->NotifyGraphChanged();
 		}
+		
 	}
 }
 

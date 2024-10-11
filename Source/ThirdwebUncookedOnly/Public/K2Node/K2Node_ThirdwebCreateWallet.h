@@ -8,7 +8,7 @@
 
 #include "GameFramework/GameMode.h"
 
-#include "K2Node_CreateWallet.generated.h"
+#include "K2Node_ThirdwebCreateWallet.generated.h"
 
 namespace CwPins
 {
@@ -36,6 +36,8 @@ class THIRDWEBUNCOOKEDONLY_API UK2Node_CreateWallet : public UK2Node_BaseAsyncTa
 	GENERATED_BODY()
 
 public:
+	UK2Node_CreateWallet();
+	
 	// UEdGraphNode interface implementation
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
