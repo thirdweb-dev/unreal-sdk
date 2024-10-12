@@ -10,6 +10,7 @@
 
 #define BIND_CREATE_WALLET_SUCCESS_DELEGATE BIND_UOBJECT_DELEGATE(FInAppWalletHandle::FCreateInAppWalletDelegate, HandleResponse)
 #define BIND_CREATE_WALLET_ERROR_DELEGATE BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
+
 #define CREATE_WALLET_TASK \
 	if (!WorldContextObject) \
 	{ \
@@ -19,6 +20,7 @@
 	Task->EcosystemPartnerId = PartnerId; \
 	Task->RegisterWithGameInstance(WorldContextObject); \
 	return Task;
+
 #define CREATE_WALLET_INPUT_TASK \
 	if (!WorldContextObject) \
 		{ \
@@ -52,7 +54,7 @@ protected:
 
 	UPROPERTY(Transient)
 	FString EcosystemPartnerId;
-	
+
 	UFUNCTION()
 	void HandleResponse(const FInAppWalletHandle& Wallet);
 

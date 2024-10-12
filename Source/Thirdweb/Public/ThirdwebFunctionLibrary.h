@@ -75,22 +75,6 @@ public:
 	// Fetch OAuth login link
 	UFUNCTION(BlueprintCallable, meta=(DisplayName="Fetch OAuth Login Link", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
 	static EFunctionResult BP_FetchOAuthLoginLink(FInAppWalletHandle Wallet, const FString& RedirectUrl, FString& LoginLink, FString& Error);
-
-	// Sign in with the oauth payload received from your login flow
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With OAuth", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SignInWithOAuth(FInAppWalletHandle Wallet, const FString& AuthResult, FString& Error);
-
-	// Sign in with the oauth payload received from your login flow
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With JWT", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SignInWithJwt(FInAppWalletHandle Wallet, const FString& Jwt, FString& Error);
-
-	// Sign in with the oauth payload received from your login flow
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With Auth Endpoint", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SignInWithAuthEndpoint(FInAppWalletHandle Wallet, const FString& Payload, FString& Error);
-
-	// Sign in with the oauth payload received from your login flow
-	UFUNCTION(BlueprintCallable, meta=(DisplayName="Sign In With Guest", ExpandEnumAsExecs="ReturnValue"), Category="Thirdweb|Wallets|In App")
-	static EFunctionResult BP_SignInWithGuest(FInAppWalletHandle Wallet, FString& Error);
 	
 	/** Check if an InApp wallet handle is valid */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Valid"), Category="Thirdweb|Wallets|In App")

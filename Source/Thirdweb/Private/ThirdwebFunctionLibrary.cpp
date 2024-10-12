@@ -79,26 +79,6 @@ EFunctionResult UThirdwebFunctionLibrary::BP_FetchOAuthLoginLink(FInAppWalletHan
 	return Wallet.FetchOAuthLoginURL(RedirectUrl, LoginLink, Error) ? EFunctionResult::Success : EFunctionResult::Failed;
 }
 
-EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithOAuth(FInAppWalletHandle Wallet, const FString& AuthResult, FString& Error)
-{
-	return /** Wallet.SignInWithOAuth(AuthResult, Error) ? EFunctionResult::Success : */ EFunctionResult::Failed;
-}
-
-EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithJwt(FInAppWalletHandle Wallet, const FString& Jwt, FString& Error)
-{
-	return /** Wallet.SignInWithJwt(Jwt, Error) ? EFunctionResult::Success : */ EFunctionResult::Failed;
-}
-
-EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithAuthEndpoint(FInAppWalletHandle Wallet, const FString& Payload, FString& Error)
-{
-	return /** Wallet.SignInWithAuthEndpoint(Payload, Error) ? EFunctionResult::Success : */ EFunctionResult::Failed;
-}
-
-EFunctionResult UThirdwebFunctionLibrary::BP_SignInWithGuest(FInAppWalletHandle Wallet, FString& Error)
-{
-	return /** Wallet.SignInWithGuest(Error) ? EFunctionResult::Success : */ EFunctionResult::Failed;
-}
-
 bool UThirdwebFunctionLibrary::BP_InAppWalletIsValid(const FInAppWalletHandle& Wallet)
 {
 	return Wallet.IsValid();

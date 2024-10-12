@@ -10,23 +10,18 @@
 #include "TWUOCommon.h"
 #include "TWUOUtils.h"
 
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateAuthEndpointWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateEmailWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateGuestWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateJwtWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateOAuthWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreatePhoneWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateSmartWallet.h"
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignInWithOTP.h"
-
-#include "K2Node/ThridwebK2NodeUtils.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateAuthEndpointWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateEmailWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateGuestWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateJwtWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateOAuthWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreatePhoneWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Styling/SlateIconFinder.h"
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
-
-#define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
 
 namespace CwPins
 {
@@ -49,15 +44,21 @@ namespace CwPins
 	const FName AccountOverride = FName(TEXT("AccountOverride"));
 }
 
-UK2Node_CreateWallet::UK2Node_CreateWallet()
+#define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
+
+UK2Node_ThirdwebCreateWallet::UK2Node_ThirdwebCreateWallet()
 {
 	ProxyClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
 	ProxyFactoryClass = UAsyncTaskThirdwebCreateOAuthWallet::StaticClass();
 	ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateOAuthWallet, CreateOAuthWallet);
 }
 
-FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
+FText UK2Node_ThirdwebCreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
+	if (TitleType == ENodeTitleType::MenuTitle)
+	{
+		return LOCTEXT("K2Node_ThirdwebCreateWallet_SmartNodeTitle", "Create Wallet");
+	}
 	if (CachedNodeTitle.IsOutOfDate(this))
 	{
 		CachedNodeTitle.MarkDirty();
@@ -66,7 +67,7 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 		{
 			if (ResolvePinValue(TypePin) == TEXT("Smart"))
 			{
-				CachedNodeTitle.SetCachedText(LOCTEXT("K2Node_CreateWallet_SmartNodeTitle", "Create Smart Wallet"), this);
+				CachedNodeTitle.SetCachedText(LOCTEXT("K2Node_ThirdwebCreateWallet_SmartNodeTitle", "Create Smart Wallet"), this);
 			}
 			else
 			{
@@ -75,14 +76,14 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 					if (Source == TEXT("OAuth"))
 					{
 						CachedNodeTitle.SetCachedText(
-							FText::Format(LOCTEXT("K2Node_CreateWallet_OAuthNodeTitle", "Create In App {0} OAuth Wallet"), FText::FromString(ResolvePinValue(GetProviderPin()))),
+							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OAuthNodeTitle", "Create In App {0} OAuth Wallet"), FText::FromString(ResolvePinValue(GetProviderPin()))),
 							this
 						);
 					}
 					else
 					{
 						CachedNodeTitle.SetCachedText(
-							FText::Format(LOCTEXT("K2Node_CreateWallet_OTPNodeTitle", "Create In App {0} OTP Wallet"), FText::FromString(Source)),
+							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create In App {0} OTP Wallet"), FText::FromString(Source)),
 							this
 						);
 					}
@@ -90,7 +91,7 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 				else
 				{
 					CachedNodeTitle.SetCachedText(
-						FText::Format(LOCTEXT("K2Node_CreateWallet_OTPNodeTitle", "Create In App {0} Wallet"), FText::FromString(Source)),
+						FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create In App {0} Wallet"), FText::FromString(Source)),
 						this
 					);
 				}
@@ -98,29 +99,16 @@ FText UK2Node_CreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType) const
 		}
 	}
 	return CachedNodeTitle;
-	// return LOCTEXT("K2Node_CreateWallet_NodeTitle", "Create In App Wallet");
 }
 
-FText UK2Node_CreateWallet::GetTooltipText() const
+FText UK2Node_ThirdwebCreateWallet::GetTooltipText() const
 {
-	return LOCTEXT("K2Node_CreateWallet_TooltipText", "Create a Thirdweb Wallet");
+	return LOCTEXT("K2Node_ThirdwebCreateWallet_TooltipText", "Create a Thirdweb Wallet");
 }
 
-FLinearColor UK2Node_CreateWallet::GetNodeTitleColor() const
+void UK2Node_ThirdwebCreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
 {
-	return FLinearColor(FColor::FromHex(TEXT("#7207b9")));
-}
-
-FSlateIcon UK2Node_CreateWallet::GetIconAndTint(FLinearColor& OutColor) const
-{
-	OutColor = FLinearColor(FColor::FromHex(TEXT("#f213a4")));
-	static const FSlateIcon Icon = FSlateIcon(FAppStyle::GetAppStyleSetName(), "Kismet.AllClasses.FunctionIcon");;
-	return Icon;
-}
-
-void UK2Node_CreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
-{
-	Super::PinDefaultValueChanged(Pin);
+	Super::Super::PinDefaultValueChanged(Pin);
 	if (Pin == GetTypePin() || Pin == GetSourcePin() || Pin == GetProviderPin())
 	{
 		CachedNodeTitle.MarkDirty();
@@ -138,35 +126,7 @@ void UK2Node_CreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
 	UpdatePins();
 }
 
-FText UK2Node_CreateWallet::GetMenuCategory() const
-{
-	return LOCTEXT("K2Node_CreateWallet_Category", "Thirdweb|Wallets|InApp");
-}
-
-void UK2Node_CreateWallet::PostReconstructNode()
-{
-	Super::PostReconstructNode();
-	UpdatePins();
-}
-
-void UK2Node_CreateWallet::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
-{
-	Super::NotifyPinConnectionListChanged(Pin);
-	UpdatePins();
-}
-
-void UK2Node_CreateWallet::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const
-{
-	Super::GetMenuActions(ActionRegistrar);
-	UClass* Action = GetClass();
-	if (ActionRegistrar.IsOpenForRegistration(Action))
-	{
-		UBlueprintNodeSpawner* Spawner = UBlueprintNodeSpawner::Create(GetClass());
-		ActionRegistrar.AddBlueprintAction(Action, Spawner);
-	}
-}
-
-void UK2Node_CreateWallet::AllocateDefaultPins()
+void UK2Node_ThirdwebCreateWallet::AllocateDefaultPins()
 {
 	// Execution pins
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
@@ -175,16 +135,29 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, CwPins::Failed);
 
 	// Base Selector Pin
-	SetNotConnectable(
-		SetFriendlyName(
-			CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebWalletType>(), CwPins::Type),
-			LOCTEXT("K2Node_CreateWallet_ThirdwebWalletType", "Kind")
+	SetPinConnectable(
+		SetPinFriendlyName(
+			SetPinDefaultValue(
+				CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebWalletType>(), CwPins::Type),
+				TEXT("InApp")
+			),
+			LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebWalletType", "Kind")
 		)
 	);
 
 	// In App Wallet Input Pins
-	SetNotConnectable(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source));
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider);
+	SetPinConnectable(
+		SetPinDefaultValue(
+			CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source),
+			TEXT("OAuth")
+		)
+	);
+
+	SetPinDefaultValue(
+		CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider),
+		TEXT("Google")
+	);
+	
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AuthInput);
 
 	// In App Wallet Output Pins
@@ -193,18 +166,18 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 	// Smart Wallet Input Pins
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), CwPins::InAppWallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Int64, CwPins::ChainID);
-	SetDefaultValue(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, CwPins::Gasless), true);
-	SetAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::Factory));
-	SetAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AccountOverride));
+	SetPinDefaultValue(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, CwPins::Gasless), TEXT("true"));
+	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::Factory));
+	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AccountOverride));
 
 	// Smart Wallet Output Pins
-	SetFriendlyName(
+	SetPinFriendlyName(
 		CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FSmartWalletHandle::StaticStruct(), CwPins::SmartWallet),
-		LOCTEXT("K2Node_CreateWallet_ThirdwebSmartWalletOutput", "Wallet")
+		LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebSmartWalletOutput", "Wallet")
 	);
 
 	// Ecosystem Input Pin
-	SetAdvancedView(SetPinVisibility(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::PartnerId), true));
+	SetPinAdvancedView(SetPinVisibility(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::PartnerId), true));
 
 	// Error Output Pin
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_String, CwPins::Error);
@@ -212,7 +185,7 @@ void UK2Node_CreateWallet::AllocateDefaultPins()
 	UpdatePins();
 }
 
-void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
 	bool bSmart = ResolvePinValue(GetTypePin()) == TEXT("Smart");
 	if (bSmart)
@@ -271,28 +244,23 @@ void UK2Node_CreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, U
 	}
 	RemovePin(GetTypePin());
 	RemovePin(GetSourcePin());
-	K2NodeUtils::Pins::RemoveHidden(this);
-	
+	RemoveHiddenPins(this);
+
 	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
-FString UK2Node_CreateWallet::ResolvePinValue(UEdGraphPin* Pin)
-{
-	return Pin ? Pin->LinkedTo.Num() > 0 ? Pin->LinkedTo[0]->DefaultValue : Pin->DefaultValue : FString();
-}
-
-void UK2Node_CreateWallet::UpdatePins()
+void UK2Node_ThirdwebCreateWallet::UpdatePins()
 {
 	if (UEdGraphPin* Pin = GetTypePin())
 	{
 		bool bSmart = ResolvePinValue(Pin) == TEXT("Smart");
-		SetHasAdvanced(UThirdwebRuntimeSettings::IsEcosystem() || bSmart);
+		SetNodeHasAdvanced(UThirdwebRuntimeSettings::IsEcosystem() || bSmart);
 		FString Source = ResolvePinValue(GetSourcePin());
 		SetPinVisibility(GetSourcePin(), !bSmart);
 		SetPinVisibility(GetProviderPin(), !bSmart && Source == TEXT("OAuth"));
-		SetFriendlyName(
+		SetPinFriendlyName(
 			SetPinVisibility(GetAuthInputPin(), !bSmart && (Source == TEXT("Phone") || Source == TEXT("Email"))),
-			Source == TEXT("Phone") ? LOCTEXT("K2Node_CreateWallet_ThirdwebPhone", "Phone Number") : LOCTEXT("K2Node_CreateWallet_ThirdwebEmail", "Email Address")
+			Source == TEXT("Phone") ? LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebPhone", "Phone Number") : LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebEmail", "Email Address")
 		);
 		SetPinVisibility(GetWalletPin(), !bSmart);
 		SetPinVisibility(GetInAppWalletPin(), bSmart);
@@ -308,8 +276,100 @@ void UK2Node_CreateWallet::UpdatePins()
 		{
 			Graph->NotifyGraphChanged();
 		}
-		
 	}
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetTypePin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Type);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetSourcePin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Source);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetProviderPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Provider);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetAuthInputPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::AuthInput);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Wallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetErrorPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Error);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
+// Smart Wallet Pins
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetInAppWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::InAppWallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetChainIDPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::ChainID);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetGaslessPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Gasless);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetFactoryPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::Factory);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetAccountOverridePin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::AccountOverride);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetSmartWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::SmartWallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
+// Ecosystem Pin
+UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetPartnerIDPin() const
+{
+	UEdGraphPin* Pin = FindPin(CwPins::PartnerId);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
 }
 
 #undef LOCTEXT_NAMESPACE

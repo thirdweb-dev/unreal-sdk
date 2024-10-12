@@ -3,7 +3,6 @@
 #pragma once
 
 #include "AsyncTaskThirdwebInAppCreateWalletBase.h"
-#include "ThirdwebRuntimeSettings.h"
 #include "AsyncTaskThirdwebCreateOAuthWallet.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)

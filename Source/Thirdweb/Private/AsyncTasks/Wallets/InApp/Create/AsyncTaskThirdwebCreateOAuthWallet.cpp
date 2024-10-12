@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateOAuthWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateOAuthWallet.h"
 
 #include "ThirdwebRuntimeSettings.h"
 

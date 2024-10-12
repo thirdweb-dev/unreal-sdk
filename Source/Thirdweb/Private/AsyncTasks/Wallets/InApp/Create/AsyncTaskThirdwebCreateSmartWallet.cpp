@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebCreateSmartWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Components/SlateWrapperTypes.h"
 
