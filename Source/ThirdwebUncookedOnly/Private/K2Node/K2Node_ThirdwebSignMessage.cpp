@@ -110,6 +110,7 @@ void UK2Node_ThirdwebSignMessage::UpdatePins()
 			{
 				Pin->PinType.PinCategory = UEdGraphSchema_K2::PC_Wildcard;
 				Pin->BreakAllPinLinks();
+				GetGraph()->NotifyGraphChanged();
 			}
 		}
 	}
