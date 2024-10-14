@@ -2,7 +2,6 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebGetAdmins.h"
 
-#include "FileHelpers.h"
 #include "ThirdwebSigner.h"
 
 #include "Components/SlateWrapperTypes.h"
