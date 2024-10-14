@@ -23,21 +23,10 @@
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 
-namespace CwPins
+namespace TwPins
 {
 	const FName Type = FName(TEXT("Type"));
 	const FName Source = FName(TEXT("Source"));
-	const FName Provider = FName(TEXT("Provider"));
-	const FName AuthInput = FName(TEXT("Input"));
-	const FName PartnerId = FName(TEXT("PartnerId"));
-	const FName Wallet = FName(TEXT("Wallet"));
-	const FName Success = FName(TEXT("Success"));
-	const FName Failed = FName(TEXT("Failed"));
-	const FName Error = FName(TEXT("Error"));
-
-	// Smart Wallet Pins
-	const FName InAppWallet = FName(TEXT("InAppWallet"));
-	const FName SmartWallet = FName(TEXT("SmartWallet"));
 	const FName ChainID = FName(TEXT("ChainID"));
 	const FName Gasless = FName(TEXT("bGasless"));
 	const FName Factory = FName(TEXT("Factory"));
@@ -116,7 +105,7 @@ void UK2Node_ThirdwebCreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
 		{
 			for (UEdGraphPin* P : Pins)
 			{
-				if (P->PinType.PinCategory != UEdGraphSchema_K2::PC_Exec && P->PinName != CwPins::Error)
+				if (P->PinType.PinCategory != UEdGraphSchema_K2::PC_Exec && P->PinName != TwPins::Error)
 				{
 					P->BreakAllPinLinks();
 				}
@@ -128,17 +117,13 @@ void UK2Node_ThirdwebCreateWallet::PinDefaultValueChanged(UEdGraphPin* Pin)
 
 void UK2Node_ThirdwebCreateWallet::AllocateDefaultPins()
 {
-	// Execution pins
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
-	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
-	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, CwPins::Success);
-	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, CwPins::Failed);
+	Super::AllocateDefaultPins();
 
 	// Base Selector Pin
 	SetPinConnectable(
 		SetPinFriendlyName(
 			SetPinDefaultValue(
-				CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebWalletType>(), CwPins::Type),
+				CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebWalletType>(), TwPins::Type),
 				TEXT("InApp")
 			),
 			LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebWalletType", "Kind")
@@ -148,41 +133,38 @@ void UK2Node_ThirdwebCreateWallet::AllocateDefaultPins()
 	// In App Wallet Input Pins
 	SetPinConnectable(
 		SetPinDefaultValue(
-			CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), CwPins::Source),
+			CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebInAppWalletSource>(), TwPins::Source),
 			TEXT("OAuth")
 		)
 	);
 
 	SetPinDefaultValue(
-		CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), CwPins::Provider),
+		CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Byte, StaticEnum<EThirdwebOAuthProvider>(), TwPins::Provider),
 		TEXT("Google")
 	);
 	
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AuthInput);
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Input);
 
 	// In App Wallet Output Pins
-	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), CwPins::Wallet);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::Wallet);
 
 	// Smart Wallet Input Pins
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), CwPins::InAppWallet);
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Int64, CwPins::ChainID);
-	SetPinDefaultValue(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, CwPins::Gasless), TEXT("true"));
-	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::Factory));
-	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::AccountOverride));
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::InAppWallet);
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Int64, TwPins::ChainID);
+	SetPinDefaultValue(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Boolean, TwPins::Gasless), TEXT("true"));
+	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Factory));
+	SetPinAdvancedView(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::AccountOverride));
 
 	// Smart Wallet Output Pins
 	SetPinFriendlyName(
-		CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FSmartWalletHandle::StaticStruct(), CwPins::SmartWallet),
+		CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FSmartWalletHandle::StaticStruct(), TwPins::SmartWallet),
 		LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebSmartWalletOutput", "Wallet")
 	);
 
 	// Ecosystem Input Pin
-	SetPinAdvancedView(SetPinVisibility(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, CwPins::PartnerId), true));
+	SetPinAdvancedView(SetPinVisibility(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::PartnerId), true));
 
-	// Error Output Pin
-	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_String, CwPins::Error);
-
-	UpdatePins();
+	PostAllocateDefaultPins();
 }
 
 void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
@@ -259,7 +241,7 @@ void UK2Node_ThirdwebCreateWallet::UpdatePins()
 		SetPinVisibility(GetSourcePin(), !bSmart);
 		SetPinVisibility(GetProviderPin(), !bSmart && Source == TEXT("OAuth"));
 		SetPinFriendlyName(
-			SetPinVisibility(GetAuthInputPin(), !bSmart && (Source == TEXT("Phone") || Source == TEXT("Email"))),
+			SetPinVisibility(GetInputPin(), !bSmart && (Source == TEXT("Phone") || Source == TEXT("Email"))),
 			Source == TEXT("Phone") ? LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebPhone", "Phone Number") : LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebEmail", "Email Address")
 		);
 		SetPinVisibility(GetWalletPin(), !bSmart);
@@ -270,7 +252,7 @@ void UK2Node_ThirdwebCreateWallet::UpdatePins()
 		SetPinVisibility(GetAccountOverridePin(), bSmart);
 		SetPinVisibility(GetSmartWalletPin(), bSmart);
 
-		SetPinVisibility(GetPartnerIDPin(), UThirdwebRuntimeSettings::IsEcosystem());
+		SetPinVisibility(GetPartnerIdPin(), UThirdwebRuntimeSettings::IsEcosystem());
 
 		if (UEdGraph* Graph = GetGraph())
 		{
@@ -281,94 +263,61 @@ void UK2Node_ThirdwebCreateWallet::UpdatePins()
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetTypePin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::Type);
+	UEdGraphPin* Pin = FindPin(TwPins::Type);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetSourcePin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::Source);
+	UEdGraphPin* Pin = FindPin(TwPins::Source);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
-UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetProviderPin() const
-{
-	UEdGraphPin* Pin = FindPin(CwPins::Provider);
-	check(Pin == NULL || Pin->Direction == EGPD_Input);
-	return Pin;
-}
 
-UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetAuthInputPin() const
-{
-	UEdGraphPin* Pin = FindPin(CwPins::AuthInput);
-	check(Pin == NULL || Pin->Direction == EGPD_Input);
-	return Pin;
-}
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetWalletPin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::Wallet);
-	check(Pin == NULL || Pin->Direction == EGPD_Output);
-	return Pin;
-}
-
-UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetErrorPin() const
-{
-	UEdGraphPin* Pin = FindPin(CwPins::Error);
+	UEdGraphPin* Pin = FindPin(TwPins::Wallet);
 	check(Pin == NULL || Pin->Direction == EGPD_Output);
 	return Pin;
 }
 
 // Smart Wallet Pins
-UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetInAppWalletPin() const
-{
-	UEdGraphPin* Pin = FindPin(CwPins::InAppWallet);
-	check(Pin == NULL || Pin->Direction == EGPD_Input);
-	return Pin;
-}
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetChainIDPin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::ChainID);
+	UEdGraphPin* Pin = FindPin(TwPins::ChainID);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetGaslessPin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::Gasless);
+	UEdGraphPin* Pin = FindPin(TwPins::Gasless);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetFactoryPin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::Factory);
+	UEdGraphPin* Pin = FindPin(TwPins::Factory);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetAccountOverridePin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::AccountOverride);
+	UEdGraphPin* Pin = FindPin(TwPins::AccountOverride);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
 UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetSmartWalletPin() const
 {
-	UEdGraphPin* Pin = FindPin(CwPins::SmartWallet);
+	UEdGraphPin* Pin = FindPin(TwPins::SmartWallet);
 	check(Pin == NULL || Pin->Direction == EGPD_Output);
-	return Pin;
-}
-
-// Ecosystem Pin
-UEdGraphPin* UK2Node_ThirdwebCreateWallet::GetPartnerIDPin() const
-{
-	UEdGraphPin* Pin = FindPin(CwPins::PartnerId);
-	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 

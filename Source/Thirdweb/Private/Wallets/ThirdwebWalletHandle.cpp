@@ -27,13 +27,19 @@ FString FWalletHandle::ToAddress() const
 	return Thirdweb::get_wallet_address(ID).AssignResult(Result) ? Result : ThirdwebUtils::ZeroAddress;
 }
 
-void FWalletHandle::Sign(const FString& Message, const FStringDelegate& ResponseDelegate) const
+void FWalletHandle::Sign(const FString& Message, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) const
 {
-	if (ResponseDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Message, SuccessDelegate, ErrorDelegate]
 	{
-		UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Message, ResponseDelegate]
+		if (FString Error; Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).AssignResult(Error))
 		{
-			ResponseDelegate.Execute(Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).GetOutput());
-		});
-	}
+			SuccessDelegate.Execute(Error);
+		} else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }

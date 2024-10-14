@@ -4,15 +4,26 @@
 
 #include "K2Node.h"
 #include "K2Node_ThirdwebBaseAsyncTask.h"
-#include "K2Node_ThirdwebSignIn.generated.h"
+#include "K2Node_ThirdwebLink.generated.h"
+
+namespace LPins
+{
+	extern const FName Input;
+	extern const FName Wallet;
+	extern const FName NewWallet;
+	extern const FName Success;
+	extern const FName Failed;
+	extern const FName Error;
+	
+}
 
 UCLASS()
-class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebSignIn : public UK2Node_ThirdwebBaseAsyncTask
+class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebLink : public UK2Node_ThirdwebBaseAsyncTask
 {
 	GENERATED_BODY()
 
 public:
-	UK2Node_ThirdwebSignIn();
+	UK2Node_ThirdwebLink();
 	
 	// UEdGraphNode interface implementation
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;

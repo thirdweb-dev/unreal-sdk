@@ -6,20 +6,12 @@
 #include "K2Node_ThirdwebBaseAsyncTask.h"
 #include "K2Node_ThirdwebCreateWallet.generated.h"
 
-namespace CwPins
+namespace TwPins
 {
 	extern const FName Type;
 	extern const FName Source;
 	extern const FName Provider;
-	extern const FName AuthInput;
-	extern const FName PartnerId;
-	extern const FName Wallet;
-	extern const FName Success;
-	extern const FName Failed;
-	extern const FName Error;
 	// Smart Wallet Pins
-	extern const FName InAppWallet;
-	extern const FName SmartWallet;
 	extern const FName ChainID;
 	extern const FName Gasless;
 	extern const FName Factory;
@@ -49,20 +41,12 @@ protected:
 	// Base Pins
 	UEdGraphPin* GetTypePin() const;
 	UEdGraphPin* GetSourcePin() const;
-	UEdGraphPin* GetProviderPin() const;
-	UEdGraphPin* GetAuthInputPin() const;
-	UEdGraphPin* GetWalletPin() const;
-	UEdGraphPin* GetErrorPin() const;
-
+	virtual UEdGraphPin* GetWalletPin() const override;
+	
 	// Smart Wallet Pins
-	UEdGraphPin* GetInAppWalletPin() const;
 	UEdGraphPin* GetChainIDPin() const;
 	UEdGraphPin* GetGaslessPin() const;
 	UEdGraphPin* GetFactoryPin() const;
 	UEdGraphPin* GetAccountOverridePin() const;
-	UEdGraphPin* GetSmartWalletPin() const;
-
-	// Ecosystem Pin
-	UEdGraphPin* GetPartnerIDPin() const;
-
+	virtual UEdGraphPin* GetSmartWalletPin() const override;
 };

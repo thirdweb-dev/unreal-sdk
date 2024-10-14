@@ -5,6 +5,19 @@
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
 
+namespace TwPins
+{
+	const FName Provider = FName(TEXT("Provider"));
+	const FName Input = FName(TEXT("Input"));
+	const FName PartnerId = FName(TEXT("PartnerId"));
+	const FName Wallet = FName(TEXT("Wallet"));
+	const FName InAppWallet = FName(TEXT("InAppWallet"));
+	const FName SmartWallet = FName(TEXT("SmartWallet"));
+	const FName Success = FName(TEXT("Success"));
+	const FName Failed = FName(TEXT("Failed"));
+	const FName Error = FName(TEXT("Error"));
+}
+
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
 
 FLinearColor UK2Node_ThirdwebBaseAsyncTask::GetNodeTitleColor() const
@@ -42,14 +55,21 @@ void UK2Node_ThirdwebBaseAsyncTask::NotifyPinConnectionListChanged(UEdGraphPin* 
 	UpdatePins();
 }
 
-void UK2Node_ThirdwebBaseAsyncTask::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const
+void UK2Node_ThirdwebBaseAsyncTask::AllocateDefaultPins()
 {
-	Super::GetMenuActions(ActionRegistrar);
-	if (UClass* Action = GetClass(); ActionRegistrar.IsOpenForRegistration(Action))
-	{
-		UBlueprintNodeSpawner* Spawner = UBlueprintNodeSpawner::Create(GetClass());
-		ActionRegistrar.AddBlueprintAction(Action, Spawner);
-	}
+	// Execution pins
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, TwPins::Success);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, TwPins::Failed);
+}
+
+void UK2Node_ThirdwebBaseAsyncTask::PostAllocateDefaultPins()
+{
+	// Error Output Pin
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_String, TwPins::Error);
+
+	UpdatePins();
 }
 
 UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::SetPinVisibility(UEdGraphPin* Pin, const bool bShow)
@@ -102,6 +122,11 @@ void UK2Node_ThirdwebBaseAsyncTask::RemoveHiddenPins(UK2Node* K2Node)
 	}
 }
 
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetConnectedPin(UEdGraphPin* Pin)
+{
+	return Pin && Pin->LinkedTo.Num() > 0 ? Pin->LinkedTo[0] : nullptr;
+}
+
 FString UK2Node_ThirdwebBaseAsyncTask::ResolvePinValue(UEdGraphPin* Pin)
 {
 	return Pin ? Pin->LinkedTo.Num() > 0 ? Pin->LinkedTo[0]->DefaultValue : Pin->DefaultValue : FString();
@@ -130,4 +155,68 @@ void UK2Node_ThirdwebBaseAsyncTask::SetNodeHasAdvanced(const bool bHasAdvanced)
 		AdvancedPinDisplay = ENodeAdvancedPins::NoPins;
 	}
 }
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetProviderPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Provider);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetInputPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Input);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetPartnerIdPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::PartnerId);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Wallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetInAppWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::InAppWallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetSmartWalletPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::SmartWallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetSuccessPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Success);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetFailedPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Failed);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetErrorPin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Error);
+	check(Pin == NULL || Pin->Direction == EGPD_Output);
+	return Pin;
+}
+
 #undef LOCTEXT_NAMESPACE

@@ -15,31 +15,6 @@
 
 #include "Misc/DefaultValueHelper.h"
 
-#define CHECK_DELEGATES(SuccessDelegate, ErrorDelegate) \
-	if (!SuccessDelegate.IsBound()) \
-	{ \
-		if (ErrorDelegate.IsBound()) \
-		{ \
-			TW_LOG(Error, TEXT("No SuccessDelegate bound::%s"), UE_SOURCE_LOCATION) \
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound")); \
-		} \
-		return; \
-	} \
-	if (!ErrorDelegate.IsBound()) { \
-		TW_LOG(Error, TEXT("No ErrorDelegate bound::%s"), UE_SOURCE_LOCATION) \
-	}
-
-#define CHECK_VALIDITY(ErrorDelegate) \
-	if (!IsValid()) \
-	{ \
-		TW_LOG(Error, TEXT("Invalid wallet handle")) \
-		if (ErrorDelegate.IsBound()) \
-		{ \
-			ErrorDelegate.Execute(TEXT("Invalid wallet handle")); \
-		} \
-		return; \
-	}
-
 #define CHECK_ECOSYSTEM(ErrorDelegate) \
 	if (UThirdwebRuntimeSettings::GetEcosystemId().IsEmpty()) \
 	{ \

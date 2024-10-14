@@ -26,6 +26,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FErrorOnlyDelegate Success;
 
+	UPROPERTY(BlueprintAssignable)
+	FErrorOnlyDelegate Failed;
+
 protected:
 	UPROPERTY(Transient)
 	UThirdwebOAuthBrowserUserWidget* Browser;

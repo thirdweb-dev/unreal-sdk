@@ -4,15 +4,21 @@
 
 #include "K2Node.h"
 #include "K2Node_ThirdwebBaseAsyncTask.h"
-#include "K2Node_ThirdwebSignIn.generated.h"
+#include "K2Node_ThirdwebSignMessage.generated.h"
+
+namespace TwPins
+{
+	extern const FName Message;
+	extern const FName SignedMessage;
+}
 
 UCLASS()
-class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebSignIn : public UK2Node_ThirdwebBaseAsyncTask
+class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebSignMessage : public UK2Node_ThirdwebBaseAsyncTask
 {
 	GENERATED_BODY()
 
 public:
-	UK2Node_ThirdwebSignIn();
+	UK2Node_ThirdwebSignMessage();
 	
 	// UEdGraphNode interface implementation
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
@@ -22,7 +28,12 @@ public:
 
 	// UK2Node interface implementation
 	virtual FText GetMenuCategory() const override;
+	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
 	// End of implementation
 	
 	virtual void AllocateDefaultPins() override;
+	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
+
+protected:
+	virtual void UpdatePins() override;
 };

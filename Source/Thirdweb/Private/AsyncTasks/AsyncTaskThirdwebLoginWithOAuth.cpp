@@ -51,6 +51,6 @@ void UAsyncTaskThirdwebLoginWithOAuth::HandleSignedIn()
 void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
 {
 	Browser->RemoveFromParent();
-	Success.Broadcast(TEXT(""));
+	Failed.Broadcast(TEXT(""));
 	SetReadyToDestroy();
 }

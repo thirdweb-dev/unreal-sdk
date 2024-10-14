@@ -5,9 +5,19 @@
 #include "K2Node_BaseAsyncTask.h"
 #include "K2Node_ThirdwebBaseAsyncTask.generated.h"
 
-/**
- * 
- */
+namespace TwPins
+{
+	extern const FName Provider;
+	extern const FName Input;
+	extern const FName PartnerId;
+	extern const FName Wallet;
+	extern const FName InAppWallet;
+	extern const FName SmartWallet;
+	extern const FName Success;
+	extern const FName Failed;
+	extern const FName Error;
+}
+
 UCLASS(Abstract)
 class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebBaseAsyncTask : public UK2Node_BaseAsyncTask
 {
@@ -30,8 +40,8 @@ public:
 	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
 	// End of implementation
 
-	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
-	
+	virtual void AllocateDefaultPins() override;
+	virtual void PostAllocateDefaultPins();
 protected:
 	/** Set the value of `bHidden` on the pin */
 	static UEdGraphPin* SetPinVisibility(UEdGraphPin* Pin, const bool bShow);
@@ -47,6 +57,9 @@ protected:
 	
 	/** Destroy all hidden pins */
 	static void RemoveHiddenPins(UK2Node* K2Node);
+
+	/** Get the pin connected to the current pin */
+	static UEdGraphPin* GetConnectedPin(UEdGraphPin* Pin);
 	
 	/** Get the resolved value of the pin */
 	static FString ResolvePinValue(UEdGraphPin* Pin);
@@ -58,4 +71,16 @@ protected:
 	virtual void UpdatePins() {}
 	/** Set the value of `AdvancedPinDisplay` on the node */
 	void SetNodeHasAdvanced(const bool bHasAdvanced);
+
+
+	/** Pin Getters */
+	virtual UEdGraphPin* GetProviderPin() const;
+	virtual UEdGraphPin* GetInputPin() const;
+	virtual UEdGraphPin* GetPartnerIdPin() const;
+	virtual UEdGraphPin* GetWalletPin() const;
+	virtual UEdGraphPin* GetInAppWalletPin() const;
+	virtual UEdGraphPin* GetSmartWalletPin() const;
+	virtual UEdGraphPin* GetSuccessPin() const;
+	virtual UEdGraphPin* GetFailedPin() const;
+	virtual UEdGraphPin* GetErrorPin() const;
 };

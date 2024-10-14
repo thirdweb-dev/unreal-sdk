@@ -5,6 +5,32 @@
 #include "ThirdwebMacros.h"
 #include "ThirdwebWalletHandle.generated.h"
 
+#define CHECK_DELEGATES(SuccessDelegate, ErrorDelegate) \
+	if (!SuccessDelegate.IsBound()) \
+	{ \
+		if (ErrorDelegate.IsBound()) \
+		{ \
+			TW_LOG(Error, TEXT("No SuccessDelegate bound::%s"), UE_SOURCE_LOCATION) \
+			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound")); \
+		} \
+		return; \
+	} \
+	if (!ErrorDelegate.IsBound()) { \
+		TW_LOG(Error, TEXT("No ErrorDelegate bound::%s"), UE_SOURCE_LOCATION) \
+		return; \
+	}
+
+#define CHECK_VALIDITY(ErrorDelegate) \
+	if (!IsValid()) \
+	{ \
+		TW_LOG(Error, TEXT("Invalid wallet handle")) \
+		if (ErrorDelegate.IsBound()) \
+		{ \
+			ErrorDelegate.Execute(TEXT("Invalid wallet handle")); \
+		} \
+		return; \
+	}
+
 USTRUCT()
 struct THIRDWEB_API FWalletHandle
 {
@@ -47,12 +73,13 @@ struct THIRDWEB_API FWalletHandle
 	virtual FString ToAddress() const;
 
 	/**
-	 * Signs the provided message using the wallet handle.
+	 * Signs a given message using the wallet handle.
 	 *
-	 * @param Message The message to be signed as a string.
-	 * @param ResponseDelegate A delegate to handle the response containing the signed message.
+	 * @param Message The message to be signed.
+	 * @param SuccessDelegate Delegate that gets called upon a successful signing operation.
+	 * @param ErrorDelegate Delegate that gets called if an error occurs during the signing operation.
 	 */
-	virtual void Sign(const FString& Message, const FStringDelegate& ResponseDelegate) const;
+	virtual void Sign(const FString& Message, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) const;
 
 	/**
 	 * Get the type of wallet handle.
