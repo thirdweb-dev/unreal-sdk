@@ -25,12 +25,42 @@ UAsyncTaskThirdwebGetAdmins* UAsyncTaskThirdwebGetAdmins::GetAdmins(UObject* Wor
 
 void UAsyncTaskThirdwebGetAdmins::HandleResponse(const TArray<FString>& Admins)
 {
-	Success.Broadcast(Admins, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(Admins, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetAdmins> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Admins]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(Admins);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebGetAdmins::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast({}, Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast({}, Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetAdmins> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

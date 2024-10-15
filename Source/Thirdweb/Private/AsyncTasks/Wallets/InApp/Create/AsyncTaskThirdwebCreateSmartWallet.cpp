@@ -7,11 +7,11 @@
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 
 UAsyncTaskThirdwebCreateSmartWallet* UAsyncTaskThirdwebCreateSmartWallet::CreateSmartWallet(UObject* WorldContextObject,
-	const FInAppWalletHandle& InAppWallet,
-	const int64 ChainID,
-	const bool bGasless,
-	const FString& Factory,
-	const FString& AccountOverride)
+                                                                                            const FInAppWalletHandle& InAppWallet,
+                                                                                            const int64 ChainID,
+                                                                                            const bool bGasless,
+                                                                                            const FString& Factory,
+                                                                                            const FString& AccountOverride)
 {
 	if (!WorldContextObject)
 	{
@@ -39,18 +39,47 @@ void UAsyncTaskThirdwebCreateSmartWallet::Activate()
 		AccountOverride,
 		BIND_UOBJECT_DELEGATE(FSmartWalletHandle::FCreateSmartWalletDelegate, HandleResponse),
 		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
-		);
-
+	);
 }
 
 void UAsyncTaskThirdwebCreateSmartWallet::HandleResponse(const FSmartWalletHandle& Wallet)
 {
-	Success.Broadcast(Wallet, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(Wallet, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebCreateSmartWallet> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Wallet]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(Wallet);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebCreateSmartWallet::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(FSmartWalletHandle(), Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(FSmartWalletHandle(), Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebCreateSmartWallet> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

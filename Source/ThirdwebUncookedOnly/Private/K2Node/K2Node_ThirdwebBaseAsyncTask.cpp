@@ -5,6 +5,8 @@
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
 
+#include "Kismet/BlueprintAsyncActionBase.h"
+
 namespace TwPins
 {
 	const FName Provider = FName(TEXT("Provider"));
@@ -19,6 +21,11 @@ namespace TwPins
 }
 
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
+
+UK2Node_ThirdwebBaseAsyncTask::UK2Node_ThirdwebBaseAsyncTask()
+{
+	ProxyActivateFunctionName = GET_FUNCTION_NAME_CHECKED(UBlueprintAsyncActionBase, Activate);
+}
 
 FLinearColor UK2Node_ThirdwebBaseAsyncTask::GetNodeTitleColor() const
 {

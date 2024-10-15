@@ -27,12 +27,42 @@ UAsyncTaskThirdwebRevokeSessionKey* UAsyncTaskThirdwebRevokeSessionKey::RevokeSe
 
 void UAsyncTaskThirdwebRevokeSessionKey::HandleResponse()
 {
-	Success.Broadcast(TEXT(""));
-	return SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebRevokeSessionKey> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse();
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebRevokeSessionKey::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebRevokeSessionKey> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

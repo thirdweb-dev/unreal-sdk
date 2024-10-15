@@ -24,21 +24,51 @@ UAsyncTaskThirdwebIsDeployed* UAsyncTaskThirdwebIsDeployed::IsDeployed(UObject* 
 	return Task;
 }
 
-
 void UAsyncTaskThirdwebIsDeployed::HandleResponse(const bool& bIsDeployed)
 {
-	if (bIsDeployed)
+	if (IsInGameThread())
 	{
-		Deployed.Broadcast(TEXT(""));
-	} else
-	{
-		NotDeployed.Broadcast(TEXT(""));
+		if (bIsDeployed)
+		{
+			Deployed.Broadcast(TEXT(""));
+		}
+		else
+		{
+			NotDeployed.Broadcast(TEXT(""));
+		}
+		SetReadyToDestroy();
 	}
-	SetReadyToDestroy();
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebIsDeployed> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, bIsDeployed]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(bIsDeployed);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebIsDeployed::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebIsDeployed> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

@@ -23,12 +23,42 @@ UAsyncTaskThirdwebGetLinkedAccounts* UAsyncTaskThirdwebGetLinkedAccounts::GetLin
 
 void UAsyncTaskThirdwebGetLinkedAccounts::HandleResponse(const TArray<FString>& LinkedAccounts)
 {
-	Success.Broadcast(LinkedAccounts, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(LinkedAccounts, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetLinkedAccounts> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, LinkedAccounts]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(LinkedAccounts);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebGetLinkedAccounts::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast({}, Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast({}, Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetLinkedAccounts> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

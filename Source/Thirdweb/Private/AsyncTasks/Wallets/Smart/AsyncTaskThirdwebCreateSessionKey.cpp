@@ -50,12 +50,42 @@ UAsyncTaskThirdwebCreateSessionKey* UAsyncTaskThirdwebCreateSessionKey::CreateSe
 
 void UAsyncTaskThirdwebCreateSessionKey::HandleResponse(const FString& TxHash)
 {
-	Success.Broadcast(TxHash, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(TxHash, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebCreateSessionKey> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, TxHash]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(TxHash);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebCreateSessionKey::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(TEXT(""), Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(TEXT(""), Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebCreateSessionKey> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

@@ -27,6 +27,8 @@ protected:
 	FNodeTextCache CachedNodeTitle;
 	
 public:
+	UK2Node_ThirdwebBaseAsyncTask();
+	
 	// UEdGraphNode interface implementation
 	virtual FLinearColor GetNodeTitleColor() const override;
 	virtual FSlateIcon GetIconAndTint(FLinearColor& OutColor) const override;

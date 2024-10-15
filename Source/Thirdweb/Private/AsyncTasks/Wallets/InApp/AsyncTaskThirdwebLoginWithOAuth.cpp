@@ -43,14 +43,44 @@ void UAsyncTaskThirdwebLoginWithOAuth::HandleAuthenticated(const FString& AuthRe
 
 void UAsyncTaskThirdwebLoginWithOAuth::HandleSignedIn()
 {
-	Success.Broadcast(TEXT(""));
-	Browser->RemoveFromParent();
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(TEXT(""));
+		Browser->RemoveFromParent();
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebLoginWithOAuth> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleSignedIn();
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
 {
-	Browser->RemoveFromParent();
-	Failed.Broadcast(TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Browser->RemoveFromParent();
+		Failed.Broadcast(TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebLoginWithOAuth> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

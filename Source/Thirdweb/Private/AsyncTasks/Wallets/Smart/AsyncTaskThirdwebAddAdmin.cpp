@@ -27,12 +27,42 @@ UAsyncTaskThirdwebAddAdmin* UAsyncTaskThirdwebAddAdmin::AddAdmin(UObject* WorldC
 
 void UAsyncTaskThirdwebAddAdmin::HandleResponse()
 {
-	Success.Broadcast((""));
-	return SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebAddAdmin> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse();
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebAddAdmin::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebAddAdmin> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

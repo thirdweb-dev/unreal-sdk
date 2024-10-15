@@ -24,12 +24,42 @@ UAsyncTaskThirdwebSmartSignMessage* UAsyncTaskThirdwebSmartSignMessage::SignMess
 
 void UAsyncTaskThirdwebSmartSignMessage::HandleResponse(const FString& SignedMessage)
 {
-	Success.Broadcast(SignedMessage, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(SignedMessage, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebSmartSignMessage> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, SignedMessage]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(SignedMessage);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebSmartSignMessage::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(TEXT(""), Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(TEXT(""), Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebSmartSignMessage> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

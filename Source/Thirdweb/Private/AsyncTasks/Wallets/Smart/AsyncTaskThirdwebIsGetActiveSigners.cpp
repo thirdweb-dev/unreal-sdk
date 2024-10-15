@@ -30,18 +30,47 @@ void UAsyncTaskThirdwebGetActiveSigners::HandleIsDeployedResponse(const bool& bD
 	{
 		return SmartWallet.GetActiveSigners(BIND_UOBJECT_DELEGATE(FSmartWalletHandle::FGetActiveSignersDelegate, HandleResponse), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 	}
-	Success.Broadcast({}, TEXT(""));
-	SetReadyToDestroy();
+	HandleResponse({});
 }
 
 void UAsyncTaskThirdwebGetActiveSigners::HandleResponse(const TArray<FSigner>& Signers)
 {
-	Success.Broadcast(Signers, TEXT(""));
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Success.Broadcast(Signers, TEXT(""));
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetActiveSigners> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Signers]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleResponse(Signers);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }
 
 void UAsyncTaskThirdwebGetActiveSigners::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast({}, Error);
-	SetReadyToDestroy();
+	if (IsInGameThread())
+	{
+		Failed.Broadcast({}, Error);
+		SetReadyToDestroy();
+	}
+	else
+	{
+		// Retry on the GameThread.
+		TWeakObjectPtr<UAsyncTaskThirdwebGetActiveSigners> WeakThis = this;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->HandleFailed(Error);
+			}
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
 }

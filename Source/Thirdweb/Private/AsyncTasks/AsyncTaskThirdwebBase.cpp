@@ -4,5 +4,4 @@
 
 void UAsyncTaskThirdwebBase::Activate()
 {
-	
 }
