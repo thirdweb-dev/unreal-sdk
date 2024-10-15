@@ -2,9 +2,11 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSendOTP.h"
 
+#include "Components/SlateWrapperTypes.h"
+
 void UAsyncTaskThirdwebSendOTP::Activate()
 {
-	InAppWallet.SendOTP(FStreamableDelegate::CreateUObject(this, &ThisClass::HandleResponse), FStringDelegate::CreateUObject(this, &ThisClass::HandleFailed));
+	InAppWallet.SendOTP(BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 }
 
 UAsyncTaskThirdwebSendOTP* UAsyncTaskThirdwebSendOTP::SendOTP(UObject* WorldContextObject, const FInAppWalletHandle& Wallet)

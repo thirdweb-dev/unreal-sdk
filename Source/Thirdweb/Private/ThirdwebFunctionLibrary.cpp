@@ -9,6 +9,8 @@
 #include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
 
+#include "Data/ThirdwebCountryCodes.h"
+
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
@@ -142,5 +144,15 @@ FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const
 FString UThirdwebFunctionLibrary::BP_ZeroAddress()
 {
 	return ThirdwebUtils::ZeroAddress;
+}
+
+FThirdwebCountryCode UThirdwebFunctionLibrary::BP_GetCountryCodeData(const int32 CountryCode)
+{
+	return ThirdwebCountryCodes::GetCountryCodeData(CountryCode);
+}
+
+TArray<FThirdwebCountryCode> UThirdwebFunctionLibrary::BP_GetAllCountryCodeData()
+{
+	return ThirdwebCountryCodes::GetCountryCodesArray();
 }
 

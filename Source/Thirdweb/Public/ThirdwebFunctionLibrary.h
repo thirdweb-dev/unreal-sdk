@@ -6,7 +6,7 @@
 
 #include "ThirdwebFunctionLibrary.generated.h"
 
-
+struct FThirdwebCountryCode;
 struct FInAppWalletHandle;
 struct FSmartWalletHandle;
 enum class EFunctionResult : uint8;
@@ -124,6 +124,17 @@ public:
 	UFUNCTION(BlueprintPure, meta=(DisplayName="To Checksummed Address", AutoCreateRefTerm="Address"), Category="Utilities|Text")
 	static FText Conv_TextAddressToStringChecksummedAddress(const FText& Address);
 
+	/** Constant for the ethereum zero address */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
 	static FString BP_ZeroAddress();
+
+	/// Data
+
+	/** Gets the country code data for the input country code, if it exists */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Country Code Data"), Category="Utilities|Country Codes")
+	static FThirdwebCountryCode BP_GetCountryCodeData(const int32 CountryCode);
+
+	/** Gets all country code data */
+	UFUNCTION(BlueprintPure, meta=(DisplayName="Get All Country Code Data"), Category="Utilities|Country Codes")
+	static TArray<FThirdwebCountryCode> BP_GetAllCountryCodeData();
 };

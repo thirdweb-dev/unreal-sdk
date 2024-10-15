@@ -17,7 +17,8 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 	GENERATED_BODY()
 
 	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
-
+	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FString>&);
+	
 	enum EInAppSource
 	{
 		InvalidSource,
@@ -281,6 +282,14 @@ public:
 	 */
 	void LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
+	/**
+	 * Retrieves the linked accounts associated with this FInAppWalletHandle.
+	 *
+	 * @param SuccessDelegate Delegate that will be executed with the linked accounts information if the operation is successful.
+	 * @param ErrorDelegate Delegate that will be executed with an error message if the operation fails.
+	 */
+	void GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
 	/**
 	 * Retrieves the source of the in-app wallet.
 	 *

@@ -768,6 +768,24 @@ void FInAppWalletHandle::LinkGuest(const FInAppWalletHandle& Wallet, const FStre
 	});
 }
 
+void FInAppWalletHandle::GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
+	{
+		FString Output;
+		if (Thirdweb::ecosystem_wallet_get_linked_accounts(ID).AssignResult(Output))
+		{
+			TW_LOG(Warning, TEXT("FInAppWalletHandle::GetLinkedAccounts::%s"), *Output);
+			SuccessDelegate.Execute({Output});
+			return;
+		}
+		ErrorDelegate.Execute(Output);
+	});
+}
+
 FString FInAppWalletHandle::GetDisplayName() const
 {
 	return IsValid()
