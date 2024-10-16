@@ -7,8 +7,9 @@
 #include "ThirdwebInternal.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
+
+#include "Containers/ThirdwebSigner.h"
 
 #include "Dom/JsonObject.h"
 

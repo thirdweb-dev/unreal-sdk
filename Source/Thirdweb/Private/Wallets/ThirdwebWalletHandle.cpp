@@ -4,22 +4,11 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
 #include "ThirdwebMacros.h"
-#include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
 
-#include "Dom/JsonObject.h"
+#include "Tasks/Task.h"
 
-#include "GenericPlatform/GenericPlatformHttp.h"
-
-#include "Kismet/KismetStringLibrary.h"
-
-#include "Misc/DefaultValueHelper.h"
-
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
 
 FString FWalletHandle::ToAddress() const
 {

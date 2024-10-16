@@ -6,7 +6,6 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
 
 #include "Data/ThirdwebCountryCodes.h"

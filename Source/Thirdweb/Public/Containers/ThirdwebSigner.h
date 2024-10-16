@@ -28,5 +28,5 @@ struct THIRDWEB_API FSigner
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Thirdweb|Wallets|Smart Wallet|Signer")
 	FDateTime EndTime;
 
-	static FSigner FromJson(const TSharedPtr<FJsonObject> &JsonObject);
+	static FSigner FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 };

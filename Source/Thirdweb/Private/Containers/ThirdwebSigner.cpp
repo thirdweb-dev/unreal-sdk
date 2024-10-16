@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "ThirdwebSigner.h"
+#include "Containers/ThirdwebSigner.h"
 
 FSigner FSigner::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {

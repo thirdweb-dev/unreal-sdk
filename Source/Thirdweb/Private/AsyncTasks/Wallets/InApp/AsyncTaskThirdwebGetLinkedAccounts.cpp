@@ -21,7 +21,7 @@ UAsyncTaskThirdwebGetLinkedAccounts* UAsyncTaskThirdwebGetLinkedAccounts::GetLin
 	return Task;
 }
 
-void UAsyncTaskThirdwebGetLinkedAccounts::HandleResponse(const TArray<FString>& LinkedAccounts)
+void UAsyncTaskThirdwebGetLinkedAccounts::HandleResponse(const TArray<FThirdwebLinkedAccount>& LinkedAccounts)
 {
 	if (IsInGameThread())
 	{

@@ -1,10 +1,10 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "ThirdwebSigner.h"
-
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebGetActiveSigners.h"
 
 #include "Components/SlateWrapperTypes.h"
+
+#include "Containers/ThirdwebSigner.h"
 
 void UAsyncTaskThirdwebGetActiveSigners::Activate()
 {

@@ -9,6 +9,8 @@
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
 
+#include "Containers/ThirdwebLinkedAccount.h"
+
 #include "GenericPlatform/GenericPlatformHttp.h"
 
 #include "Kismet/KismetStringLibrary.h"
@@ -780,8 +782,18 @@ void FInAppWalletHandle::GetLinkedAccounts(const FGetLinkedAccountsDelegate& Suc
 		FString Output;
 		if (Thirdweb::ecosystem_wallet_get_linked_accounts(ID).AssignResult(Output))
 		{
-			TW_LOG(Warning, TEXT("FInAppWalletHandle::GetLinkedAccounts::%s"), *Output);
-			SuccessDelegate.Execute({Output});
+			TArray<FThirdwebLinkedAccount> LinkedAccounts;
+			TArray<TSharedPtr<FJsonValue>> JsonValueArray;
+			const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Output);
+			FJsonSerializer::Deserialize(Reader, JsonValueArray);
+			for (int i = 0; i < JsonValueArray.Num(); i++)
+			{
+				if (JsonValueArray[i]->Type == EJson::Object)
+				{
+					LinkedAccounts.Emplace(FThirdwebLinkedAccount::FromJson(JsonValueArray[i]->AsObject()));
+				}
+			}
+			SuccessDelegate.Execute(LinkedAccounts);
 			return;
 		}
 		ErrorDelegate.Execute(Output);

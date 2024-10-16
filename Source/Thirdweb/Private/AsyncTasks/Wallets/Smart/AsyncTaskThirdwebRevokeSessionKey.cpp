@@ -2,8 +2,6 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebRevokeSessionKey.h"
 
-#include "ThirdwebSigner.h"
-
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebRevokeSessionKey::Activate()

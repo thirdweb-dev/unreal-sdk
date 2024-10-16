@@ -2,8 +2,6 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebAddAdmin.h"
 
-#include "ThirdwebSigner.h"
-
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebAddAdmin::Activate()
