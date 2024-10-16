@@ -15,6 +15,25 @@
 
 #include "Misc/DefaultValueHelper.h"
 
+#define CHECK_ECOSYSTEM(ErrorDelegate) \
+	if (UThirdwebRuntimeSettings::GetEcosystemId().IsEmpty()) \
+	{ \
+		TW_LOG(Error, TEXT("Ecosystem ID not set in settings")) \
+		if (ErrorDelegate.IsBound()) \
+		{ \
+			ErrorDelegate.Execute(TEXT("Ecosystem ID not set in settings")); \
+		} \
+		return; \
+	}
+
+#define CHECK_SOURCE(InSource) \
+	if (Source != InSource) \
+	{ \
+		TW_LOG(Error, TEXT("Wallet handle is not %s source"), FInAppWalletHandle::GetSourceString(InSource)) \
+		ErrorDelegate.Execute(FString::Format(TEXT("Wallet handle is not %s source"), FInAppWalletHandle::GetSourceString(InSource))); \
+		return; \
+	}
+
 FInAppWalletHandle::FInAppWalletHandle()
 {
 	Type = InApp;
@@ -60,185 +79,233 @@ bool FInAppWalletHandle::IsValid() const
 	return Super::IsValid() && Source != InvalidSource;
 }
 
-bool FInAppWalletHandle::CreateEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateEmailWallet(const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (Thirdweb::create_in_app_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		TO_RUST_STRING(Email),
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		nullptr
-	).AssignResult(Error))
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Email, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(EInAppSource::Email, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			TO_RUST_STRING(Email),
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			nullptr
+		).AssignResult(Error))
+		{
+			SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Email, Error));
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateEcosystemEmailWallet(const FString& PartnerId, const FString& Email, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateEcosystemEmailWallet(const FString& PartnerId, const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (UThirdwebRuntimeSettings::GetEcosystemId().IsEmpty())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [PartnerId, Email, SuccessDelegate, ErrorDelegate]
 	{
-		Error = TEXT("Ecosystem ID not set in settings");
-		return false;
-	}
-	if (Thirdweb::create_ecosystem_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
-		TO_RUST_STRING(PartnerId),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		TO_RUST_STRING(Email),
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		nullptr
-	).AssignResult(Error))
-	{
-		Wallet = FInAppWalletHandle(EInAppSource::Email, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_ecosystem_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
+			TO_RUST_STRING(PartnerId),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			TO_RUST_STRING(Email),
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			nullptr
+		).AssignResult(Error))
+		{
+			FInAppWalletHandle Wallet = FInAppWalletHandle(EInAppSource::Email, Error);
+			Wallet.EcosystemPartnerId = PartnerId;
+			SuccessDelegate.Execute(Wallet);
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateOAuthWallet(const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateOAuthWallet(const EThirdwebOAuthProvider Provider, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (Thirdweb::create_in_app_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
-	).AssignResult(Error))
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Provider, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(Provider, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
+		).AssignResult(Error))
+		{
+			SuccessDelegate.Execute(FInAppWalletHandle(Provider, Error));
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateEcosystemOAuthWallet(const FString& PartnerId, const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateEcosystemOAuthWallet(const FString& PartnerId,
+                                                    const EThirdwebOAuthProvider Provider,
+                                                    const FCreateInAppWalletDelegate& SuccessDelegate,
+                                                    const FStringDelegate& ErrorDelegate)
 {
-	if (UThirdwebRuntimeSettings::GetEcosystemId().IsEmpty())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [PartnerId, Provider, SuccessDelegate, ErrorDelegate]
 	{
-		Error = TEXT("Ecosystem ID not set in settings");
-		return false;
-	}
-	if (Thirdweb::create_ecosystem_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
-		TO_RUST_STRING(PartnerId),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
-	).AssignResult(Error))
-	{
-		Wallet = FInAppWalletHandle(Provider, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_ecosystem_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
+			TO_RUST_STRING(PartnerId),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			TO_RUST_STRING(ThirdwebUtils::ToString(Provider))
+		).AssignResult(Error))
+		{
+			FInAppWalletHandle Wallet = FInAppWalletHandle(Provider, Error);
+			Wallet.EcosystemPartnerId = PartnerId;
+			SuccessDelegate.Execute(Wallet);
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreatePhoneWallet(const FString& Phone, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreatePhoneWallet(const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (Thirdweb::create_in_app_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(Phone),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		nullptr
-	).AssignResult(Error))
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Phone, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(EInAppSource::Phone, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(Phone),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			nullptr
+		).AssignResult(Error))
+		{
+			SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Phone, Error));
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateEcosystemPhoneWallet(const FString& PartnerId, const FString& Phone, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateEcosystemPhoneWallet(const FString& PartnerId, const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (Thirdweb::create_ecosystem_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
-		TO_RUST_STRING(PartnerId),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(Phone),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		nullptr
-	).AssignResult(Error))
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [PartnerId, Phone, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(EInAppSource::Phone, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_ecosystem_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
+			TO_RUST_STRING(PartnerId),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(Phone),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			nullptr
+		).AssignResult(Error))
+		{
+			FInAppWalletHandle Wallet = FInAppWalletHandle(EInAppSource::Phone, Error);
+			Wallet.EcosystemPartnerId = PartnerId;
+			SuccessDelegate.Execute(Wallet);
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateCustomAuthWallet(const EInAppSource Source, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateCustomAuthWallet(const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	if (Source != Jwt && Source != AuthEndpoint && Source != Guest)
 	{
-		Error = TEXT("Invalid custom auth source");
-		return false;
+		if (ErrorDelegate.IsBound())
+		{
+			ErrorDelegate.Execute(TEXT("Invalid custom auth source"));
+		}
+		return;
 	}
-
-	if (Thirdweb::create_in_app_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		TO_RUST_STRING(FString(GetSourceString(Source)))
-	).AssignResult(Error))
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Source, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(Source, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_in_app_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			TO_RUST_STRING(FString(GetSourceString(Source)))
+		).AssignResult(Error))
+		{
+			SuccessDelegate.Execute(FInAppWalletHandle(Source, Error));
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
-bool FInAppWalletHandle::CreateEcosystemCustomAuthWallet(const FString& PartnerId, const EInAppSource Source, FInAppWalletHandle& Wallet, FString& Error)
+void FInAppWalletHandle::CreateEcosystemCustomAuthWallet(const FString& PartnerId, const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
 	if (Source != Jwt && Source != AuthEndpoint && Source != Guest)
 	{
-		Error = TEXT("Invalid custom auth source");
-		return false;
+		ErrorDelegate.Execute(TEXT("Invalid custom auth source"));
+		return;
 	}
-	if (Thirdweb::create_ecosystem_wallet(
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
-		TO_RUST_STRING(PartnerId),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
-		nullptr,
-		nullptr,
-		nullptr,
-		TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-		TO_RUST_STRING(FString(GetSourceString(Source)))
-	).AssignResult(Error))
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [PartnerId, Source, SuccessDelegate, ErrorDelegate]
 	{
-		Wallet = FInAppWalletHandle(Source, Error);
-		Error.Empty();
-		return true;
-	}
-	return false;
+		if (FString Error; Thirdweb::create_ecosystem_wallet(
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
+			TO_RUST_STRING(PartnerId),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+			nullptr,
+			nullptr,
+			nullptr,
+			TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+			TO_RUST_STRING(FString(GetSourceString(Source)))
+		).AssignResult(Error))
+		{
+			FInAppWalletHandle Wallet = FInAppWalletHandle(Source, Error);
+			Wallet.EcosystemPartnerId = PartnerId;
+			SuccessDelegate.Execute(Wallet);
+		}
+		else
+		{
+			ErrorDelegate.Execute(Error);
+		}
+	});
 }
 
 bool FInAppWalletHandle::IsConnected() const
@@ -251,96 +318,179 @@ void FInAppWalletHandle::Disconnect() const
 	Thirdweb::disconnect(ID).Free();
 }
 
-bool FInAppWalletHandle::VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error)
+void FInAppWalletHandle::SendOTP(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!IsValid())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
 	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
-	}
-	if (Source != Email)
-	{
-		Error = TEXT("Wallet handle is not email source");
-		return false;
-	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
-	{
-		switch (Method)
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
-		case EThirdwebOTPMethod::Phone:
+			switch (Source)
 			{
-				if (Thirdweb::ecosystem_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+			case Phone:
 				{
-					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-					return true;
+					if (Thirdweb::ecosystem_wallet_send_otp_phone(ID).AssignResult(Error, true))
+					{
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			case Email:
+				{
+					if (Thirdweb::ecosystem_wallet_send_otp_email(ID).AssignResult(Error, true))
+					{
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			default:
+				{
+					ErrorDelegate.Execute(TEXT("Wallet handle is not email/phone source"));
+					return;
 				}
 			}
-		case EThirdwebOTPMethod::Email:
+		}
+		else
+		{
+			switch (Source)
+			{
+			case Phone:
+				{
+					if (Thirdweb::in_app_wallet_send_otp_phone(ID).AssignResult(Error, true))
+					{
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			case Email:
+				{
+					if (Thirdweb::in_app_wallet_send_otp_email(ID).AssignResult(Error, true))
+					{
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			default:
+				{
+					ErrorDelegate.Execute(TEXT("Wallet handle is not email/phone source"));
+					return;
+				}
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Source != Phone && Source != Email)
+	{
+		ErrorDelegate.Execute(TEXT("Wallet handle is not email/phone OTP source"));
+		return;
+	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, OTP, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
+		{
+			switch (Source)
+			{
+			case Phone:
+				{
+					if (Thirdweb::ecosystem_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					{
+						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			case Email:
+				{
+					if (Thirdweb::ecosystem_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					{
+						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+						SuccessDelegate.Execute();
+						return;
+					}
+					break;
+				}
+			default: return;
+			}
+		}
+		else
+		{
+			switch (Source)
+			{
+			case Phone:
+				{
+					if (Thirdweb::in_app_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					{
+						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+						SuccessDelegate.Execute();
+						return;
+					}
+				}
+			case Email:
+				{
+					if (Thirdweb::in_app_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					{
+						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+						SuccessDelegate.Execute();
+						return;
+					}
+				}
+			default: return;
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::LinkOTP(const FInAppWalletHandle& Wallet, const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Wallet.GetSource() != Phone && Wallet.GetSource() != Email)
+	{
+		ErrorDelegate.Execute(TEXT("Wallet handle is not email/phone OTP source"));
+		return;
+	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Wallet, OTP, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		switch (Source)
+		{
+		case Phone:
+			{
+				if (Thirdweb::ecosystem_wallet_link_account(ID, Wallet.GetID(), TO_RUST_STRING(OTP), nullptr, nullptr, nullptr).AssignResult(Error, true))
+				{
+					SuccessDelegate.Execute();
+					return;
+				}
+				break;
+			}
+		case Email:
 			{
 				if (Thirdweb::ecosystem_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
-					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-					return true;
+					SuccessDelegate.Execute();
+					return;
 				}
+				break;
 			}
+		default: return;
 		}
-	}
-	else
-	{
-		switch (Method)
-		{
-		case EThirdwebOTPMethod::Phone:
-			{
-				if (Thirdweb::in_app_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
-				{
-					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-					return true;
-				}
-			}
-		case EThirdwebOTPMethod::Email:
-			{
-				if (Thirdweb::in_app_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
-				{
-					FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool FInAppWalletHandle::SendOTP(const EThirdwebOTPMethod Method, FString& Error)
-{
-	if (!IsValid())
-	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
-	}
-	if (Source != Email)
-	{
-		Error = TEXT("Wallet handle is not email source");
-		return false;
-	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
-	{
-		switch (Method)
-		{
-		case EThirdwebOTPMethod::Phone: return Thirdweb::ecosystem_wallet_send_otp_phone(ID).AssignResult(Error, true);
-		case EThirdwebOTPMethod::Email: return Thirdweb::ecosystem_wallet_send_otp_email(ID).AssignResult(Error, true);
-		}
-	}
-	else
-	{
-		switch (Method)
-		{
-		case EThirdwebOTPMethod::Phone: return Thirdweb::in_app_wallet_send_otp_phone(ID).AssignResult(Error, true);
-		case EThirdwebOTPMethod::Email: return Thirdweb::in_app_wallet_send_otp_email(ID).AssignResult(Error, true);
-		}
-	}
-
-	return false;
+		ErrorDelegate.Execute(Error);
+	});
 }
 
 bool FInAppWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error)
@@ -377,148 +527,263 @@ bool FInAppWalletHandle::FetchOAuthLoginURL(const FString& RedirectUrl, FString&
 	return false;
 }
 
-bool FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, FString& Error)
+void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!IsValid())
-	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
-	}
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
 	if (Source != OAuthProvider)
 	{
-		Error = TEXT("Wallet handle is not OAuth source");
-		return false;
+		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
+		return;
 	}
 	FString Result = AuthResult;
 	if (Result.StartsWith(TEXT("%7B%22")))
 	{
 		Result = FGenericPlatformHttp::UrlDecode(AuthResult);
 	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Result, SuccessDelegate, ErrorDelegate]
 	{
-		if (Thirdweb::ecosystem_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error, true))
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
-		}
-	}
-	else
-	{
-		if (Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error, true))
-		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool FInAppWalletHandle::SignInWithJwt(const FString& Jwt, FString& Error)
-{
-	if (!IsValid())
-	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
-	}
-	if (Source != EInAppSource::Jwt)
-	{
-		Error = TEXT("Wallet handle is not JWT source");
-		return false;
-	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
-	{
-		if (Thirdweb::ecosystem_wallet_sign_in_with_jwt(ID, TO_RUST_STRING(Jwt)).AssignResult(Error, true))
-		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
-		}
-	}
-	else
-	{
-		if (UThirdwebRuntimeSettings::GetEncryptionKey().IsEmpty())
-		{
-			Error = TEXT("No encryption key set");
+			if (Thirdweb::ecosystem_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
 		}
 		else
 		{
+			if (Thirdweb::in_app_wallet_sign_in_with_oauth(ID, TO_RUST_STRING(Result)).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::LinkOAuth(const FInAppWalletHandle& Wallet, const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Wallet.GetSource() != OAuthProvider)
+	{
+		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
+		return;
+	}
+	FString Result = AuthResult;
+	if (Result.StartsWith(TEXT("%7B%22")))
+	{
+		Result = FGenericPlatformHttp::UrlDecode(AuthResult);
+	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Wallet, Result, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (Thirdweb::ecosystem_wallet_link_account(ID, Wallet.GetID(), nullptr, TO_RUST_STRING(Result), nullptr, nullptr).AssignResult(Error, true))
+		{
+			SuccessDelegate.Execute();
+			return;
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::SignInWithJwt(const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Source != EInAppSource::Jwt)
+	{
+		ErrorDelegate.Execute(TEXT("Wallet handle is not JWT source"));
+		return;
+	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Jwt, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
+		{
+			if (Thirdweb::ecosystem_wallet_sign_in_with_jwt(ID, TO_RUST_STRING(Jwt)).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
+		}
+		else
+		{
+			if (UThirdwebRuntimeSettings::GetEncryptionKey().IsEmpty())
+			{
+				ErrorDelegate.Execute(TEXT("No encryption key set"));
+				return;
+			}
 			if (Thirdweb::in_app_wallet_sign_in_with_jwt(ID, TO_RUST_STRING(Jwt), TO_RUST_STRING(UThirdwebRuntimeSettings::GetEncryptionKey())).AssignResult(Error, true))
 			{
 				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-				return true;
+				SuccessDelegate.Execute();
+				return;
 			}
 		}
-	}
-
-	return false;
+		ErrorDelegate.Execute(Error);
+	});
 }
 
-bool FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, FString& Error)
+void FInAppWalletHandle::LinkJwt(const FInAppWalletHandle& Wallet, const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!IsValid())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Wallet.GetSource() != EInAppSource::Jwt)
 	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
+		ErrorDelegate.Execute(TEXT("Wallet handle is not JWT source"));
+		return;
 	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Wallet, Jwt, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (Thirdweb::ecosystem_wallet_link_account(ID, Wallet.GetID(), nullptr, nullptr, TO_RUST_STRING(Jwt), nullptr).AssignResult(Error, true))
+		{
+			SuccessDelegate.Execute();
+			return;
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
 	if (Source != AuthEndpoint)
 	{
-		Error = TEXT("Wallet handle is not auth endpoint source");
-		return false;
+		ErrorDelegate.Execute(TEXT("Wallet handle is not auth endpoint source"));
+		return;
 	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Payload, SuccessDelegate, ErrorDelegate]
 	{
-		if (Thirdweb::ecosystem_wallet_sign_in_with_auth_endpoint(ID, TO_RUST_STRING(Payload)).AssignResult(Error, true))
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
+			if (Thirdweb::ecosystem_wallet_sign_in_with_auth_endpoint(ID, TO_RUST_STRING(Payload)).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
 		}
-	}
-	else
-	{
-		if (UThirdwebRuntimeSettings::GetEncryptionKey().IsEmpty())
+		else
 		{
-			Error = TEXT("No encryption key set");
-		} else
-		{
+			if (UThirdwebRuntimeSettings::GetEncryptionKey().IsEmpty())
+			{
+				ErrorDelegate.Execute(TEXT("No encryption key set"));
+				return;
+			}
 			if (Thirdweb::in_app_wallet_sign_in_with_auth_endpoint(ID, TO_RUST_STRING(Payload), TO_RUST_STRING(UThirdwebRuntimeSettings::GetEncryptionKey())).AssignResult(Error, true))
 			{
 				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-				return true;
+				SuccessDelegate.Execute();
+				return;
 			}
 		}
-	}
-	return false;
+		ErrorDelegate.Execute(Error);
+	});
 }
 
-bool FInAppWalletHandle::SignInWithGuest(FString& Error)
+void FInAppWalletHandle::LinkAuthEndpoint(const FInAppWalletHandle& Wallet, const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!IsValid())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	if (Wallet.GetSource() != AuthEndpoint)
 	{
-		Error = TEXT("Invalid wallet handle");
-		return false;
+		ErrorDelegate.Execute(TEXT("Wallet handle is not auth endpoint source"));
+		return;
 	}
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Wallet, Payload, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (Thirdweb::ecosystem_wallet_link_account(ID, Wallet.GetID(), nullptr, nullptr, nullptr, TO_RUST_STRING(Payload)).AssignResult(Error, true))
+		{
+			SuccessDelegate.Execute();
+			return;
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::SignInWithGuest(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
 	if (Source != Guest)
 	{
-		Error = TEXT("Wallet handle is not guest source");
-		return false;
+		ErrorDelegate.Execute(TEXT("Wallet handle is not guest source"));
+		return;
 	}
-	if (UThirdwebRuntimeSettings::IsEcosystem())
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
 	{
-		if (Thirdweb::ecosystem_wallet_sign_in_with_guest(ID, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
+			if (Thirdweb::ecosystem_wallet_sign_in_with_guest(ID, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
 		}
-	}
-	else
+		else
+		{
+			if (Thirdweb::in_app_wallet_sign_in_with_guest(ID, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
+			{
+				FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
+				SuccessDelegate.Execute();
+				return;
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	if (Wallet.GetSource() != Guest)
 	{
-		if (Thirdweb::in_app_wallet_sign_in_with_guest(ID, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
-		{
-			FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
-			return true;
-		}
+		ErrorDelegate.Execute(TEXT("Wallet handle is not guest source"));
+		return;
 	}
-	return false;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Wallet, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (Thirdweb::ecosystem_wallet_link_account(ID, Wallet.GetID(), nullptr, nullptr, nullptr, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
+		{
+			SuccessDelegate.Execute();
+			return;
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
+	{
+		FString Output;
+		if (Thirdweb::ecosystem_wallet_get_linked_accounts(ID).AssignResult(Output))
+		{
+			TW_LOG(Warning, TEXT("FInAppWalletHandle::GetLinkedAccounts::%s"), *Output);
+			SuccessDelegate.Execute({Output});
+			return;
+		}
+		ErrorDelegate.Execute(Output);
+	});
 }
 
 FString FInAppWalletHandle::GetDisplayName() const

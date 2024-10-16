@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 140,
-	"VersionName": "1.4.0",
+	"Version": 150,
+	"VersionName": "1.5.0",
 	"FriendlyName": "Thirdweb",
 	"Description": "Unreal Integration of Thirdweb Wallets",
 	"Category": "Thirdweb",
@@ -34,6 +34,11 @@
 		{
 			"Name": "ThirdwebEditor",
 			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ThirdwebUncookedOnly",
+			"Type": "UncookedOnly",
 			"LoadingPhase": "Default"
 		}
 	]

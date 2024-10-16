@@ -3,8 +3,7 @@
 #pragma once
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
-#include "Kismet/BlueprintAsyncActionBase.h"
+#include "Wallets/InApp/AsyncTaskThirdwebInAppBase.h"
 
 #include "AsyncTaskThirdwebLoginWithOAuth.generated.h"
 
@@ -13,36 +12,37 @@ class UThirdwebOAuthBrowserUserWidget;
 /**
  * 
  */
-UCLASS(Blueprintable, BlueprintType, ClassGroup="Thirdweb|Authentication")
-class THIRDWEB_API UAsyncTaskThirdwebLoginWithOAuth : public UBlueprintAsyncActionBase
+UCLASS(Blueprintable, BlueprintType)
+class THIRDWEB_API UAsyncTaskThirdwebLoginWithOAuth : public UAsyncTaskThirdwebInAppBase
 {
 	GENERATED_BODY()
 
 public:
-	
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|In App")
 	static UAsyncTaskThirdwebLoginWithOAuth* LoginWithOAuth(UObject* WorldContextObject, const FInAppWalletHandle& Wallet);
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOAuthDelegate, const FString&, Message);
 	UPROPERTY(BlueprintAssignable)
-	FOAuthDelegate Success;
+	FErrorOnlyDelegate Success;
 
 	UPROPERTY(BlueprintAssignable)
-	FOAuthDelegate Failed;
+	FErrorOnlyDelegate Failed;
 
 protected:
 	UPROPERTY(Transient)
 	UThirdwebOAuthBrowserUserWidget* Browser;
-	
+
 	UPROPERTY(Transient)
 	FInAppWalletHandle Wallet;
-	
+
 private:
 	UFUNCTION()
-	void HandleFailed(const FString& Error);
+	void HandleAuthenticated(const FString& AuthResult);
 
 	UFUNCTION()
-	void HandleAuthenticated(const FString& AuthResult);
+	virtual void HandleSignedIn();
+
+	UFUNCTION()
+	void HandleFailed(const FString& Error);
 };

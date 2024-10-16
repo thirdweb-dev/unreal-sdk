@@ -25,8 +25,6 @@ namespace Thirdweb
 
 		// Assign's result to variables and then frees the underlying FFIResult
 		bool AssignResult(FString& Output, const bool bErrorOnlyResult = false) const;
-		// Assign's result to variables including retry and then frees the underlying FFIResult
-		bool AssignRetryResult(bool& bCanRetry, FString& Output, const bool bErrorOnlyResult = false) const;
 		// Frees the FFI Result for functions that have no relevant output
 		void Free() const;
 		// Convenience function to log the FFIResult
@@ -82,6 +80,9 @@ namespace Thirdweb
 		FFIResult ecosystem_wallet_sign_in_with_jwt(uintptr_t handle_id, const char* jwt);
 		FFIResult ecosystem_wallet_sign_in_with_auth_endpoint(uintptr_t handle_id, const char* payload);
 		FFIResult ecosystem_wallet_sign_in_with_guest(uintptr_t handle_id, const char* session_id);
+
+		FFIResult ecosystem_wallet_link_account(uintptr_t handle_id, uintptr_t wallet_to_link_handle_id, const char* otp, const char* oauth_result, const char* jwt, const char* payload);
+		FFIResult ecosystem_wallet_get_linked_accounts(uintptr_t handle_id);
 
 		// Smart Wallet management
 

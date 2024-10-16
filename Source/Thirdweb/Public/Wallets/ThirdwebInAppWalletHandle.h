@@ -3,6 +3,9 @@
 #pragma once
 
 #include "ThirdwebWalletHandle.h"
+
+#include "Engine/StreamableManager.h"
+
 #include "ThirdwebInAppWalletHandle.generated.h"
 
 enum class EThirdwebOTPMethod : uint8;
@@ -13,6 +16,9 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 {
 	GENERATED_BODY()
 
+	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
+	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FString>&);
+	
 	enum EInAppSource
 	{
 		InvalidSource,
@@ -35,7 +41,7 @@ private:
 	 * @return An initialized FInAppWalletHandle instance.
 	 */
 	explicit FInAppWalletHandle(const EInAppSource InSource, const int64 InID);
-	
+
 	/**
 	 * Constructs an FInAppWalletHandle object.
 	 *
@@ -75,81 +81,89 @@ public:
 	}
 
 	/**
-	 * Creates an in-app email wallet.
+	 * Creates an email-based in-app wallet.
 	 *
-	 * @param Email The email address to associate with the wallet.
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
+	 * @param Email The email address to associate with the wallet, must be a valid email format.
+	 * @param SuccessDelegate Delegate to execute upon successful wallet creation.
+	 * @param ErrorDelegate Delegate to execute upon encountering an error during wallet creation.
 	 */
-	static bool CreateEmailWallet(const FString& Email, FInAppWalletHandle& Wallet, FString& Error);
-	static bool CreateEcosystemEmailWallet(const FString& PartnerId, const FString& Email, FInAppWalletHandle& Wallet, FString& Error);
+	static void CreateEmailWallet(const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	static void CreateEcosystemEmailWallet(const FString& PartnerId, const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Creates an in-app OAuth wallet using the specified provider.
+	 * Initiates the creation of an OAuth wallet using the specified provider.
 	 *
 	 * @param Provider The OAuth provider to use for wallet creation.
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
+	 * @param SuccessDelegate A delegate to be called upon successful wallet creation.
+	 * @param ErrorDelegate A delegate to be called if an error occurs during wallet creation.
 	 */
-	static bool CreateOAuthWallet(const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error);
-	static bool CreateEcosystemOAuthWallet(const FString& PartnerId, const EThirdwebOAuthProvider Provider, FInAppWalletHandle& Wallet, FString& Error);
+	static void CreateOAuthWallet(const EThirdwebOAuthProvider Provider, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	static void CreateEcosystemOAuthWallet(const FString& PartnerId, const EThirdwebOAuthProvider Provider, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Creates an in-app phone wallet.
+	 * Creates a phone-based in-app wallet.
 	 *
-	 * @param Phone The phone number to associate with the wallet.
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
+	 * @param Phone The phone number used to create the wallet, which must be a valid phone number.
+	 * @param SuccessDelegate The delegate called upon successful wallet creation.
+	 * @param ErrorDelegate The delegate called if there is an error during wallet creation.
 	 */
-	static bool CreatePhoneWallet(const FString& Phone, FInAppWalletHandle& Wallet, FString& Error);
-	static bool CreateEcosystemPhoneWallet(const FString& PartnerId, const FString& Phone, FInAppWalletHandle& Wallet, FString& Error);
+	static void CreatePhoneWallet(const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	static void CreateEcosystemPhoneWallet(const FString& PartnerId, const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Creates an in-app JWT wallet.
+	 * Creates a JWT wallet.
 	 *
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
+	 * @param SuccessDelegate The delegate to be executed upon successful wallet creation.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs during wallet creation.
 	 */
-	static bool CreateJwtWallet(FInAppWalletHandle& Wallet, FString& Error) { return CreateCustomAuthWallet(Jwt, Wallet, Error); }
-	static bool CreateEcosystemJwtWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error) { return CreateEcosystemCustomAuthWallet(PartnerId, Jwt, Wallet, Error); }
-	/**
-	 * Creates an in-app wallet using an authentication endpoint.
-	 *
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
-	 */
-	static bool CreateAuthEndpointWallet(FInAppWalletHandle& Wallet, FString& Error) { return CreateCustomAuthWallet(AuthEndpoint, Wallet, Error); }
-	static bool CreateEcosystemAuthEndpointWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error) { return CreateEcosystemCustomAuthWallet(PartnerId, AuthEndpoint, Wallet, Error); }
+	static void CreateJwtWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Jwt, SuccessDelegate, ErrorDelegate); }
+
+	static void CreateEcosystemJwtWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+	{
+		return CreateEcosystemCustomAuthWallet(PartnerId, Jwt, SuccessDelegate, ErrorDelegate);
+	}
 
 	/**
-	 * Creates an in-app guest wallet.
+	 * Creates an in-app wallet with an authentication endpoint.
 	 *
-	 * @param Wallet An output parameter that will hold the newly created wallet handle if the creation is successful.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the wallet creation is successful, false otherwise.
+	 * @param SuccessDelegate Delegate to be called upon successful wallet creation, receiving specific success details.
+	 * @param ErrorDelegate Delegate to be called upon an error during wallet creation, receiving the error message.
 	 */
-	static bool CreateGuestWallet(FInAppWalletHandle& Wallet, FString& Error) { return CreateCustomAuthWallet(Guest, Wallet, Error); }
-	static bool CreateEcosystemGuestWallet(const FString& PartnerId, FInAppWalletHandle& Wallet, FString& Error) { return CreateEcosystemCustomAuthWallet(PartnerId, Guest, Wallet, Error); }
+	static void CreateAuthEndpointWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+	{
+		return CreateCustomAuthWallet(AuthEndpoint, SuccessDelegate, ErrorDelegate);
+	}
+
+	static void CreateEcosystemAuthEndpointWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+	{
+		return CreateEcosystemCustomAuthWallet(PartnerId, AuthEndpoint, SuccessDelegate, ErrorDelegate);
+	}
+
+	/**
+	 * Creates a guest wallet by delegating to the custom authorization wallet creation function.
+	 *
+	 * @param SuccessDelegate Delegate to be called upon successful wallet creation.
+	 * @param ErrorDelegate Delegate to be called if there is an error during the wallet creation process.
+	 */
+	static void CreateGuestWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Guest, SuccessDelegate, ErrorDelegate); }
+
+	static void CreateEcosystemGuestWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+	{
+		return CreateEcosystemCustomAuthWallet(PartnerId, Guest, SuccessDelegate, ErrorDelegate);
+	}
 
 private:
 	/**
 	 * Creates a custom authenticated in-app wallet.
 	 *
-	 * @param Source The source of authentication. The valid values are Jwt, AuthEndpoint, and Guest.
-	 * @param Wallet Reference to an FInAppWalletHandle object that will be initialized if authentication succeeds.
-	 * @param Error Reference to an FString that will contain an error message if authentication fails.
-	 * @return True if the wallet is successfully created; otherwise, false.
+	 * @param Source The source from where the in-app wallet is to be created.
+	 * @param SuccessDelegate Delegate to be called upon successful creation of the wallet.
+	 * @param ErrorDelegate Delegate to be called if an error occurs during the wallet creation.
 	 */
-	static bool CreateCustomAuthWallet(const EInAppSource Source, FInAppWalletHandle& Wallet, FString& Error);
-	static bool CreateEcosystemCustomAuthWallet(const FString& PartnerId, const EInAppSource Source, FInAppWalletHandle& Wallet, FString& Error);
-	
-public:
+	static void CreateCustomAuthWallet(const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	static void CreateEcosystemCustomAuthWallet(const FString& PartnerId, const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
+public:
 	/** Check if the wallet is connected to a session */
 	bool IsConnected() const;
 
@@ -157,23 +171,32 @@ public:
 	void Disconnect() const;
 
 	/**
-	 * Verifies a One Time Password (OTP) for the in-app wallet handle.
+	 * Sends a one-time password (OTP) to the wallet handle's associated phone or email.
 	 *
-	 * @param Method The method by which the OTP was sent (e.g., Phone, Email).
-	 * @param OTP The One Time Password to verify.
-	 * @param Error Output parameter that will contain an error message if the verification fails.
-	 * @return True if the OTP is successfully verified, false otherwise.
+	 * @param SuccessDelegate Delegate to be executed on successful OTP sending.
+	 * @param ErrorDelegate Delegate to be executed if an error occurs during OTP sending.
+	 *
 	 */
-	bool VerifyOTP(const EThirdwebOTPMethod Method, const FString& OTP, FString& Error);
+	void SendOTP(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with a One-Time Password (OTP) for the in-app wallet handle.
+	 *
+	 * @param OTP The one-time password to be verified.
+	 * @param SuccessDelegate The delegate to execute upon successful verification.
+	 * @param ErrorDelegate The delegate to execute if verification fails or an error occurs.
+	 */
+	void SignInWithOTP(const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Sends a One-Time Password (OTP) via the specified method (Phone or Email).
+	 * Links a One-Time Password (OTP) to the specified in-app wallet.
 	 *
-	 * @param Method The method to be used for sending the OTP (Phone or Email).
-	 * @param Error Returns an error message if the OTP sending fails.
-	 * @return True if the OTP was sent successfully, false otherwise.
+	 * @param Wallet The in-app wallet handle to which the OTP will be linked.
+	 * @param OTP The one-time password that will be linked to the wallet.
+	 * @param SuccessDelegate The delegate to be called upon successful linking of the OTP.
+	 * @param ErrorDelegate The delegate to be called if there is an error linking the OTP.
 	 */
-	bool SendOTP(const EThirdwebOTPMethod Method, FString& Error);
+	void LinkOTP(const FInAppWalletHandle& Wallet, const FString& OTP, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
 	 * Fetches the OAuth login URL for the in-app wallet.
@@ -186,41 +209,94 @@ public:
 	bool FetchOAuthLoginURL(const FString& RedirectUrl, FString& LoginLink, FString& Error);
 
 	/**
-	 * Signs in using OAuth authentication details.
+	 * Sign in with OAuth for the in-app wallet handle.
 	 *
-	 * @param AuthResult The authentication result string obtained from the OAuth provider.
-	 * @param Error Will contain an error message if the sign-in process fails.
-	 * @return True if sign-in was successful, false otherwise.
+	 * @param AuthResult The result string obtained from OAuth authentication.
+	 * @param SuccessDelegate Delegate to be executed upon successful sign-in.
+	 * @param ErrorDelegate Delegate to be executed upon failure, with an error message.
 	 */
-	bool SignInWithOAuth(const FString& AuthResult, FString& Error);
+	void SignInWithOAuth(const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Links a new OAuth wallet to the existing in-app wallet.
+	 *
+	 * @param Wallet The in-app wallet handle that the OAuth account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param AuthResult The authentication result string containing the OAuth credentials.
+	 * @param SuccessDelegate A delegate that will be called upon successfully linking the OAuth account.
+	 * @param ErrorDelegate A delegate that will be called if there is an error during the linking process, providing an error message.
+	 */
+	void LinkOAuth(const FInAppWalletHandle& Wallet, const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 	
 	/**
-	 * Signs in using a JSON Web Token (JWT) and an encryption key.
+	 * Signs in with a JSON Web Token (JWT) for authentication.
 	 *
-	 * @param Jwt The JSON Web Token post-authenticating the user. This is any OIDC compatible JWT. The token should be a string starting with ey.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the sign-in is successful, false otherwise.
+	 * @param Jwt The JSON Web Token used for authentication; must be a valid JWT string.
+	 * @param SuccessDelegate Delegate to be executed upon successful authentication, must be bound.
+	 * @param ErrorDelegate Delegate to be executed if an error occurs during authentication.
 	 */
-	bool SignInWithJwt(const FString& Jwt, FString& Error);
+	void SignInWithJwt(const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Signs in using any payload.
+ 	 * Links a JSON Web Token (JWT) for authentication.
+ 	 *
+	 * @param Wallet The in-app wallet handle that the JWT account will link with. Must be a valid handle. Must never have independently authenticated.
+ 	 * @param Jwt The JSON Web Token used for authentication; must be a valid JWT string.
+ 	 * @param SuccessDelegate Delegate to be executed upon successful authentication, must be bound.
+ 	 * @param ErrorDelegate Delegate to be executed if an error occurs during authentication.
+ 	 */
+	void LinkJwt(const FInAppWalletHandle& Wallet, const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with the authentication endpoint using the provided payload.
 	 *
-	 * @param Payload The data payload required for the sign-in process. The payload can have any shape, but is generally JSON.
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the sign-in is successful, false otherwise.
+	 * @param Payload The authentication payload, must be a valid JSON string.
+	 * @param SuccessDelegate The delegate to be executed on successful sign-in, must be bound.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs, should be bound to handle error messages.
 	 */
-	bool SignInWithAuthEndpoint(const FString& Payload, FString& Error);
+	void SignInWithAuthEndpoint(const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
-	 * Signs in as an anonymous guest user using a semi-reproducible device fingerprint.
-	 * Fingerprints can change from update to update and should not be relied upon for long term use.
+	 * links an authentication endpoint using the provided payload.
 	 *
-	 * @param Error An output parameter that will hold any error message in case of a failure.
-	 * @return True if the sign-in is successful, false otherwise.
+	 * @param Wallet The in-app wallet handle that the AuthEndpoint account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param Payload The authentication payload, must be a valid JSON string.
+	 * @param SuccessDelegate The delegate to be executed on successful sign-in, must be bound.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs, should be bound to handle error messages.
 	 */
-	bool SignInWithGuest(FString& Error);
+	void LinkAuthEndpoint(const FInAppWalletHandle& Wallet, const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Signs in with guest authentication.
+	 *
+	 * @param SuccessDelegate The delegate to execute on successful sign-in.
+	 * @param ErrorDelegate The delegate to execute if an error occurs during the sign-in process; will receive an error message.
+	 */
+	void SignInWithGuest(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
+	/**
+	 * Links guest authentication.
+	 *
+	 * @param Wallet The in-app wallet handle that the guest account will link with. Must be a valid handle. Must never have independently authenticated.
+	 * @param SuccessDelegate The delegate to execute on successful sign-in.
+	 * @param ErrorDelegate The delegate to execute if an error occurs during the sign-in process; will receive an error message.
+	 */
+	void LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Retrieves the linked accounts associated with this FInAppWalletHandle.
+	 *
+	 * @param SuccessDelegate Delegate that will be executed with the linked accounts information if the operation is successful.
+	 * @param ErrorDelegate Delegate that will be executed with an error message if the operation fails.
+	 */
+	void GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
+	 * Retrieves the source of the in-app wallet.
+	 *
+	 * @return The source of the in-app wallet as an EInAppSource enum.
+	 */
+	EInAppSource GetSource() const { return Source; }
+	
 	/**
 	 * Retrieves the source string.
 	 *
@@ -258,9 +334,9 @@ public:
 	virtual FString GetDisplayName() const override;
 
 	/**
-	 * Retrieves the current OAuth provider.
+	 * Retrieves the configured OAuth provider.
 	 *
-	 * @return The current OAuth provider.
+	 * @return The configured OAuth provider.
 	 */
 	EThirdwebOAuthProvider GetOAuthProvider() const { return Provider; }
 

@@ -53,13 +53,6 @@ enum class EThirdwebOAuthBrowserBackend : uint8
 	External UMETA(DisplayName="External"),
 };
 
-UENUM()
-enum class EThirdwebAuthenticationMethod : uint8
-{
-	ClientID UMETA(DisplayName="Client ID"),
-	SecretKey UMETA(DisplayName="Secret Key"),
-};
-
 UENUM(BlueprintType, DisplayName="OTP Method")
 enum class EThirdwebOTPMethod : uint8
 {
