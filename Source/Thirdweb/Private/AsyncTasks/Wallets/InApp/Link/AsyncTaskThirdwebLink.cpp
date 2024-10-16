@@ -6,7 +6,7 @@
 
 void UAsyncTaskThirdwebLink::Activate()
 {
-	switch (InAppWallet.GetSource())
+	switch (NewInAppWallet.GetSource())
 	{
 	case FInAppWalletHandle::Email: return InAppWallet.LinkOTP(
 			NewInAppWallet,
