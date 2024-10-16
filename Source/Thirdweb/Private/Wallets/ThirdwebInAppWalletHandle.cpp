@@ -15,6 +15,8 @@
 
 #include "Misc/DefaultValueHelper.h"
 
+#include "Tasks/Task.h"
+
 #define CHECK_ECOSYSTEM(ErrorDelegate) \
 	if (UThirdwebRuntimeSettings::GetEcosystemId().IsEmpty()) \
 	{ \
