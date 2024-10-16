@@ -52,9 +52,9 @@ namespace Thirdweb
 		                               const char* storage_directory_path,
 		                               const char* auth_provider);
 		FFIResult in_app_wallet_send_otp_email(uintptr_t handle_id);
-		FFIResult in_app_wallet_verify_otp_email(uintptr_t handle_id, const char* otp);
+		FFIResult in_app_wallet_sign_in_with_otp_email(uintptr_t handle_id, const char* otp);
 		FFIResult in_app_wallet_send_otp_phone(uintptr_t handle_id);
-		FFIResult in_app_wallet_verify_otp_phone(uintptr_t handle_id, const char* otp);
+		FFIResult in_app_wallet_sign_in_with_otp_phone(uintptr_t handle_id, const char* otp);
 		FFIResult in_app_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char* redirect_url);
 		FFIResult in_app_wallet_sign_in_with_oauth(uintptr_t handle_id, const char* auth_result);
 		FFIResult in_app_wallet_sign_in_with_jwt(uintptr_t handle_id, const char* jwt, const char* encryption_key);
@@ -72,9 +72,9 @@ namespace Thirdweb
 		                                  const char* storage_directory_path,
 		                                  const char* auth_provider);
 		FFIResult ecosystem_wallet_send_otp_email(uintptr_t handle_id);
-		FFIResult ecosystem_wallet_verify_otp_email(uintptr_t handle_id, const char* otp);
+		FFIResult ecosystem_wallet_sign_in_with_otp_email(uintptr_t handle_id, const char* otp);
 		FFIResult ecosystem_wallet_send_otp_phone(uintptr_t handle_id);
-		FFIResult ecosystem_wallet_verify_otp_phone(uintptr_t handle_id, const char* otp);
+		FFIResult ecosystem_wallet_sign_in_with_otp_phone(uintptr_t handle_id, const char* otp);
 		FFIResult ecosystem_wallet_fetch_oauth_login_link(uintptr_t handle_id, const char* redirect_url);
 		FFIResult ecosystem_wallet_sign_in_with_oauth(uintptr_t handle_id, const char* auth_result);
 		FFIResult ecosystem_wallet_sign_in_with_jwt(uintptr_t handle_id, const char* jwt);

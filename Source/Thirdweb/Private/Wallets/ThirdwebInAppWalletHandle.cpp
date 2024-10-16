@@ -407,7 +407,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 			{
 			case Phone:
 				{
-					if (Thirdweb::ecosystem_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					if (Thirdweb::ecosystem_wallet_sign_in_with_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
 						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 						SuccessDelegate.Execute();
@@ -417,7 +417,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				}
 			case Email:
 				{
-					if (Thirdweb::ecosystem_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					if (Thirdweb::ecosystem_wallet_sign_in_with_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
 						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 						SuccessDelegate.Execute();
@@ -434,7 +434,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 			{
 			case Phone:
 				{
-					if (Thirdweb::in_app_wallet_verify_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					if (Thirdweb::in_app_wallet_sign_in_with_otp_phone(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
 						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 						SuccessDelegate.Execute();
@@ -443,7 +443,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				}
 			case Email:
 				{
-					if (Thirdweb::in_app_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+					if (Thirdweb::in_app_wallet_sign_in_with_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
 						FThirdwebAnalytics::SendConnectEvent(ToAddress(), GetTypeString());
 						SuccessDelegate.Execute();
@@ -482,7 +482,7 @@ void FInAppWalletHandle::LinkOTP(const FInAppWalletHandle& Wallet, const FString
 			}
 		case Email:
 			{
-				if (Thirdweb::ecosystem_wallet_verify_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
+				if (Thirdweb::ecosystem_wallet_sign_in_with_otp_email(ID, TO_RUST_STRING(OTP)).AssignResult(Error, true))
 				{
 					SuccessDelegate.Execute();
 					return;
