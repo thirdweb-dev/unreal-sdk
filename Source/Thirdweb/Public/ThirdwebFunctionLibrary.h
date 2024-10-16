@@ -11,9 +11,6 @@ struct FInAppWalletHandle;
 struct FSmartWalletHandle;
 enum class EFunctionResult : uint8;
 enum class EThirdwebOAuthProvider : uint8;
-enum class EThirdwebOTPMethod : uint8;
-enum class EOTPVerificationFunctionResult : uint8;
-enum class ESmartWalletDeployedFunctionResult : uint8;
 
 /**
  * Thirdweb Function Library
@@ -55,14 +52,6 @@ public:
 	/** Gets the public address of a smart wallet handle */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Address", BlueprintAutocast), Category="Utilities|Text|Smart Wallet")
 	static FText Conv_SmartWalletHandleToText(FSmartWalletHandle Wallet);
-
-	/** Signs an arbitrary message with an InApp wallet */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
-	static FString BP_SignInAppMessage(const FInAppWalletHandle& Wallet, const FString& Message);
-	
-	/** Signs an arbitrary message with a smart wallet */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Sign Message"), Category="Thirdweb|Wallets")
-	static FString BP_SignSmartMessage(const FSmartWalletHandle& Wallet, const FString& Message);
 
 	/** Check if the wallet handle is connected to a session */
 	UFUNCTION(BlueprintPure, meta=(DisplayName="Is Connected"), Category="Thirdweb|Wallets|In App")

@@ -55,16 +55,6 @@ FText UThirdwebFunctionLibrary::Conv_SmartWalletHandleToText(FSmartWalletHandle 
 	return FText::FromString(Conv_SmartWalletHandleToString(Wallet));
 }
 
-FString UThirdwebFunctionLibrary::BP_SignInAppMessage(const FInAppWalletHandle& Wallet, const FString& Message)
-{
-	return ""; // Wallet.Sign(Message);
-}
-
-FString UThirdwebFunctionLibrary::BP_SignSmartMessage(const FSmartWalletHandle& Wallet, const FString& Message)
-{
-	return ""; // Wallet.Sign(Message);
-}
-
 bool UThirdwebFunctionLibrary::BP_WalletIsConnected(const FInAppWalletHandle& Wallet)
 {
 	return Wallet.IsConnected();
