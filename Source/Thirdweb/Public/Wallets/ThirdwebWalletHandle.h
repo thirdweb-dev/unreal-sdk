@@ -135,6 +135,6 @@ protected:
 
 	friend uint32 GetTypeHash(const FWalletHandle& InHandle)
 	{
-		return GetTypeHash(InHandle.ID);
+		return GetTypeHash(InHandle.GetID());
 	}
 };

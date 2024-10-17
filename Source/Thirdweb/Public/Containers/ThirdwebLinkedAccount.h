@@ -8,7 +8,7 @@
 
 #include "ThirdwebLinkedAccount.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, DisplayName="Linked Account")
 struct THIRDWEB_API FThirdwebLinkedAccount
 {
 	GENERATED_BODY()
@@ -29,4 +29,19 @@ struct THIRDWEB_API FThirdwebLinkedAccount
 	FString Phone;
 
 	static FThirdwebLinkedAccount FromJson(const TSharedPtr<FJsonObject>& JsonObject);
+
+	bool operator==(const FThirdwebLinkedAccount& Other) const
+	{
+		return Id.IsEqual(Other.Id);
+	}
+
+	bool operator!=(const FThirdwebLinkedAccount& Other) const
+	{
+		return !Id.IsEqual(Other.Id);
+	}
+
+	friend uint32 GetTypeHash(const FThirdwebLinkedAccount& Other)
+	{
+		return GetTypeHash(Other.Id);
+	}
 };

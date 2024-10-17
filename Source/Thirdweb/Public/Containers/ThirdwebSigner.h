@@ -29,4 +29,19 @@ struct THIRDWEB_API FSigner
 	FDateTime EndTime;
 
 	static FSigner FromJson(const TSharedPtr<FJsonObject>& JsonObject);
+
+	bool operator==(const FSigner& Other) const
+	{
+		return Address.Equals(Other.Address, ESearchCase::IgnoreCase);
+	}
+
+	bool operator!=(const FSigner& Other) const
+	{
+		return !Address.Equals(Other.Address, ESearchCase::IgnoreCase);
+	}
+	
+	friend uint32 GetTypeHash(const FSigner& Other)
+	{
+		return GetTypeHash(Other.Address);
+	}
 };
