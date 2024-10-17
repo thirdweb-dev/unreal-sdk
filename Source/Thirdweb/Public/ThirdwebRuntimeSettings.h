@@ -40,17 +40,25 @@ public:
 	
 
 	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|InApp Wallets")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|InApp")
 	FString EncryptionKey;
 
+	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Ecosystem")
+	FString EcosystemId;
+	
 	/** Optional array of engine signers stored globally for convenience */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|Smart Wallets")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Smart")
 	TArray<FString> EngineSigners;
 
-	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Config|Ecosystem Wallets")
-	FString EcosystemId;
+	/** Publicly accessible Base URL To your Engine instance. Needed for all Engine nodes */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Base URL", Category=Engine)
+	FString EngineBaseUrl;
 
+	/** Access Token for Engine Authorization */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Access Token", Category=Engine)
+	FString EngineAccessToken;
+	
 	/** Opt in or out of connect analytics */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
 	bool bSendAnalytics;
@@ -61,7 +69,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
 	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
-
+	
 	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
@@ -168,5 +176,26 @@ public:
 			return Settings->bSendAnalytics;
 		}
 		return false;
+	}
+
+	/** Static accessor to get BaseEngineUrl */
+	static FString GetEngineBaseUrl()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			FString Url = Settings->EngineBaseUrl.TrimStartAndEnd();
+			return Url.EndsWith("/") ? Url.LeftChop(1) : Url;
+		}
+		return TEXT("");
+	}
+	
+	/** Static accessor to get AccessToken */
+	static FString GetEngineAccessToken()
+	{
+		if (const UThirdwebRuntimeSettings* Settings = Get())
+		{
+			return Settings->EngineAccessToken.TrimStartAndEnd();
+		}
+		return TEXT("");
 	}
 };

@@ -2,8 +2,9 @@
 
 #pragma once
 
+#include "AsyncTaskThirdwebInAppBase.h"
+
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-#include "Wallets/InApp/AsyncTaskThirdwebInAppBase.h"
 
 #include "AsyncTaskThirdwebLoginWithOAuth.generated.h"
 
