@@ -14,21 +14,21 @@ FThirdwebLinkedAccount FThirdwebLinkedAccount::FromJson(const TSharedPtr<FJsonOb
 		if (JsonObject->HasTypedField<EJson::Object>(TEXT("details")))
 		{
 			const TSharedPtr<FJsonObject> DetailsJsonObject = JsonObject->GetObjectField(TEXT("details"));
-			if (JsonObject->HasTypedField<EJson::String>(TEXT("id")))
+			if (DetailsJsonObject->HasTypedField<EJson::String>(TEXT("id")))
 			{
-				LinkedAccount.Id = FName(*JsonObject->GetStringField(TEXT("id")));
+				LinkedAccount.Id = FName(*DetailsJsonObject->GetStringField(TEXT("id")));
 			}
-			if (!JsonObject->HasTypedField<EJson::Null>(TEXT("email")) && JsonObject->HasTypedField<EJson::String>(TEXT("email")))
+			if (!DetailsJsonObject->HasTypedField<EJson::Null>(TEXT("email")) && DetailsJsonObject->HasTypedField<EJson::String>(TEXT("email")))
 			{
-				LinkedAccount.Email = JsonObject->GetStringField(TEXT("email"));
+				LinkedAccount.Email = DetailsJsonObject->GetStringField(TEXT("email"));
 			}
-			if (!JsonObject->HasTypedField<EJson::Null>(TEXT("address")) && JsonObject->HasTypedField<EJson::String>(TEXT("address")))
+			if (!DetailsJsonObject->HasTypedField<EJson::Null>(TEXT("address")) && DetailsJsonObject->HasTypedField<EJson::String>(TEXT("address")))
 			{
-				LinkedAccount.Address = JsonObject->GetStringField(TEXT("address"));
+				LinkedAccount.Address = DetailsJsonObject->GetStringField(TEXT("address"));
 			}
-			if (!JsonObject->HasTypedField<EJson::Null>(TEXT("phone")) && JsonObject->HasTypedField<EJson::String>(TEXT("phone")))
+			if (!DetailsJsonObject->HasTypedField<EJson::Null>(TEXT("phone")) && DetailsJsonObject->HasTypedField<EJson::String>(TEXT("phone")))
 			{
-				LinkedAccount.Phone = JsonObject->GetStringField(TEXT("phone"));
+				LinkedAccount.Phone = DetailsJsonObject->GetStringField(TEXT("phone"));
 			}
 		}
 	}

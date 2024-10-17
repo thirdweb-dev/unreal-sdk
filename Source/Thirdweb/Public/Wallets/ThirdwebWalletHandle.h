@@ -31,6 +31,9 @@
 		return; \
 	}
 
+struct FSmartWalletHandle;
+struct FInAppWalletHandle;
+
 USTRUCT()
 struct THIRDWEB_API FWalletHandle
 {
@@ -49,6 +52,9 @@ struct THIRDWEB_API FWalletHandle
 	{
 	}
 
+	explicit FWalletHandle(const FInAppWalletHandle& InAppWalletHandle);
+	explicit FWalletHandle(const FSmartWalletHandle& SmartWalletHandle);
+	
 	/**
 	 * Checks if the wallet handle is valid.
 	 *

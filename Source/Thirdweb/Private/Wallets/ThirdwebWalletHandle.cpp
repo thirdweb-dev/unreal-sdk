@@ -9,6 +9,19 @@
 
 #include "Tasks/Task.h"
 
+#include "Wallets/ThirdwebSmartWalletHandle.h"
+
+FWalletHandle::FWalletHandle(const FInAppWalletHandle& InAppWalletHandle)
+{
+	Type = InAppWalletHandle.GetType();
+	ID = InAppWalletHandle.GetID();
+}
+
+FWalletHandle::FWalletHandle(const FSmartWalletHandle& SmartWalletHandle)
+{
+	Type = SmartWalletHandle.GetType();
+	ID = SmartWalletHandle.GetID();
+}
 
 FString FWalletHandle::ToAddress() const
 {
