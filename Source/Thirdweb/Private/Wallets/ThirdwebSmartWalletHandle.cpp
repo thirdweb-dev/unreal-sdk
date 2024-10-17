@@ -26,6 +26,7 @@ FSmartWalletHandle::FSmartWalletHandle(const FInAppWalletHandle& InInAppWallet, 
 {
 	Type = Smart;
 	int64 InID;
+	InAppWallet = InInAppWallet;
 	FDefaultValueHelper::ParseInt64(Int64String, InID);
 	ensureAlwaysMsgf(InID > 0, TEXT("Invalid id 0"));
 	ID = InID;
