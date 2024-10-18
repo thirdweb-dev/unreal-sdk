@@ -2,10 +2,6 @@
 
 #pragma once
 
-#include "Dom/JsonObject.h"
-
-#include "Misc/DateTime.h"
-
 #include "ThirdwebLinkedAccount.generated.h"
 
 USTRUCT(BlueprintType, DisplayName="Linked Account")
@@ -28,7 +24,7 @@ struct THIRDWEB_API FThirdwebLinkedAccount
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Thirdweb|Wallets|InApp")
 	FString Phone;
 
-	static FThirdwebLinkedAccount FromJson(const TSharedPtr<FJsonObject>& JsonObject);
+	static FThirdwebLinkedAccount FromJson(const TSharedPtr<class FJsonObject>& JsonObject);
 
 	bool operator==(const FThirdwebLinkedAccount& Other) const
 	{

@@ -2,15 +2,9 @@
 
 #pragma once
 
-#include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebLog.h"
 
 #include "Engine/DeveloperSettings.h"
-
-#include "HAL/FileManager.h"
-
-#include "Misc/Paths.h"
 
 #include "ThirdwebRuntimeSettings.generated.h"
 
@@ -31,11 +25,11 @@ public:
 	
 
 	/** Stores the client identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
 	FString ClientID;
 
 	/** Stores the bundle identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Config)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
 	FString BundleID;
 	
 
@@ -77,125 +71,40 @@ public:
 	void GenerateEncryptionKey();
 
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
-	static TArray<FString> GetThirdwebGlobalEngineSigners()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->EngineSigners;
-		}
-		return {};
-	}
+	static TArray<FString> GetThirdwebGlobalEngineSigners();
 
 	/** Gets the first global engine signer in the array, if any */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signers"))
-	static FString GetThirdwebGlobalEngineSigner(bool& bFound)
-	{
-		bFound = false;
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			if (Settings->EngineSigners.Num() > 0)
-			{
-				bFound = true;
-				return Settings->EngineSigners[0];
-			}
-		}
-		return TEXT("");
-	}
+	static FString GetThirdwebGlobalEngineSigner(bool& bFound);
 
 	/** Static accessor to get EncryptionKey */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
-	static FString GetEncryptionKey()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->EncryptionKey;
-		}
-		return TEXT("");
-	}
+	static FString GetEncryptionKey();
 	
 	/** Static accessor to retrieve the absolute path of the thirdweb InAppWallet platform */
-	static FString GetStorageDirectory()
-	{
-		FString StorageDir = FPaths::Combine(IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::ProjectSavedDir()), "Thirdweb", "InAppWallet");
-		TW_LOG(Verbose, TEXT("StorageDir::%s"), *StorageDir)
-		return StorageDir;
-	}
+	static FString GetStorageDirectory();
 
 	/** Static accessor to get the resolved backend of an OAuth provider */
-	static bool IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			if (Settings->bOverrideOAuthBrowserProviderBackends)
-			{
-				return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
-			}
-			return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
-		}
-		return false;
-	}
+	static bool IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider);
 
 	/** Static accessor to get EcosystemId */
-	static FString GetEcosystemId()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->EcosystemId.TrimStartAndEnd();
-		}
-		return TEXT("");
-	}
+	static FString GetEcosystemId();
 
 	/** Static accessor to check EcosystemId validity */
 	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }
 
 	/** Static accessor to get ClientId */
-	static FString GetClientId()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->ClientID.TrimStartAndEnd();
-		}
-		return TEXT("");
-	}
+	static FString GetClientId();
 	
 	/** Static accessor to get BundleId */
-	static FString GetBundleId()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->BundleID.TrimStartAndEnd();
-		}
-		return TEXT("");
-	}
+	static FString GetBundleId();
 	
 	/** Static accessor to check Analytics Opt-In status */
-	static bool AnalyticsEnabled()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->bSendAnalytics;
-		}
-		return false;
-	}
+	static bool AnalyticsEnabled();
 
 	/** Static accessor to get BaseEngineUrl */
-	static FString GetEngineBaseUrl()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			FString Url = Settings->EngineBaseUrl.TrimStartAndEnd();
-			return Url.EndsWith("/") ? Url.LeftChop(1) : Url;
-		}
-		return TEXT("");
-	}
+	static FString GetEngineBaseUrl();
 	
 	/** Static accessor to get AccessToken */
-	static FString GetEngineAccessToken()
-	{
-		if (const UThirdwebRuntimeSettings* Settings = Get())
-		{
-			return Settings->EngineAccessToken.TrimStartAndEnd();
-		}
-		return TEXT("");
-	}
+	static FString GetEngineAccessToken();
 };

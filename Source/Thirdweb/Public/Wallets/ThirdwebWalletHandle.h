@@ -78,6 +78,8 @@ struct THIRDWEB_API FWalletHandle
 	 */
 	virtual FString ToAddress() const;
 
+	void CacheAddress();
+	
 	/**
 	 * Signs a given message using the wallet handle.
 	 *
@@ -132,15 +134,16 @@ struct THIRDWEB_API FWalletHandle
 		return GetID() != Other.GetID();
 	}
 
+	friend uint32 GetTypeHash(const FWalletHandle& InHandle)
+	{
+		return GetTypeHash(InHandle.GetID());
+	}
 protected:
+	// Cached address to reduce calls
+	FString CachedAddress = TEXT("");
 	// The current Handle type
 	EWalletHandleType Type = InvalidHandle;
 
 	// The wallet handle id
 	int64 ID = 0;
-
-	friend uint32 GetTypeHash(const FWalletHandle& InHandle)
-	{
-		return GetTypeHash(InHandle.GetID());
-	}
 };

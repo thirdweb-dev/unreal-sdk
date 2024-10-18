@@ -2,6 +2,8 @@
 
 #include "Containers/ThirdwebSigner.h"
 
+#include "Dom/JsonObject.h"
+
 FSigner FSigner::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	FSigner Signer;

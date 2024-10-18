@@ -6,16 +6,13 @@
 
 #include "HttpModule.h"
 #include "ThirdwebRuntimeSettings.h"
+#include "ThirdwebUtils.h"
+
+#include "Dom/JsonObject.h"
 
 #include "Interfaces/IHttpResponse.h"
 
 #include "Kismet/KismetStringLibrary.h"
-
-#include "Dom/JsonObject.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonWriter.h"
-#include "Serialization/JsonSerializer.h"
-#include "Policies/CondensedJsonPrintPolicy.h"
 
 TSharedPtr<FJsonObject> FThirdwebTransactionOverrides::ToJson() const
 {
@@ -108,17 +105,10 @@ void UAsyncTaskThirdwebEngineWriteContract::Activate()
 	}
 	if (!Abi.IsEmpty())
 	{
-		TArray<TSharedPtr<FJsonValue>> AbiJsonObject;
-		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Abi);
-		FJsonSerializer::Deserialize(Reader, AbiJsonObject);
-		JsonObject->SetArrayField(TEXT("abi"), AbiJsonObject);
+		JsonObject->SetArrayField(TEXT("abi"), ThirdwebUtils::Json::ToJsonArray(Abi));
 	}
-
-	FString Content;
-	const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Content);
-	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-	Request->SetContentAsString(Content);
-
+	
+	Request->SetContentAsString(ThirdwebUtils::Json::ToString(JsonObject));
 	Request->SetURL(
 		FString::Format(
 			TEXT("{0}/contract/{1}/{2}/write{3}"),
@@ -140,10 +130,7 @@ void UAsyncTaskThirdwebEngineWriteContract::HandleResponse(FHttpRequestPtr, FHtt
 {
 	if (bConnectedSuccessfully)
 	{
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-		FJsonSerializer::Deserialize(Reader, JsonObject);
-		if (JsonObject.IsValid())
+		if (TSharedPtr<FJsonObject> JsonObject = ThirdwebUtils::Json::ToJson(Response->GetContentAsString()); JsonObject.IsValid())
 		{
 			if (JsonObject->HasTypedField<EJson::String>(TEXT("error")))
 			{
