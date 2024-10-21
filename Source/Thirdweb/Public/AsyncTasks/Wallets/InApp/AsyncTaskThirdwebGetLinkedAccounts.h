@@ -3,6 +3,9 @@
 #pragma once
 
 #include "AsyncTaskThirdwebInAppBase.h"
+
+#include "Containers/ThirdwebLinkedAccount.h"
+
 #include "AsyncTaskThirdwebGetLinkedAccounts.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)
