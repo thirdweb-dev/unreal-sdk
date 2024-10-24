@@ -16,6 +16,7 @@ UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 	bOverrideOAuthBrowserProviderBackends = false;
 	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Google)] = EThirdwebOAuthBrowserBackend::External;
 	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Telegram)] = EThirdwebOAuthBrowserBackend::External;
+	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Facebook)] = EThirdwebOAuthBrowserBackend::External;
 }
 
 void UThirdwebRuntimeSettings::GenerateEncryptionKey()
