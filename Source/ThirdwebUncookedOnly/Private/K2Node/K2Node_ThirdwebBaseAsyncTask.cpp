@@ -4,6 +4,7 @@
 
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
+#include "ThirdwebRuntimeSettings.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 
@@ -77,6 +78,11 @@ void UK2Node_ThirdwebBaseAsyncTask::PostAllocateDefaultPins()
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_String, TwPins::Error);
 
 	UpdatePins();
+}
+
+void UK2Node_ThirdwebBaseAsyncTask::ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+{
+	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
 UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::SetPinVisibility(UEdGraphPin* Pin, const bool bShow)

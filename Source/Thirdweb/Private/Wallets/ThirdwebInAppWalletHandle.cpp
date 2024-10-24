@@ -545,17 +545,14 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
 		return;
 	}
-	FString Result = AuthResult;
-	if (Result.StartsWith(TEXT("%7B%22")))
-	{
-		Result = FGenericPlatformHttp::UrlDecode(AuthResult);
-	}
+	FString Result = ThirdwebUtils::ParseAuthResult(AuthResult);
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Result, SuccessDelegate, ErrorDelegate]
 	{
 		FString Error;
 		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("FInAppWalletHandle::SignInWithOAuth::Task::%s"), *Result)
 			if (Thirdweb::ecosystem_wallet_sign_in_with_oauth(ThisCopy.GetID(), TO_RUST_STRING(Result)).AssignResult(Error, true))
 			{
 				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
@@ -585,11 +582,7 @@ void FInAppWalletHandle::LinkOAuth(const FInAppWalletHandle& Wallet, const FStri
 		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
 		return;
 	}
-	FString Result = AuthResult;
-	if (Result.StartsWith(TEXT("%7B%22")))
-	{
-		Result = FGenericPlatformHttp::UrlDecode(AuthResult);
-	}
+	FString Result = ThirdwebUtils::ParseAuthResult(AuthResult);
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, Result, SuccessDelegate, ErrorDelegate]
 	{

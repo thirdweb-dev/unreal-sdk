@@ -25,7 +25,7 @@ class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebBaseAsyncTask : public UK2Node_Ba
 
 protected:
 	FNodeTextCache CachedNodeTitle;
-	
+
 public:
 	UK2Node_ThirdwebBaseAsyncTask();
 	
@@ -37,6 +37,7 @@ public:
 
 
 	// UK2Node interface implementation
+	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual FText GetMenuCategory() const override;
 	virtual void PostReconstructNode() override;
 	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
@@ -44,6 +45,7 @@ public:
 
 	virtual void AllocateDefaultPins() override;
 	virtual void PostAllocateDefaultPins();
+
 protected:
 	/** Set the value of `bHidden` on the pin */
 	static UEdGraphPin* SetPinVisibility(UEdGraphPin* Pin, const bool bShow);

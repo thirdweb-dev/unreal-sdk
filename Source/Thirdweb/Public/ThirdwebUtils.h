@@ -69,6 +69,7 @@ namespace ThirdwebUtils
 	 */
 	extern THIRDWEB_API EThirdwebOAuthProvider ToOAuthProvider(const FString& String);
 
+	extern FString ParseAuthResult(const FString& AuthResult);
 	namespace Json
 	{
 		extern TSharedPtr<FJsonObject> ToJson(const FString& String);

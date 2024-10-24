@@ -40,6 +40,10 @@ public:
 	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Ecosystem")
 	FString EcosystemId;
+
+	/** Enable if you plan to use varying partner ids. Disabling this will hide the input on relevant nodes */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Use Partner IDs", Category="Wallets|Ecosystem")
+	bool bUsePartnerIds = true;
 	
 	/** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Smart")
@@ -89,6 +93,9 @@ public:
 
 	/** Static accessor to get EcosystemId */
 	static FString GetEcosystemId();
+
+	/** Static accessor to get bUsePartnerIds */
+	static bool ShowPartnerIds();
 
 	/** Static accessor to check EcosystemId validity */
 	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }

@@ -39,7 +39,7 @@ FString UThirdwebOAuthBrowserWidget::GetUrl() const
 	{
 		if (FString Url = Browser->GetUrl(); !Url.IsEmpty())
 		{
-			return FGenericPlatformHttp::UrlDecode(Url);
+			return Url;
 		}
 	}
 #endif
@@ -108,7 +108,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadComplete()
 	if (IsInGameThread())
 	{
 		TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadComplete:%s"), *Browser->GetUrl());
-		OnPageLoaded.Broadcast(FGenericPlatformHttp::UrlDecode(Browser->GetUrl()));
+		OnPageLoaded.Broadcast(Browser->GetUrl());
 	}
 	else
 	{

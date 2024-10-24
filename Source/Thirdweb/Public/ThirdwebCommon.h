@@ -43,6 +43,8 @@ enum class EThirdwebOAuthProvider : uint8
 	Line UMETA(DisplayName="Line"),
 	X UMETA(DisplayName="X"),
 	Coinbase UMETA(DisplayName="Coinbase"),
+	Twitch UMETA(DisplayName="Twitch"),
+	Github UMETA(DisplayName="Github"),
 	None UMETA(Hidden)
 };
 

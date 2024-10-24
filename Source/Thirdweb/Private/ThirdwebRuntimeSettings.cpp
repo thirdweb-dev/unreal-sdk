@@ -90,6 +90,19 @@ FString UThirdwebRuntimeSettings::GetEcosystemId()
 	return TEXT("");
 }
 
+bool UThirdwebRuntimeSettings::ShowPartnerIds()
+{
+	if (!IsEcosystem())
+	{
+		return false;
+	}
+	if (const UThirdwebRuntimeSettings* Settings = Get())
+	{
+		return Settings->bUsePartnerIds;
+	}
+	return true;
+}
+
 FString UThirdwebRuntimeSettings::GetClientId()
 {
 	if (const UThirdwebRuntimeSettings* Settings = Get())

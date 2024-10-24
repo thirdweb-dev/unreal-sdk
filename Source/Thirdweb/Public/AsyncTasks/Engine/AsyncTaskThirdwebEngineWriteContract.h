@@ -19,7 +19,7 @@ struct THIRDWEB_API FThirdwebTransactionOverrides
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Thirdweb|Engine")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="Gas Limit", Category="Thirdweb|Engine")
 	int64 Gas = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Thirdweb|Engine")

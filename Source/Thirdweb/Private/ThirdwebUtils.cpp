@@ -7,6 +7,8 @@
 
 #include "Dom/JsonObject.h"
 
+#include "GenericPlatform/GenericPlatformHttp.h"
+
 #include "Policies/CondensedJsonPrintPolicy.h"
 
 #include "Serialization/JsonReader.h"
@@ -17,7 +19,7 @@
 namespace ThirdwebUtils
 {
 	const TCHAR* ZeroAddress = TEXT("0x0000000000000000000000000000000000000000");
-	
+
 	bool IsChecksummedAddress(const FString& Address) { return Thirdweb::is_valid_address(TO_RUST_STRING(Address), true).GetOutput().ToBool(); }
 
 	bool IsValidAddress(const FString& Address, const bool bWithChecksum) { return Thirdweb::is_valid_address(TO_RUST_STRING(Address), bWithChecksum).GetOutput().ToBool(); }
@@ -35,12 +37,37 @@ namespace ThirdwebUtils
 			if (It.Value.EqualToCaseIgnored(Text))
 			{
 				return It.Key;
-			} 
+			}
 		}
 		return EThirdwebOAuthProvider::None;
 	}
 
 	EThirdwebOAuthProvider ToOAuthProvider(const FString& String) { return ToOAuthProvider(FText::FromString(String)); }
+
+	FString ParseAuthResult(const FString& AuthResult)
+	{
+		FString Result = AuthResult;
+		UE_LOG(LogTemp, Verbose, TEXT("ThirdwebUtils::ParseAuthResult::Initial::%s"), *Result)
+		if (Result.StartsWith(TEXT("%7B%22")))
+		{
+			Result = FGenericPlatformHttp::UrlDecode(Result);
+			UE_LOG(LogTemp, VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::UrlDecoded::%s"), *Result)
+		}
+		// if (Result.StartsWith("{"))
+		// {
+		// 	if (const TSharedPtr<FJsonObject> JsonObject = Json::ToJson(Result); JsonObject->HasTypedField<EJson::Object>(TEXT("storedToken")))
+		// 	{
+		// 		TSharedPtr<FJsonObject> StoredTokenJsonObject = JsonObject->GetObjectField(TEXT("storedToken"));
+		// 		if (StoredTokenJsonObject->HasTypedField<EJson::String>(TEXT("jwtToken")))
+		// 		{
+		// 			Result = StoredTokenJsonObject->GetStringField(TEXT("jwtToken"));
+		// 			UE_LOG(LogTemp, VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::jwtToken::%s"), *Result)
+		// 		}
+		// 	}
+		// }
+		UE_LOG(LogTemp, Verbose, TEXT("ThirdwebUtils::ParseAuthResult::jwtToken::%s"), *Result)
+		return Result;
+	}
 
 	namespace Maps
 	{
@@ -53,10 +80,12 @@ namespace ThirdwebUtils
 			{EThirdwebOAuthProvider::Telegram, LOCTEXT("Telegram", "Telegram")},
 			{EThirdwebOAuthProvider::Line, LOCTEXT("Line", "Line")},
 			{EThirdwebOAuthProvider::X, LOCTEXT("X", "X")},
-			{EThirdwebOAuthProvider::Coinbase, LOCTEXT("Coinbase", "Coinbase")}
+			{EThirdwebOAuthProvider::Coinbase, LOCTEXT("Coinbase", "Coinbase")},
+			{EThirdwebOAuthProvider::Twitch, LOCTEXT("Twitch", "Twitch")},
+			{EThirdwebOAuthProvider::Github, LOCTEXT("Github", "Github")}
 		};
 	}
-	
+
 	namespace Json
 	{
 		TSharedPtr<FJsonObject> ToJson(const FString& String)

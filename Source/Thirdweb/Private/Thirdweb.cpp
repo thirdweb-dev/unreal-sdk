@@ -33,5 +33,5 @@ void Thirdweb::FFIResult::Free() const
 
 void Thirdweb::FFIResult::Log() const
 {
-	TW_LOG(Log, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), *FString(UTF8_TO_TCHAR(message)));
+	TW_LOG(VeryVerbose, TEXT("FFIResult: success=%s, message=%s"), success ? TEXT("true") : TEXT("false"), *FString(UTF8_TO_TCHAR(message)));
 }

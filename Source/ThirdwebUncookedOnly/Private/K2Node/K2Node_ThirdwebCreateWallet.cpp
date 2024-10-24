@@ -227,7 +227,6 @@ void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerCo
 	RemovePin(GetTypePin());
 	RemovePin(GetSourcePin());
 	RemoveHiddenPins(this);
-
 	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
