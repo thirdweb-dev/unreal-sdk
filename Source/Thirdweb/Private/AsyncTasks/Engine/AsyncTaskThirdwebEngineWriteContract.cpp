@@ -1,7 +1,5 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#pragma once
-
 #include "AsyncTasks/Engine/AsyncTaskThirdwebEngineWriteContract.h"
 
 #include "HttpModule.h"
