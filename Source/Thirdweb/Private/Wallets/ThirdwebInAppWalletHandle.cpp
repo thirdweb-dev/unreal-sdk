@@ -552,7 +552,7 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 		FString Error;
 		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("FInAppWalletHandle::SignInWithOAuth::Task::%s"), *Result)
+			TW_LOG(VeryVerbose, TEXT("FInAppWalletHandle::SignInWithOAuth::Task::%s"), *Result)
 			if (Thirdweb::ecosystem_wallet_sign_in_with_oauth(ThisCopy.GetID(), TO_RUST_STRING(Result)).AssignResult(Error, true))
 			{
 				FThirdwebAnalytics::SendConnectEvent(ThisCopy);

@@ -3,6 +3,7 @@
 #include "ThirdwebUtils.h"
 
 #include "Thirdweb.h"
+#include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
 
 #include "Dom/JsonObject.h"
@@ -47,25 +48,12 @@ namespace ThirdwebUtils
 	FString ParseAuthResult(const FString& AuthResult)
 	{
 		FString Result = AuthResult;
-		UE_LOG(LogTemp, Verbose, TEXT("ThirdwebUtils::ParseAuthResult::Initial::%s"), *Result)
+		TW_LOG(Verbose, TEXT("ThirdwebUtils::ParseAuthResult::Initial::%s"), *Result)
 		if (Result.StartsWith(TEXT("%7B%22")))
 		{
 			Result = FGenericPlatformHttp::UrlDecode(Result);
-			UE_LOG(LogTemp, VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::UrlDecoded::%s"), *Result)
+			TW_LOG(VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::UrlDecoded::%s"), *Result)
 		}
-		// if (Result.StartsWith("{"))
-		// {
-		// 	if (const TSharedPtr<FJsonObject> JsonObject = Json::ToJson(Result); JsonObject->HasTypedField<EJson::Object>(TEXT("storedToken")))
-		// 	{
-		// 		TSharedPtr<FJsonObject> StoredTokenJsonObject = JsonObject->GetObjectField(TEXT("storedToken"));
-		// 		if (StoredTokenJsonObject->HasTypedField<EJson::String>(TEXT("jwtToken")))
-		// 		{
-		// 			Result = StoredTokenJsonObject->GetStringField(TEXT("jwtToken"));
-		// 			UE_LOG(LogTemp, VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::jwtToken::%s"), *Result)
-		// 		}
-		// 	}
-		// }
-		UE_LOG(LogTemp, Verbose, TEXT("ThirdwebUtils::ParseAuthResult::jwtToken::%s"), *Result)
 		return Result;
 	}
 

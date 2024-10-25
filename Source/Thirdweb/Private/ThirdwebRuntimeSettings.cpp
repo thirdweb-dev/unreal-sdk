@@ -10,14 +10,53 @@
 
 #include "Misc/Paths.h"
 
+// These Providers do not work with an embedded browser for various reasons:
+// - Google: https://accounts.youtube.com/accounts/SetSID does not load
+// - Facebook: https://www.facebook.com/privacy/consent/gdp does not load
+// - Telegram: Forced transient pop-up window
+const TArray<EThirdwebOAuthProvider> UThirdwebRuntimeSettings::ExternalOnlyProviders = {
+	EThirdwebOAuthProvider::Google,
+	EThirdwebOAuthProvider::Facebook,
+	EThirdwebOAuthProvider::Telegram,
+};
+
 UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 {
 	bSendAnalytics = true;
 	bOverrideOAuthBrowserProviderBackends = false;
-	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Google)] = EThirdwebOAuthBrowserBackend::External;
-	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Telegram)] = EThirdwebOAuthBrowserBackend::External;
-	OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::Facebook)] = EThirdwebOAuthBrowserBackend::External;
+	bOverrideAppUri = false;
+	for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders) OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
 }
+
+#if WITH_EDITOR
+void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	// ReSharper disable once CppTooWideScopeInitStatement
+	FName CurrentPropertyName = PropertyChangedEvent.GetMemberPropertyName();
+	if (CurrentPropertyName == FName(TEXT("OAuthBrowserProviderBackendOverrides")))
+	{
+		bool bChanged = false;
+		for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders)
+		{
+			if (OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] != EThirdwebOAuthBrowserBackend::External)
+			{
+				OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
+				bChanged = true;
+				
+			}
+		}
+		if (bChanged)
+		{
+			if (MarkPackageDirty())
+			{
+				PostEditChange();
+			}
+		}
+	}
+}
+#endif
 
 void UThirdwebRuntimeSettings::GenerateEncryptionKey()
 {
@@ -71,13 +110,19 @@ FString UThirdwebRuntimeSettings::GetStorageDirectory()
 
 bool UThirdwebRuntimeSettings::IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
 {
+	if (ExternalOnlyProviders.Contains(Provider)) return true;
+#if PLATFORM_APPLE
+	// Apple natively handles apple auth links, so we want to enforce that flow
+	if (Provider == EThirdwebOAuthProvider::Apple) return true;
+#endif
+
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
 		if (Settings->bOverrideOAuthBrowserProviderBackends)
 		{
-			return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+			return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
 		}
-		return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
+		return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
 	}
 	return false;
 }
@@ -146,6 +191,20 @@ FString UThirdwebRuntimeSettings::GetEngineAccessToken()
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
 		return Settings->EngineAccessToken.TrimStartAndEnd();
+	}
+	return TEXT("");
+}
+
+FString UThirdwebRuntimeSettings::GetAppUri()
+{
+	if (const UThirdwebRuntimeSettings* Settings = Get())
+	{
+		if (Settings->bOverrideAppUri)
+		{
+			
+			return Settings->CustomAppUri.TrimStartAndEnd();
+		}
+		return FString::Printf(TEXT("bundleid://%s"), *GetBundleId());
 	}
 	return TEXT("");
 }

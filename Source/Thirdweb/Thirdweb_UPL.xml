@@ -1,31 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root xmlns:android="http://schemas.android.com/apk/res/android">
-	<init>
-		<log text="Thirdweb Plugin Init"/>
-		<setBoolFromPropertyContains result="bPackageForOculusQuest" ini="Engine" section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings" property="PackageForOculusMobile" contains="Quest"/>
-		<setBoolFromPropertyContains result="bPackageForOculusQuest2" ini="Engine" section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings" property="PackageForOculusMobile" contains="Quest2"/>
-		<setBoolFromPropertyContains result="bPackageForOculusQuestPro" ini="Engine" section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings" property="PackageForOculusMobile" contains="QuestPro"/>
+    <init>
+        <log text="Thirdweb Plugin Init"/>
+        <setBoolFromPropertyContains result="bPackageForOculusQuest" ini="Engine"
+                                     section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings"
+                                     property="PackageForOculusMobile" contains="Quest"/>
+        <setBoolFromPropertyContains result="bPackageForOculusQuest2" ini="Engine"
+                                     section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings"
+                                     property="PackageForOculusMobile" contains="Quest2"/>
+        <setBoolFromPropertyContains result="bPackageForOculusQuestPro" ini="Engine"
+                                     section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings"
+                                     property="PackageForOculusMobile" contains="QuestPro"/>
 
-		<setBoolOr result="bPackageForOculusMobile" 
-			arg1="$B(bPackageForOculusQuest)" arg2="$B(bPackageForOculusQuest2)"/>
-		<setBoolOr result="bPackageForOculusMobile" 
-			arg1="$B(bPackageForOculusMobile)" arg2="$B(bPackageForOculusQuestPro)"/>
+        <setBoolOr result="bPackageForOculusMobile" arg1="$B(bPackageForOculusQuest)"
+                   arg2="$B(bPackageForOculusQuest2)"/>
+        <setBoolOr result="bPackageForOculusMobile" arg1="$B(bPackageForOculusMobile)"
+                   arg2="$B(bPackageForOculusQuestPro)"/>
 
-		<if condition="bPackageForOculusMobile">
-			<true>
-				<log text="Adding com.oculus.always_draw_view_root for Oculus devices to manifest for hardware acceleration."/>
-			</true>
-		</if>
-	</init>
+        <if condition="bPackageForOculusMobile">
+            <true>
+                <log text="Adding com.oculus.always_draw_view_root for Oculus devices to manifest for hardware acceleration."/>
+            </true>
+        </if>
+        <log text="Thirdweb Plugin OAuth Schema URI Init"/>
+        <setBoolFromProperty result="bOverrideAppUri" ini="Engine" section="/Script/Thirdweb.ThirdwebRuntimeSettings"
+                             property="bOverrideAppUri" default="false"/>
+        <if condition="bOverrideAppUri">
+            <true>
+                <setStringFromProperty result="ThirdwebCustomAppURI" ini="Engine"
+                                       section="/Script/Thirdweb.ThirdwebRuntimeSettings"
+                                       property="CustomAppUri" default=""/>
+                <setStringReplace result="ThirdwebCustomAppURI" source="ThirdwebCustomAppURI" find="://" with=" "/>
+                <setIntFindString result="ThirdwebSeparator" source="ThirdwebCustomAppURI" find=" "/>
+                <setIntLength result="ThirdwebCustomAppURILen" source="ThirdwebCustomAppURI"/>
+                <setIntSubtract result="ThirdwebUriLen" arg1="ThirdwebCustomAppURILen" arg2="ThirdwebSeparator"/>
+                <setStringSubstring result="ThirdwebHost" source="ThirdwebCustomAppURI" index="$I(ThirdwebSeparator)"
+                                    length="$I(ThirdwebUriLen)"/>
+                <setStringReplace result="ThirdwebScheme" source="ThirdwebCustomAppURI" find=" $S(ThirdwebHost)"
+                                  with=""/>
+            </true>
+            <false>
+                <setString result="ThirdwebScheme" value="bundleid"/>
+                <setStringFromProperty result="ThirdwebHost" ini="Engine"
+                                       section="/Script/Thirdweb.ThirdwebRuntimeSettings"
+                                       property="BundleID" default=""/>
+            </false>
+        </if>
+    </init>
 
-	<androidManifestUpdates>
-		<if condition="bPackageForOculusMobile">
-			<true>
-				<addElements tag="application">
-					<meta-data android:name="com.oculus.always_draw_view_root" android:value="true"/>
-				</addElements>
-			</true>
-		</if>
-	</androidManifestUpdates>
-
+    <androidManifestUpdates>
+        <if condition="bPackageForOculusMobile">
+            <true>
+                <addElements tag="application">
+                    <meta-data android:name="com.oculus.always_draw_view_root" android:value="true"/>
+                </addElements>
+            </true>
+        </if>
+        <activity>
+            <intent-filter android:label="@string/filter_view_example_gizmos">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <!-- Accepts URIs that begin with "{ThirdwebScheme}://{ThirdwebHost}” -->
+                <data android:scheme="$S(ThirdwebScheme)"
+                      android:host="$S(ThirdwebHost)"/>
+            </intent-filter>
+        </activity>
+    </androidManifestUpdates>
 </root>

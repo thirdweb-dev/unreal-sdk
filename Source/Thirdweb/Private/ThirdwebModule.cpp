@@ -28,7 +28,7 @@ public:
 				WebBrowserInitSettings.ProductVersion = TEXT("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
 				if (!WebBrowserModule.CustomInitialize(WebBrowserInitSettings))
 				{
-					UE_LOG(LogThirdweb, Error, TEXT("ThirdwebModule::Could not initialize WebBrowserModule with custom User-Agent! Singleton already exists"))
+					TW_LOG(Error, TEXT("ThirdwebModule::Could not initialize WebBrowserModule with custom User-Agent! Singleton already exists"))
 				}
 				IWebBrowserSingleton* WebBrowserSingleton = WebBrowserModule.GetSingleton();
 				if (WebBrowserSingleton)

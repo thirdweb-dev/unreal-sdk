@@ -22,8 +22,11 @@ class THIRDWEB_API UThirdwebRuntimeSettings : public UDeveloperSettings
 
 public:
 	UThirdwebRuntimeSettings();
-	
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	
 	/** Stores the client identifier. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
 	FString ClientID;
@@ -56,6 +59,14 @@ public:
 	/** Access Token for Engine Authorization */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Access Token", Category=Engine)
 	FString EngineAccessToken;
+
+	/** Edit Condition for overriding Custom Application Schema */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
+	bool bOverrideAppUri;
+	
+	/** Custom Application URI for oauth redirects. default is bundleid://{bundleId} */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category=Engine)
+	FString CustomAppUri;
 	
 	/** Opt in or out of connect analytics */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
@@ -67,10 +78,11 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
 	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
-	
-	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
-	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
+protected:
+    static const TArray<EThirdwebOAuthProvider> ExternalOnlyProviders;
+	
+public:
 	UFUNCTION(CallInEditor, Category=Encryption)
 	void GenerateEncryptionKey();
 
@@ -114,4 +126,11 @@ public:
 	
 	/** Static accessor to get AccessToken */
 	static FString GetEngineAccessToken();
+
+	/** Static accessor for AppUri */
+	static FString GetAppUri();
+	
+	/** Convenience Getter */
+	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
+	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 };

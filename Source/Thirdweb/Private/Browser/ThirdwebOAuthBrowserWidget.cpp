@@ -3,6 +3,7 @@
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
 
 #include "ThirdwebLog.h"
+#include "ThirdwebRuntimeSettings.h"
 
 #include "Async/Async.h"
 
@@ -46,6 +47,15 @@ FString UThirdwebOAuthBrowserWidget::GetUrl() const
 	return TEXT("");
 }
 
+FString UThirdwebOAuthBrowserWidget::GetDummyUrl()
+{
+#if PLATFORM_ANDROID | PLATFORM_IOS
+	return UThirdwebRuntimeSettings::GetAppUri();
+#else
+	return DummyUrl;
+#endif
+}
+
 void UThirdwebOAuthBrowserWidget::ReleaseSlateResources(const bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
@@ -66,7 +76,7 @@ void UThirdwebOAuthBrowserWidget::Authenticate(const FString& OAuthLoginUrl)
 {
 #if WITH_CEF
 	ENSURE_VALID_BROWSER("Authenticate")
-	TW_LOG(Log, TEXT("OAuthBrowserWidget::Authenticate::Loading %s"), *OAuthLoginUrl);
+	TW_LOG(VeryVerbose, TEXT("OAuthBrowserWidget::Authenticate::Loading %s"), *OAuthLoginUrl);
 	Browser->LoadURL(OAuthLoginUrl);
 #endif
 }
@@ -78,11 +88,11 @@ void UThirdwebOAuthBrowserWidget::HandleUrlChanged(const FText& InUrl)
 	if (IsInGameThread())
 	{
 		FString Url = InUrl.ToString();
-        if (Url.IsEmpty())
-        {
-        	Url = Browser->GetUrl();
-        }
-        TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
+		if (Url.IsEmpty())
+		{
+			Url = Browser->GetUrl();
+		}
+		TW_LOG(VeryVerbose, TEXT("ThirdwebOAuthBrowserWidget::HandleUrlChanged:%s"), *Url);
 		OnUrlChanged.Broadcast(FGenericPlatformHttp::UrlDecode(Url));
 	}
 	else
@@ -97,7 +107,7 @@ void UThirdwebOAuthBrowserWidget::HandleUrlChanged(const FText& InUrl)
 			}
 		}, TStatId(), nullptr, ENamedThreads::GameThread);
 	}
-	
+
 #endif
 }
 
@@ -107,7 +117,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadComplete()
 	ENSURE_VALID_BROWSER("HandleOnLoadComplete")
 	if (IsInGameThread())
 	{
-		TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadComplete:%s"), *Browser->GetUrl());
+		TW_LOG(VeryVerbose, TEXT("ThirdwebOAuthBrowserWidget::HandleOnLoadComplete:%s"), *Browser->GetUrl());
 		OnPageLoaded.Broadcast(Browser->GetUrl());
 	}
 	else
@@ -127,7 +137,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadComplete()
 
 bool UThirdwebOAuthBrowserWidget::HandleOnBeforePopup(FString URL, FString Frame)
 {
-	TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnBeforePopup::%s | %s"), *URL, *Frame)
+	TW_LOG(VeryVerbose, TEXT("ThirdwebOAuthBrowserWidget::HandleOnBeforePopup::%s | %s"), *URL, *Frame)
 	if (OnBeforePopup.IsBound())
 	{
 		if (IsInGameThread())
@@ -164,7 +174,7 @@ void UThirdwebOAuthBrowserWidget::HandleOnLoadError()
 
 bool UThirdwebOAuthBrowserWidget::HandleOnCloseWindow(const TWeakPtr<IWebBrowserWindow>& Window)
 {
-	TW_LOG(Log, TEXT("ThirdwebOAuthBrowserWidget::HandleOnCloseWindow"))
+	TW_LOG(VeryVerbose, TEXT("ThirdwebOAuthBrowserWidget::HandleOnCloseWindow"))
 	RemoveFromParent();
 	return true;
 }
@@ -183,18 +193,18 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserWidget::RebuildWidget()
 	if (!IsDesignTime())
 	{
 		Browser = SNew(SWebBrowser)
-			.InitialURL(InitialUrl)
-			.ShowControls(false)
-			.ShowAddressBar(false)
+		                           .InitialURL(InitialUrl)
+		                           .ShowControls(false)
+		                           .ShowAddressBar(false)
 			// .PopupMenuMethod(EPopupMethod::UseCurrentWindow)
-			.SupportsTransparency(bSupportsTransparency)
-			.ShowInitialThrobber(bShowInitialThrobber)
-			.OnCreateWindow(BIND_UOBJECT_DELEGATE(FOnCreateWindowDelegate ,HandleOnCreateWindow))
-			.OnLoadError(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadError))
-			.OnUrlChanged(BIND_UOBJECT_DELEGATE(FOnTextChanged, HandleUrlChanged))
-			.OnLoadCompleted(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadComplete))
-			.OnCloseWindow(BIND_UOBJECT_DELEGATE(FOnCloseWindowDelegate, HandleOnCloseWindow))
-			.OnBeforePopup(BIND_UOBJECT_DELEGATE(FOnBeforePopupDelegate, HandleOnBeforePopup));
+		                           .SupportsTransparency(bSupportsTransparency)
+		                           .ShowInitialThrobber(bShowInitialThrobber)
+		                           .OnCreateWindow(BIND_UOBJECT_DELEGATE(FOnCreateWindowDelegate, HandleOnCreateWindow))
+		                           .OnLoadError(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadError))
+		                           .OnUrlChanged(BIND_UOBJECT_DELEGATE(FOnTextChanged, HandleUrlChanged))
+		                           .OnLoadCompleted(BIND_UOBJECT_DELEGATE(FSimpleDelegate, HandleOnLoadComplete))
+		                           .OnCloseWindow(BIND_UOBJECT_DELEGATE(FOnCloseWindowDelegate, HandleOnCloseWindow))
+		                           .OnBeforePopup(BIND_UOBJECT_DELEGATE(FOnBeforePopupDelegate, HandleOnBeforePopup));
 
 		return Browser.ToSharedRef();
 	}
