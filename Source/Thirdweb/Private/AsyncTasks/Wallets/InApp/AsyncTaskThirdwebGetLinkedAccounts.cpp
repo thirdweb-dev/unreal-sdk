@@ -2,6 +2,8 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebGetLinkedAccounts.h"
 
+#include "Async/TaskGraphInterfaces.h"
+
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebGetLinkedAccounts::Activate()
