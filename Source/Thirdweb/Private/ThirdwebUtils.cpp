@@ -65,14 +65,10 @@ namespace ThirdwebUtils
 	{
 		FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FString& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
 		{
-			FString UnmatchedLeft;
-			FString UnmatchedRight;
+			FString UnmatchedLeft, UnmatchedRight;
 			if (InString.Split(MatchString, &UnmatchedLeft, &UnmatchedRight))
 			{
-				FString MatchedBegin = MatchString.Left(ShowBeginCount);
-				FString MatchedEnd = MatchString.Right(ShowEndCount);
-				
-				return UnmatchedLeft + MatchedBegin + MaskCharacter + MaskCharacter + MaskCharacter + MatchedEnd + UnmatchedRight;
+				return UnmatchedLeft + MatchString.Left(ShowBeginCount) + MaskCharacter + MaskCharacter + MaskCharacter + MatchString.Right(ShowEndCount) + UnmatchedRight;
 			}
 			return InString;
 		}
