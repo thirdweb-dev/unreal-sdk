@@ -69,12 +69,10 @@ namespace ThirdwebUtils
 			FString UnmatchedRight;
 			if (InString.Split(MatchString, &UnmatchedLeft, &UnmatchedRight))
 			{
-				TArray<FString> Characters = UKismetStringLibrary::ParseIntoArray(MatchString);
-				for (int i = FMath::Max(ShowBeginCount - 1, 0); i < Characters.Num() - ShowEndCount; i++)
-				{
-					Characters[i] = MaskCharacter;
-				}
-				return UnmatchedLeft + UKismetStringLibrary::JoinStringArray(Characters, TEXT("")) + UnmatchedRight;
+				FString MatchedBegin = MatchString.Left(ShowBeginCount);
+				FString MatchedEnd = MatchString.Right(ShowEndCount);
+				
+				return UnmatchedLeft + MatchedBegin + MaskCharacter + MaskCharacter + MaskCharacter + MatchedEnd + UnmatchedRight;
 			}
 			return InString;
 		}
