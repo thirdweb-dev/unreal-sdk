@@ -67,7 +67,7 @@ void UAsyncTaskThirdwebEngineReadContract::HandleResponse(FHttpRequestPtr, FHttp
 	if (bConnectedSuccessfully)
 	{
 		FString Content = Response->GetContentAsString();
-		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineReadContract::HandleResponse::Content=%s"), Content)
+		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineReadContract::HandleResponse::Content=%s"), *Content)
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
 		FJsonSerializer::Deserialize(Reader, JsonObject);

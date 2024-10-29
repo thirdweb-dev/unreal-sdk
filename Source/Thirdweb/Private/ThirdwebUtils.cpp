@@ -63,11 +63,11 @@ namespace ThirdwebUtils
 
 	namespace Internal
 	{
-		FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FStringView& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
+		FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FString& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
 		{
 			FString UnmatchedLeft;
 			FString UnmatchedRight;
-			if (FString::Split(InString, &UnmatchedLeft, &UnmatchedRight))
+			if (InString.Split(MatchString, &UnmatchedLeft, &UnmatchedRight))
 			{
 				TArray<FString> Characters = UKismetStringLibrary::ParseIntoArray(MatchString);
 				for (int i = FMath::Max(ShowBeginCount - 1, 0); i < Characters.Num() - ShowEndCount; i++)
