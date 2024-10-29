@@ -50,8 +50,13 @@ public class Thirdweb : ModuleRules
 
 			if (IsAndroid)
 			{
-				var PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, target.RelativeEnginePath);
-				AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Thirdweb_UPL.xml"));
+				AdditionalPropertiesForReceipt.Add(
+					"AndroidPlugin",
+					Path.Combine(
+						Utils.MakePathRelativeTo(ModuleDirectory, target.RelativeEnginePath),
+						"Thirdweb_UPL.xml"
+					)
+				);
 			}
 		}
 #else

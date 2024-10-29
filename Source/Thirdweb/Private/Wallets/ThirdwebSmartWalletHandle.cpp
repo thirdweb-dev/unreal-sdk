@@ -5,10 +5,12 @@
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
 #include "ThirdwebInternal.h"
+#include "ThirdwebLog.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
+
+#include "Containers/ThirdwebSigner.h"
 
 #include "Dom/JsonObject.h"
 
@@ -21,10 +23,13 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
+#include "Tasks/Task.h"
+
 FSmartWalletHandle::FSmartWalletHandle(const FInAppWalletHandle& InInAppWallet, const FString& Int64String)
 {
 	Type = Smart;
 	int64 InID;
+	InAppWallet = InInAppWallet;
 	FDefaultValueHelper::ParseInt64(Int64String, InID);
 	ensureAlwaysMsgf(InID > 0, TEXT("Invalid id 0"));
 	ID = InID;
@@ -38,14 +43,8 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
                                 const FCreateSmartWalletDelegate& SuccessDelegate,
                                 const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	
 	if (!InInAppWallet.IsValid())
 	{
 		if (ErrorDelegate.IsBound())
@@ -54,6 +53,7 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
 		}
 		return;
 	}
+	
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [InInAppWallet, ChainID, bGasless, Factory, AccountOverride, SuccessDelegate, ErrorDelegate]
 	{
 		if (FString Error; Thirdweb::create_smart_wallet(
@@ -69,7 +69,7 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
 		{
 			FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
 			SuccessDelegate.Execute(SmartWallet);
-			FThirdwebAnalytics::SendConnectEvent(SmartWallet.ToAddress(), SmartWallet.GetTypeString());
+			FThirdwebAnalytics::SendConnectEvent(SmartWallet);
 		}
 		else
 		{
@@ -83,25 +83,13 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
 
 void FSmartWalletHandle::IsDeployed(const FBoolDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, SuccessDelegate, ErrorDelegate]
 	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
-	{
-		if (FString Error; Thirdweb::smart_wallet_is_deployed(ID).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_is_deployed(ThisCopy.GetID()).AssignResult(Error))
 		{
 			SuccessDelegate.Execute(Error.ToBool());
 		}
@@ -122,22 +110,9 @@ void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
                                           const FStringDelegate& SuccessDelegate,
                                           const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
 	FDateTime TenYearsFromNow = FDateTime::UtcNow() + FTimespan::FromDays(10 * 365);
 
 	TArray<const char*> ApprovedTargetsCArray;
@@ -145,13 +120,14 @@ void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
 	{
 		ApprovedTargetsCArray.Add(TO_RUST_STRING(Target));
 	}
+	FSmartWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(
 		UE_SOURCE_LOCATION,
-		[this, Signer, ApprovedTargets, ApprovedTargetsCArray, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd, SuccessDelegate,
+		[ThisCopy, Signer, ApprovedTargets, ApprovedTargetsCArray, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd, SuccessDelegate,
 			ErrorDelegate]
 		{
 			if (FString Error; Thirdweb::smart_wallet_create_session_key(
-				ID,
+				ThisCopy.GetID(),
 				TO_RUST_STRING(Signer),
 				ApprovedTargets.IsEmpty() ? nullptr : ApprovedTargetsCArray.GetData(),
 				ApprovedTargetsCArray.Num(),
@@ -184,25 +160,13 @@ void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
 
 void FSmartWalletHandle::RevokeSessionKey(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Signer, SuccessDelegate, ErrorDelegate]
 	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Signer, SuccessDelegate, ErrorDelegate]
-	{
-		if (FString Error; Thirdweb::smart_wallet_revoke_session_key(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_revoke_session_key(ThisCopy.GetID(), TO_RUST_STRING(Signer)).AssignResult(Error))
 		{
 			SuccessDelegate.Execute();
 		}
@@ -215,26 +179,14 @@ void FSmartWalletHandle::RevokeSessionKey(const FString& Signer, const FSimpleDe
 
 void FSmartWalletHandle::GetAdmins(const FStringArrayDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, SuccessDelegate, ErrorDelegate]
 	{
 		TArray<FString> Admins;
-		if (FString Error; Thirdweb::smart_wallet_get_all_admins(ID).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_get_all_admins(ThisCopy.GetID()).AssignResult(Error))
 		{
 			TArray<TSharedPtr<FJsonValue>> JsonValueArray;
 			const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Error);
@@ -260,25 +212,13 @@ void FSmartWalletHandle::GetAdmins(const FStringArrayDelegate& SuccessDelegate, 
 
 void FSmartWalletHandle::AddAdmin(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Signer, SuccessDelegate, ErrorDelegate]
 	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Signer, SuccessDelegate, ErrorDelegate]
-	{
-		if (FString Error; Thirdweb::smart_wallet_add_admin(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_add_admin(ThisCopy.GetID(), TO_RUST_STRING(Signer)).AssignResult(Error))
 		{
 			SuccessDelegate.Execute();
 		} else
@@ -290,25 +230,13 @@ void FSmartWalletHandle::AddAdmin(const FString& Signer, const FSimpleDelegate& 
 
 void FSmartWalletHandle::RemoveAdmin(const FString& Signer, const FSimpleDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Signer, SuccessDelegate, ErrorDelegate]
 	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Signer, SuccessDelegate, ErrorDelegate]
-	{
-		if (FString Error; Thirdweb::smart_wallet_remove_admin(ID, TO_RUST_STRING(Signer)).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_remove_admin(ThisCopy.GetID(), TO_RUST_STRING(Signer)).AssignResult(Error))
 		{
 			SuccessDelegate.Execute();
 		} else
@@ -320,25 +248,13 @@ void FSmartWalletHandle::RemoveAdmin(const FString& Signer, const FSimpleDelegat
 
 void FSmartWalletHandle::GetActiveSigners(const FGetActiveSignersDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
-	if (!SuccessDelegate.IsBound())
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate);
+	CHECK_VALIDITY(ErrorDelegate);
+	
+	FSmartWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, SuccessDelegate, ErrorDelegate]
 	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Success Delegate Not Bound"));
-		}
-		return;
-	}
-	if (!IsValid())
-	{
-		if (ErrorDelegate.IsBound())
-		{
-			ErrorDelegate.Execute(TEXT("Invalid smart wallet handle"));
-		}
-		return;
-	}
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, SuccessDelegate, ErrorDelegate]
-	{
-		if (FString Error; Thirdweb::smart_wallet_get_all_active_signers(ID).AssignResult(Error))
+		if (FString Error; Thirdweb::smart_wallet_get_all_active_signers(ThisCopy.GetID()).AssignResult(Error))
 		{
 			TArray<FSigner> Signers;
 			TArray<TSharedPtr<FJsonValue>> JsonValueArray;

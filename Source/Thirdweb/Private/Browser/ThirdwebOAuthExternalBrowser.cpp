@@ -59,11 +59,11 @@ void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 
 	// Start the HTTP server
 	FHttpServerModule::Get().StartAllListeners();
-	TW_LOG(Verbose, TEXT("OAuth HTTP Server started and listening on port 8789"));
+	TW_LOG(VeryVerbose, TEXT("OAuth HTTP Server started and listening on port 8789"));
 
 	// Open the browser with the login URL
 	FPlatformProcess::LaunchURL(*Link, nullptr, nullptr);
-	TW_LOG(Log, TEXT("Browser opened with URL: %s"), *Link);
+	TW_LOG(Verbose, TEXT("Browser opened with URL: %s"), *Link);
 	State = AuthPending;
 }
 
@@ -74,11 +74,11 @@ void UThirdwebOAuthExternalBrowser::Tick(float DeltaTime)
 		State = Complete;
 		// Stop the HTTP listener
 		FHttpServerModule::Get().StopAllListeners();
-		TW_LOG(Verbose, TEXT("OAuth HTTP Server stopped listening"));
+		TW_LOG(VeryVerbose, TEXT("OAuth HTTP Server stopped listening"));
 
 		// Unbind the route
 		Router->UnbindRoute(RouteHandle);
-		TW_LOG(Verbose, TEXT("Route unbound"));
+		TW_LOG(VeryVerbose, TEXT("Route unbound"));
 
 		FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
 

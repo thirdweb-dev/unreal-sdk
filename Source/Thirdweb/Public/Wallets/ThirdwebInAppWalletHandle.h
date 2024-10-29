@@ -8,6 +8,7 @@
 
 #include "ThirdwebInAppWalletHandle.generated.h"
 
+struct FThirdwebLinkedAccount;
 enum class EThirdwebOTPMethod : uint8;
 enum class EThirdwebOAuthProvider : uint8;
 
@@ -17,7 +18,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 	GENERATED_BODY()
 
 	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
-	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FString>&);
+	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FThirdwebLinkedAccount>&);
 	
 	enum EInAppSource
 	{

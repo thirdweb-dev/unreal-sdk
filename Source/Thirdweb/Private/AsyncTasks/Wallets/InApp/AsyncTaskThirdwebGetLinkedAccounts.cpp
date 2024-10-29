@@ -2,6 +2,8 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebGetLinkedAccounts.h"
 
+#include "Async/TaskGraphInterfaces.h"
+
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebGetLinkedAccounts::Activate()
@@ -21,7 +23,7 @@ UAsyncTaskThirdwebGetLinkedAccounts* UAsyncTaskThirdwebGetLinkedAccounts::GetLin
 	return Task;
 }
 
-void UAsyncTaskThirdwebGetLinkedAccounts::HandleResponse(const TArray<FString>& LinkedAccounts)
+void UAsyncTaskThirdwebGetLinkedAccounts::HandleResponse(const TArray<FThirdwebLinkedAccount>& LinkedAccounts)
 {
 	if (IsInGameThread())
 	{

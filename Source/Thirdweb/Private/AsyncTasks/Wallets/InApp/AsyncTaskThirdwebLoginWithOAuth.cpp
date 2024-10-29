@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/AsyncTaskThirdwebLoginWithOAuth.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebLoginWithOAuth.h"
 
 #include "ThirdwebLog.h"
 #include "TimerManager.h"

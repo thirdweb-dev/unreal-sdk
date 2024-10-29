@@ -39,6 +39,7 @@ public:
 	
 	bool IsPageLoaded() const;
 	FString GetUrl() const;
+	static FString GetDummyUrl();
 	
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")
 	void Authenticate(const FString& OAuthLoginUrl);
@@ -46,18 +47,20 @@ public:
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void OnWidgetRebuilt() override;
+	
 public:
 	FSimpleStringDelegate OnUrlChanged;
 	FSimpleStringDelegate OnPageLoaded;
 	FSimpleDoubleStringDelegate OnBeforePopup;
 	
-	static const FString DummyUrl;
+	
 
 private:
 	FString InitialUrl;
 	bool bSupportsTransparency = false;
 	bool bShowInitialThrobber = false;
-
+	static const FString DummyUrl;
+	
 #if WITH_CEF
 	TSharedPtr<SWebBrowser> Browser;
 #endif

@@ -2,7 +2,7 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebIsActiveSigner.h"
 
-#include "ThirdwebSigner.h"
+#include "Containers/ThirdwebSigner.h"
 
 #include "Components/SlateWrapperTypes.h"
 

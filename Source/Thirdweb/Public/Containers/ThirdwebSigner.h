@@ -2,10 +2,6 @@
 
 #pragma once
 
-#include "Dom/JsonObject.h"
-
-#include "Misc/DateTime.h"
-
 #include "ThirdwebSigner.generated.h"
 
 USTRUCT(BlueprintType)
@@ -28,5 +24,20 @@ struct THIRDWEB_API FSigner
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Thirdweb|Wallets|Smart Wallet|Signer")
 	FDateTime EndTime;
 
-	static FSigner FromJson(const TSharedPtr<FJsonObject> &JsonObject);
+	static FSigner FromJson(const TSharedPtr<class FJsonObject>& JsonObject);
+
+	bool operator==(const FSigner& Other) const
+	{
+		return Address.Equals(Other.Address, ESearchCase::IgnoreCase);
+	}
+
+	bool operator!=(const FSigner& Other) const
+	{
+		return !Address.Equals(Other.Address, ESearchCase::IgnoreCase);
+	}
+	
+	friend uint32 GetTypeHash(const FSigner& Other)
+	{
+		return GetTypeHash(Other.Address);
+	}
 };

@@ -3,6 +3,9 @@
 #pragma once
 
 #include "AsyncTaskThirdwebInAppBase.h"
+
+#include "Containers/ThirdwebLinkedAccount.h"
+
 #include "AsyncTaskThirdwebGetLinkedAccounts.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)
@@ -16,7 +19,7 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|In App")
 	static UAsyncTaskThirdwebGetLinkedAccounts* GetLinkedAccounts(UObject* WorldContextObject, const FInAppWalletHandle& Wallet);
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGetLinkedAccountsDelegate, const TArray<FString>&, LinkedAccounts, const FString&, Error);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGetLinkedAccountsDelegate, const TArray<FThirdwebLinkedAccount>&, LinkedAccounts, const FString&, Error);
 	UPROPERTY(BlueprintAssignable)
 	FGetLinkedAccountsDelegate Success;
 	
@@ -25,7 +28,7 @@ public:
 
 private:
 	UFUNCTION()
-	void HandleResponse(const TArray<FString>& LinkedAccounts);
+	void HandleResponse(const TArray<FThirdwebLinkedAccount>& LinkedAccounts);
 	
 	UFUNCTION()
 	virtual void HandleFailed(const FString& Error);

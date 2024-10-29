@@ -1,32 +1,13 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-// Warning: The information provided in this file is for convenience, and is subject to change at any time.
-
-#pragma once
-
-#include "ThirdwebCountryCodes.generated.h"
-
-USTRUCT(BlueprintType, DisplayName="Country Code")
-struct THIRDWEB_API FThirdwebCountryCode
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Country Code")
-	int32 Code = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Country Code")
-	FText Abbreviation;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Country Code")
-	FText FullName;
-};
+#include "Containers/ThirdwebCountryCodes.h"
 
 #define LOCTEXT_NAMESPACE "Thirdweb"
 #define LOCTEXT_LOCAL(Value) LOCTEXT(Value, Value)
 
 namespace ThirdwebCountryCodes
 {
-	static TMap<int32, FThirdwebCountryCode> Map = {
+	const TMap<int32, FThirdwebCountryCode> Map = {
 		{376, {376, LOCTEXT_LOCAL("AD"), LOCTEXT_LOCAL("Andorra")}},
 		{971, {971, LOCTEXT_LOCAL("AE"), LOCTEXT_LOCAL("United Arab Emirates")}},
 		{93, {93, LOCTEXT_LOCAL("AF"), LOCTEXT_LOCAL("Afghanistan")}},
@@ -265,9 +246,9 @@ namespace ThirdwebCountryCodes
 		{263, {263, LOCTEXT_LOCAL("ZW"), LOCTEXT_LOCAL("Zimbabwe")}},
 	};
 
-	static FThirdwebCountryCode GetCountryCodeData(const int32 CountryCode) { return Map.Contains(CountryCode) ? Map[CountryCode] : FThirdwebCountryCode(); }
+	FThirdwebCountryCode GetCountryCodeData(const int32 CountryCode) { return Map.Contains(CountryCode) ? Map[CountryCode] : FThirdwebCountryCode(); }
 
-	static TArray<FThirdwebCountryCode> GetCountryCodesArray()
+	TArray<FThirdwebCountryCode> GetCountryCodesArray()
 	{
 		TArray<FThirdwebCountryCode> CountryCodes;
 		Map.GenerateValueArray(CountryCodes);

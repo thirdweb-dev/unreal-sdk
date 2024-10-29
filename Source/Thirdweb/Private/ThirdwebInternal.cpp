@@ -12,18 +12,10 @@
 
 #include "Kismet/GameplayStatics.h"
 
-#include "Policies/CondensedJsonPrintPolicy.h"
+#include "Wallets/ThirdwebInAppWalletHandle.h"
+#include "Wallets/ThirdwebSmartWalletHandle.h"
+#include "Wallets/ThirdwebWalletHandle.h"
 
-#include "Serialization/JsonSerializer.h"
-#include "Serialization/JsonWriter.h"
-
-FString FThirdwebAnalytics::JsonObjectToString(const TSharedPtr<FJsonObject>& JsonObject)
-{
-	FString Out;
-	const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out);
-	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-	return Out;
-}
 
 FString FThirdwebAnalytics::GetPluginVersion()
 {
@@ -34,8 +26,19 @@ FString FThirdwebAnalytics::GetPluginVersion()
 	return "0.0.0";
 }
 
-void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& Type)
+// ReSharper disable CppPassValueParameterByConstReference
+void FThirdwebAnalytics::SendConnectEvent(const FWalletHandle Wallet)
 {
+	if (!IsInGameThread())
+	{
+		// Retry on the GameThread.
+		const FWalletHandle WalletCopy;
+		FFunctionGraphTask::CreateAndDispatchWhenReady([WalletCopy]()
+		{
+			SendConnectEvent(WalletCopy);
+		}, TStatId(), nullptr, ENamedThreads::GameThread);
+		return;
+	}
 	const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get();
 	if (!UThirdwebRuntimeSettings::AnalyticsEnabled() || UThirdwebRuntimeSettings::GetBundleId().IsEmpty() || UThirdwebRuntimeSettings::GetClientId().IsEmpty())
 	{
@@ -57,11 +60,16 @@ void FThirdwebAnalytics::SendConnectEvent(const FString& Wallet, const FString& 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	JsonObject->SetStringField(TEXT("source"), TEXT("connectWallet"));
 	JsonObject->SetStringField(TEXT("action"), TEXT("connect"));
-	JsonObject->SetStringField(TEXT("walletAddress"), Wallet);
-	JsonObject->SetStringField(TEXT("walletType"), Type);
-	Request->SetContentAsString(JsonObjectToString(JsonObject));
+	JsonObject->SetStringField(TEXT("walletAddress"), Wallet.ToAddress());
+	JsonObject->SetStringField(TEXT("walletType"), Wallet.GetTypeString());
+	Request->SetContentAsString(ThirdwebUtils::Json::ToString(JsonObject));
 	Request->ProcessRequest();
 }
+
+void FThirdwebAnalytics::SendConnectEvent(const FInAppWalletHandle Wallet) { SendConnectEvent(FWalletHandle(Wallet)); }
+
+void FThirdwebAnalytics::SendConnectEvent(const FSmartWalletHandle Wallet) { SendConnectEvent(FWalletHandle(Wallet)); }
+// ReSharper restore CppPassValueParameterByConstReference
 
 // https://stackoverflow.com/a/58467162/12204515
 FString FThirdwebAnalytics::GenerateUUID()
@@ -69,7 +77,7 @@ FString FThirdwebAnalytics::GenerateUUID()
 	static std::random_device Device;
 	static std::mt19937 RNG(Device());
 
-	std::uniform_int_distribution<int> Distribution(0, 15);
+	std::uniform_int_distribution Distribution(0, 15);
 
 	const char* Options = "0123456789abcdef";
 	constexpr bool Dash[] = {false, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false};

@@ -6,10 +6,9 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
 
-#include "Data/ThirdwebCountryCodes.h"
+#include "Containers/ThirdwebCountryCodes.h"
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"

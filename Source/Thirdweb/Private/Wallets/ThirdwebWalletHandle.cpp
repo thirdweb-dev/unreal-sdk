@@ -4,27 +4,45 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
+#include "ThirdwebLog.h"
 #include "ThirdwebMacros.h"
-#include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebSigner.h"
 #include "ThirdwebUtils.h"
 
-#include "Dom/JsonObject.h"
+#include "Tasks/Task.h"
 
-#include "GenericPlatform/GenericPlatformHttp.h"
+#include "Wallets/ThirdwebSmartWalletHandle.h"
 
-#include "Kismet/KismetStringLibrary.h"
+FWalletHandle::FWalletHandle(const FInAppWalletHandle& InAppWalletHandle)
+{
+	Type = InAppWalletHandle.GetType();
+	ID = InAppWalletHandle.GetID();
+}
 
-#include "Misc/DefaultValueHelper.h"
-
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
+FWalletHandle::FWalletHandle(const FSmartWalletHandle& SmartWalletHandle)
+{
+	Type = SmartWalletHandle.GetType();
+	ID = SmartWalletHandle.GetID();
+}
 
 FString FWalletHandle::ToAddress() const
 {
+	if (!CachedAddress.IsEmpty())
+	{
+		return CachedAddress;
+	}
 	FString Result;
 	return Thirdweb::get_wallet_address(ID).AssignResult(Result) ? Result : ThirdwebUtils::ZeroAddress;
+}
+
+void FWalletHandle::CacheAddress()
+{
+	if (!CachedAddress.IsEmpty())
+	{
+		if (FString Result; Thirdweb::get_wallet_address(ID).AssignResult(Result))
+		{
+			CachedAddress = Result;
+		}
+	}
 }
 
 void FWalletHandle::Sign(const FString& Message, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) const
@@ -32,9 +50,10 @@ void FWalletHandle::Sign(const FString& Message, const FStringDelegate& SuccessD
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [this, Message, SuccessDelegate, ErrorDelegate]
+	FWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Message, SuccessDelegate, ErrorDelegate]
 	{
-		if (FString Error; Thirdweb::sign_message(ID, TO_RUST_STRING(Message)).AssignResult(Error))
+		if (FString Error; Thirdweb::sign_message(ThisCopy.GetID(), TO_RUST_STRING(Message)).AssignResult(Error))
 		{
 			SuccessDelegate.Execute(Error);
 		} else

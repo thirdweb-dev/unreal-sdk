@@ -80,7 +80,7 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 	
 	// Get Login URL
 	FString Link;
-	if (FString Error; !Wallet.FetchOAuthLoginURL(Browser->DummyUrl, Link, Error))
+	if (FString Error; !Wallet.FetchOAuthLoginURL(UThirdwebOAuthBrowserWidget::GetDummyUrl(), Link, Error))
 	{
 		return HandleError(Error);
 	}
@@ -118,7 +118,7 @@ void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 	{
 		return SetVisible(false);
 	}
-	if (Url.StartsWith(Browser->DummyUrl))
+	if (Url.StartsWith(UThirdwebOAuthBrowserWidget::GetDummyUrl()))
 	{
 		SetVisible(false);
 		FString Left, Right;
