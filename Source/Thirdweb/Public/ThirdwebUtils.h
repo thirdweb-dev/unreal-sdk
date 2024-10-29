@@ -2,6 +2,7 @@
 
 #pragma once
 
+class IHttpRequest;
 enum class EThirdwebOAuthProvider : uint8;
 
 namespace ThirdwebUtils
@@ -75,6 +76,14 @@ namespace ThirdwebUtils
 		extern TSharedPtr<FJsonObject> ToJson(const FString& String);
 		extern TArray<TSharedPtr<FJsonValue>> ToJsonArray(const FString& String);
 		extern FString ToString(const TSharedPtr<FJsonObject>& JsonObject);
+	}
+
+	namespace Internal
+	{
+		extern FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FString& MaskCharacter = TEXT("*"), const int32 ShowBeginCount = 4, const int32 ShowEndCount = 4);
+		extern TArray<FString> MaskSensitiveString(const TArray<FString>& InStrings, const FString& MatchString, const FString& MaskCharacter = TEXT("*"), const int32 ShowBeginCount = 4, const int32 ShowEndCount = 4);
+		extern TArray<FString> MaskSensitiveString(const TArray<FString>& InStrings, const TArray<FString>& MatchStrings, const FString& MaskCharacter = TEXT("*"), const int32 ShowBeginCount = 4, const int32 ShowEndCount = 4);
+		extern void LogRequest(const TSharedRef<IHttpRequest>& Request, const TArray<FString>& SensitiveStrings = {});
 	}
 }
 

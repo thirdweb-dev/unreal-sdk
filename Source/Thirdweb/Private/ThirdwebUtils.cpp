@@ -10,6 +10,10 @@
 
 #include "GenericPlatform/GenericPlatformHttp.h"
 
+#include "Interfaces/IHttpRequest.h"
+
+#include "Kismet/KismetStringLibrary.h"
+
 #include "Policies/CondensedJsonPrintPolicy.h"
 
 #include "Serialization/JsonReader.h"
@@ -55,6 +59,62 @@ namespace ThirdwebUtils
 			TW_LOG(VeryVerbose, TEXT("ThirdwebUtils::ParseAuthResult::UrlDecoded::%s"), *Result)
 		}
 		return Result;
+	}
+
+	namespace Internal
+	{
+		FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FStringView& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
+		{
+			FString UnmatchedLeft;
+			FString UnmatchedRight;
+			if (FString::Split(InString, &UnmatchedLeft, &UnmatchedRight))
+			{
+				TArray<FString> Characters = UKismetStringLibrary::ParseIntoArray(MatchString);
+				for (int i = FMath::Max(ShowBeginCount - 1, 0); i < Characters.Num() - ShowEndCount; i++)
+				{
+					Characters[i] = MaskCharacter;
+				}
+				return UnmatchedLeft + UKismetStringLibrary::JoinStringArray(Characters, TEXT("")) + UnmatchedRight;
+			}
+			return InString;
+		}
+
+		TArray<FString> MaskSensitiveString(const TArray<FString>& InStrings, const FString& MatchString, const FString& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
+		{
+			TArray<FString> Result;
+			for (const FString& InString : InStrings)
+			{
+				Result.Emplace(MaskSensitiveString(InString, MatchString, MaskCharacter, ShowBeginCount, ShowEndCount));
+			}
+			return Result;
+		}
+
+		TArray<FString> MaskSensitiveString(const TArray<FString>& InStrings, const TArray<FString>& MatchStrings, const FString& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
+		{
+			TArray<FString> Result;
+			for (const FString& InString : InStrings)
+			{
+				FString ResultString = InString;
+				for (const FString& MatchString : MatchStrings)
+				{
+					MaskSensitiveString(ResultString, MatchString, MaskCharacter, ShowBeginCount, ShowEndCount);
+				}
+				Result.Emplace(ResultString);
+			}
+			return Result;
+		}
+
+		void LogRequest(const TSharedRef<IHttpRequest>& Request, const TArray<FString>& SensitiveStrings)
+		{
+			TArray<uint8> Content = Request->GetContent();
+			TW_LOG(
+				VeryVerbose,
+				TEXT("ThirdwebUtils::Internal::LogRequest::URL=%s | Headers=%s | Content=%s"),
+				*Request->GetURL(),
+				*UKismetStringLibrary::JoinStringArray(ThirdwebUtils::Internal::MaskSensitiveString(Request->GetAllHeaders(), SensitiveStrings), TEXT(";")),
+				ANSI_TO_TCHAR(reinterpret_cast<const char*>(Request->GetContent().GetData()))
+			)
+		}
 	}
 
 	namespace Maps

@@ -90,7 +90,7 @@ public:
 	static TArray<FString> GetThirdwebGlobalEngineSigners();
 
 	/** Gets the first global engine signer in the array, if any */
-	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signers"))
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signer"))
 	static FString GetThirdwebGlobalEngineSigner(bool& bFound);
 
 	/** Static accessor to get EncryptionKey */

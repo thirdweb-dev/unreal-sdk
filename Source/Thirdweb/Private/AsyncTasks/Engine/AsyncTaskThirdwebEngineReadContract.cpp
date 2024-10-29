@@ -3,7 +3,9 @@
 #include "AsyncTasks/Engine/AsyncTaskThirdwebEngineReadContract.h"
 
 #include "HttpModule.h"
+#include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
+#include "ThirdwebUtils.h"
 
 #include "Dom/JsonObject.h"
 
@@ -54,7 +56,7 @@ void UAsyncTaskThirdwebEngineReadContract::Activate()
 			}
 		)
 	);
-
+	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
 	Request->SetTimeout(30.0f);
 	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
 	Request->ProcessRequest();
@@ -64,9 +66,10 @@ void UAsyncTaskThirdwebEngineReadContract::HandleResponse(FHttpRequestPtr, FHttp
 {
 	if (bConnectedSuccessfully)
 	{
-		FString ResponseString = Response->GetContentAsString();
+		FString Content = Response->GetContentAsString();
+		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineReadContract::HandleResponse::Content=%s"), Content)
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseString);
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
 		FJsonSerializer::Deserialize(Reader, JsonObject);
 		if (JsonObject.IsValid())
 		{
@@ -79,9 +82,10 @@ void UAsyncTaskThirdwebEngineReadContract::HandleResponse(FHttpRequestPtr, FHttp
 				}
 				return HandleFailed(Error);
 			}
-			Success.Broadcast(ResponseString, TEXT(""));
+			Success.Broadcast(Content, TEXT(""));
 			SetReadyToDestroy();
-		} else return HandleFailed(TEXT("Invalid Response"));
+		}
+		else return HandleFailed(TEXT("Invalid Response"));
 	}
 	else return HandleFailed(TEXT("Network connection failed"));
 }

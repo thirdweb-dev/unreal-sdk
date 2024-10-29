@@ -3,6 +3,7 @@
 #include "AsyncTasks/Engine/AsyncTaskThirdwebEngineWriteContract.h"
 
 #include "HttpModule.h"
+#include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
 
@@ -105,8 +106,8 @@ void UAsyncTaskThirdwebEngineWriteContract::Activate()
 	{
 		JsonObject->SetArrayField(TEXT("abi"), ThirdwebUtils::Json::ToJsonArray(Abi));
 	}
-	
-	Request->SetContentAsString(ThirdwebUtils::Json::ToString(JsonObject));
+	FString Content = ThirdwebUtils::Json::ToString(JsonObject);
+	Request->SetContentAsString(Content);
 	Request->SetURL(
 		FString::Format(
 			TEXT("{0}/contract/{1}/{2}/write{3}"),
@@ -118,7 +119,7 @@ void UAsyncTaskThirdwebEngineWriteContract::Activate()
 			}
 		)
 	);
-
+	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
 	Request->SetTimeout(30.0f);
 	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
 	Request->ProcessRequest();
@@ -128,8 +129,10 @@ void UAsyncTaskThirdwebEngineWriteContract::HandleResponse(FHttpRequestPtr, FHtt
 {
 	if (bConnectedSuccessfully)
 	{
-		if (TSharedPtr<FJsonObject> JsonObject = ThirdwebUtils::Json::ToJson(Response->GetContentAsString()); JsonObject.IsValid())
+		const FString Content = Response->GetContentAsString();
+		if (TSharedPtr<FJsonObject> JsonObject = ThirdwebUtils::Json::ToJson(Content); JsonObject.IsValid())
 		{
+			TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineWriteContract::HandleResponse::Content=%s"), *Content)
 			if (JsonObject->HasTypedField<EJson::String>(TEXT("error")))
 			{
 				FString Error = TEXT("Unknown Error");
