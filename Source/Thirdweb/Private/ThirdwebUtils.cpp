@@ -97,7 +97,7 @@ namespace ThirdwebUtils
 				FString ResultString = InString;
 				for (const FString& MatchString : MatchStrings)
 				{
-					MaskSensitiveString(ResultString, MatchString, MaskCharacter, ShowBeginCount, ShowEndCount);
+					ResultString = MaskSensitiveString(ResultString, MatchString, MaskCharacter, ShowBeginCount, ShowEndCount);
 				}
 				Result.Emplace(ResultString);
 			}
