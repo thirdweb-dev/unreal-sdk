@@ -143,9 +143,14 @@ void UAsyncTaskThirdwebEngineWriteContract::HandleResponse(FHttpRequestPtr, FHtt
 				return HandleFailed(Error);
 			}
 			FString QueueId = TEXT("Unknown");
-			if (JsonObject->HasTypedField<EJson::String>(TEXT("queueId")))
+			if (JsonObject->HasTypedField<EJson::Object>(TEXT("result")))
 			{
-				QueueId = JsonObject->GetStringField(TEXT("queueId"));
+				// ReSharper disable once CppTooWideScopeInitStatement
+				TSharedPtr<FJsonObject> ResultJsonObject = JsonObject->GetObjectField(TEXT("result"));
+				if (ResultJsonObject->HasTypedField<EJson::String>(TEXT("queueId")))
+				{
+					QueueId = ResultJsonObject->GetStringField(TEXT("queueId"));
+				}
 			}
 			Success.Broadcast(QueueId, TEXT(""));
 			SetReadyToDestroy();
