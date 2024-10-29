@@ -23,6 +23,8 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
+#include "Tasks/Task.h"
+
 FSmartWalletHandle::FSmartWalletHandle(const FInAppWalletHandle& InInAppWallet, const FString& Int64String)
 {
 	Type = Smart;

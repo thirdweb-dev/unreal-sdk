@@ -2,6 +2,8 @@
 
 #pragma once
 
+class FJsonObject;
+class FJsonValue;
 class IHttpRequest;
 enum class EThirdwebOAuthProvider : uint8;
 
