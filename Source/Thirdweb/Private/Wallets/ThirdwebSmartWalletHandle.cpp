@@ -103,10 +103,7 @@ void FSmartWalletHandle::IsDeployed(const FBoolDelegate& SuccessDelegate, const 
 void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
                                           const TArray<FString>& ApprovedTargets,
                                           const FString& NativeTokenLimitPerTransactionInWei,
-                                          const FDateTime& PermissionStart,
                                           const FDateTime& PermissionEnd,
-                                          const FDateTime& RequestValidityStart,
-                                          const FDateTime& RequestValidityEnd,
                                           const FStringDelegate& SuccessDelegate,
                                           const FStringDelegate& ErrorDelegate)
 {
@@ -114,16 +111,25 @@ void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
 	CHECK_VALIDITY(ErrorDelegate);
 	
 	FDateTime TenYearsFromNow = FDateTime::UtcNow() + FTimespan::FromDays(10 * 365);
-
+	FDateTime EndTime = TenYearsFromNow;
 	TArray<const char*> ApprovedTargetsCArray;
 	for (const FString& Target : ApprovedTargets)
 	{
 		ApprovedTargetsCArray.Add(TO_RUST_STRING(Target));
 	}
+	if (PermissionEnd.ToUnixTimestamp() > 0)
+	{
+		EndTime = PermissionEnd;
+		if (EndTime + FTimespan::FromMinutes(10) < FDateTime::UtcNow())
+		{
+			ErrorDelegate.Execute(TEXT("Invalid EndTime"));
+			return;
+		}
+	}
 	FSmartWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(
 		UE_SOURCE_LOCATION,
-		[ThisCopy, Signer, ApprovedTargets, ApprovedTargetsCArray, NativeTokenLimitPerTransactionInWei, PermissionStart, PermissionEnd, RequestValidityStart, RequestValidityEnd, SuccessDelegate,
+		[ThisCopy, Signer, ApprovedTargets, ApprovedTargetsCArray, NativeTokenLimitPerTransactionInWei, EndTime, TenYearsFromNow, SuccessDelegate,
 			ErrorDelegate]
 		{
 			if (FString Error; Thirdweb::smart_wallet_create_session_key(
@@ -132,10 +138,10 @@ void FSmartWalletHandle::CreateSessionKey(const FString& Signer,
 				ApprovedTargets.IsEmpty() ? nullptr : ApprovedTargetsCArray.GetData(),
 				ApprovedTargetsCArray.Num(),
 				TO_RUST_STRING(NativeTokenLimitPerTransactionInWei),
-				TO_RUST_TIMESTAMP(PermissionStart),
-				TO_RUST_TIMESTAMP(PermissionEnd),
-				TO_RUST_TIMESTAMP(RequestValidityStart),
-				TO_RUST_TIMESTAMP(RequestValidityEnd)
+				0,
+				TO_RUST_TIMESTAMP(EndTime),
+				0,
+				TO_RUST_TIMESTAMP(TenYearsFromNow)
 			).AssignResult(Error))
 			{
 				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
