@@ -52,7 +52,7 @@ void UAsyncTaskThirdwebEngineReadContract::Activate()
 				FString::Printf(TEXT("%lld"), ChainId),
 				ContractAddress,
 				FunctionName,
-				Args.Num() > 0 ? TEXT("&args={0}") + UKismetStringLibrary::JoinStringArray(Args, TEXT(",")) : TEXT("")
+				Args.Num() > 0 ? TEXT("&args=") + UKismetStringLibrary::JoinStringArray(Args, TEXT(",")) : TEXT("")
 			}
 		)
 	);
