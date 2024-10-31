@@ -10,10 +10,14 @@
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
 
-#include "Components/Button.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/PanelWidget.h"
+
+#if PLATFORM_ANDROID
+#include "Android/AndroidApplication.h"
+#include "Browser/Android/ThirdwebAndroidJNI.h"
+#endif
 
 const FString UThirdwebOAuthBrowserUserWidget::BackendUrlPrefix = TEXT("https://embedded-wallet.thirdweb.com/");
 
@@ -89,6 +93,17 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 	// Check Browser Type
 	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))
 	{
+#if PLATFORM_ANDROID
+		if (JNIEnv *Env = FAndroidApplication::GetJavaEnv())
+		{
+			jstring JUrl = Env->NewStringUTF(TCHAR_TO_UTF8(*Link));
+			jclass JClass = FAndroidApplication::FindJavaClass("com/thirdweb/unrealengine/ThirdwebActivity");
+			static jmethodID JLaunchUrl = FJavaWrapper::FindStaticMethod(Env, JClass, "startActivity", "(Landroid/app/Activity;Ljava/lang/String;)V", false);
+					
+			CallJniStaticVoidMethod(Env, JClass, JLaunchUrl, FJavaWrapper::GameActivityThis, JUrl);
+		}
+#endif
+		
 		return ExternalBrowser->Authenticate(Link);
 	}
 	return Browser->Authenticate(Link);
@@ -164,6 +179,27 @@ void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)
 {
 	OnError.Broadcast(Error);
 }
+
+#if PLATFORM_ANDROID
+void UThirdwebOAuthBrowserUserWidget::CallJniStaticVoidMethod(JNIEnv *Env, const jclass Class, jmethodID Method, ...)
+{
+	va_list Args;
+
+	va_start(Args, Method);
+	Env->CallStaticVoidMethodV(Class, Method, Args);
+	va_end(Args);
+	Env->DeleteLocalRef(Class);
+}
+void UThirdwebOAuthBrowserUserWidget::HandleDeepLink(const FString& Url)
+{
+	HandleUrlChanged(Url);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed(const FString& Url)
+{
+	HandleUrlChanged(Url);
+}
+#endif
 
 void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)
 {
