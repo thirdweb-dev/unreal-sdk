@@ -47,6 +47,7 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 	bool bChanged = false;
 	// ReSharper disable once CppTooWideScopeInitStatement
 	const FName CurrentPropertyName = PropertyChangedEvent.GetMemberPropertyName();
+	UE_LOG(LogTemp, Warning, TEXT("PropertyChangedEvent=%s"), *CurrentPropertyName.ToString())
 	if (CurrentPropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, OAuthBrowserProviderBackendOverrides))
 	{
 		for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders)
@@ -97,6 +98,7 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 			bChanged = true;
 		}
 	}
+	
 	if (bChanged && MarkPackageDirty())
 	{
 		PostEditChange();
@@ -267,7 +269,7 @@ FString UThirdwebRuntimeSettings::GetAppUri()
 		{
 			return Settings->CustomAppUri.TrimStartAndEnd();
 		}
-		return FString::Printf(TEXT("bundleid://%s"), *GetBundleId());
+		return FString::Printf(TEXT("%s://%s"), *GetBundleId(), *GetClientId());
 	}
 	return TEXT("");
 }

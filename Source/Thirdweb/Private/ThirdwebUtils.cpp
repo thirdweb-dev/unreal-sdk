@@ -169,9 +169,9 @@ namespace ThirdwebUtils
 			Request->SetHeader("x-sdk-name", "UnrealEngineSDK");
 			Request->SetHeader("x-sdk-os", UGameplayStatics::GetPlatformName());
 			Request->SetHeader("x-sdk-platform", "unreal-engine");
-			Request->SetHeader("x-sdk-version", ThirdwebUtils::Internal::GetPluginVersion());
-			Request->SetHeader("x-client-id", Settings->ClientId);
-			Request->SetHeader("x-bundle-id", Settings->BundleId);
+			Request->SetHeader("x-sdk-version", GetPluginVersion());
+			Request->SetHeader("x-client-id", Settings->GetClientId());
+			Request->SetHeader("x-bundle-id", Settings->GetBundleId());
 			Request->SetTimeout(5.0f);
 
 			// ReSharper disable once CppLocalVariableMayBeConst

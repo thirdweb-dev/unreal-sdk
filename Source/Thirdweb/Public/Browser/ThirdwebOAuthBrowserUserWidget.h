@@ -74,7 +74,6 @@ protected:
 	
 public:
 #if PLATFORM_ANDROID
-	void CallJniStaticVoidMethod(JNIEnv* Env, const jclass Class, jmethodID Method, ...);
 	void HandleDeepLink(const FString& Url);
 	void HandleCustomTabsDismissed(const FString& Url);
 #endif

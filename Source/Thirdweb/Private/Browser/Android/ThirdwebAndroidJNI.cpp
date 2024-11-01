@@ -9,6 +9,16 @@
 #include "Android/AndroidPlatform.h"
 #include "Engine/GameEngine.h"
 
+void ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod(JNIEnv* Env, const jclass Class, jmethodID Method, ...)
+{
+	TW_LOG(VeryVerbose, TEXT("ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod::Called"))
+	va_list Args;
+	va_start(Args, Method);
+	Env->CallStaticVoidMethodV(Class, Method, Args);
+	va_end(Args);
+	Env->DeleteLocalRef(Class);
+}
+
 UThirdwebOAuthBrowserUserWidget* GetOAuthBrowserUserWidget()
 {
 	if (UGameEngine* GameEngine = Cast<UGameEngine>(GEngine))
@@ -75,7 +85,7 @@ JNI_METHOD void Java_com_epicgames_unreal_GameActivity_handleDeepLink(JNIEnv* En
 		{
 			Browser->HandleDeepLink(DeepLink);
 		}
-		
+
 		Env->ReleaseStringUTFChars(JDeepLink, CDeepLink);
 	}
 }
