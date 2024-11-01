@@ -1,23 +1,17 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
+// ReSharper disable CppMemberFunctionMayBeConst
+
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
-
 #include "Containers/ThirdwebLinkedAccount.h"
-
-#include "GenericPlatform/GenericPlatformHttp.h"
-
-#include "Kismet/KismetStringLibrary.h"
-
 #include "Misc/DefaultValueHelper.h"
-
 #include "Tasks/Task.h"
 
 #define CHECK_ECOSYSTEM(ErrorDelegate) \
@@ -370,7 +364,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				{
 					if (Thirdweb::ecosystem_wallet_sign_in_with_otp_phone(ThisCopy.GetID(), TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
-						FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+						ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 						SuccessDelegate.Execute();
 						return;
 					}
@@ -380,7 +374,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				{
 					if (Thirdweb::ecosystem_wallet_sign_in_with_otp_email(ThisCopy.GetID(), TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
-						FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+						ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 						SuccessDelegate.Execute();
 						return;
 					}
@@ -397,7 +391,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				{
 					if (Thirdweb::in_app_wallet_sign_in_with_otp_phone(ThisCopy.GetID(), TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
-						FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+						ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 						SuccessDelegate.Execute();
 						return;
 					}
@@ -406,7 +400,7 @@ void FInAppWalletHandle::SignInWithOTP(const FString& OTP, const FStreamableDele
 				{
 					if (Thirdweb::in_app_wallet_sign_in_with_otp_email(ThisCopy.GetID(), TO_RUST_STRING(OTP)).AssignResult(Error, true))
 					{
-						FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+						ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 						SuccessDelegate.Execute();
 						return;
 					}
@@ -422,6 +416,7 @@ void FInAppWalletHandle::LinkOTP(const FInAppWalletHandle& Wallet, const FString
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
 	if (Wallet.GetSource() != Phone && Wallet.GetSource() != Email)
 	{
 		ErrorDelegate.Execute(TEXT("Wallet handle is not email/phone OTP source"));
@@ -511,7 +506,7 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 			TW_LOG(VeryVerbose, TEXT("FInAppWalletHandle::SignInWithOAuth::Task::%s"), *Result)
 			if (Thirdweb::ecosystem_wallet_sign_in_with_oauth(ThisCopy.GetID(), TO_RUST_STRING(Result)).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -520,7 +515,7 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 		{
 			if (Thirdweb::in_app_wallet_sign_in_with_oauth(ThisCopy.GetID(), TO_RUST_STRING(Result)).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -533,6 +528,7 @@ void FInAppWalletHandle::LinkOAuth(const FInAppWalletHandle& Wallet, const FStri
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
 	if (Wallet.GetSource() != OAuthProvider)
 	{
 		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
@@ -569,7 +565,7 @@ void FInAppWalletHandle::SignInWithJwt(const FString& Jwt, const FStreamableDele
 		{
 			if (Thirdweb::ecosystem_wallet_sign_in_with_jwt(ThisCopy.GetID(), TO_RUST_STRING(Jwt)).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -583,7 +579,7 @@ void FInAppWalletHandle::SignInWithJwt(const FString& Jwt, const FStreamableDele
 			}
 			if (Thirdweb::in_app_wallet_sign_in_with_jwt(ThisCopy.GetID(), TO_RUST_STRING(Jwt), TO_RUST_STRING(UThirdwebRuntimeSettings::GetEncryptionKey())).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -596,6 +592,7 @@ void FInAppWalletHandle::LinkJwt(const FInAppWalletHandle& Wallet, const FString
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
 	if (Wallet.GetSource() != EInAppSource::Jwt)
 	{
 		ErrorDelegate.Execute(TEXT("Wallet handle is not JWT source"));
@@ -631,7 +628,7 @@ void FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, const FS
 		{
 			if (Thirdweb::ecosystem_wallet_sign_in_with_auth_endpoint(ThisCopy.GetID(), TO_RUST_STRING(Payload)).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -645,7 +642,7 @@ void FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, const FS
 			}
 			if (Thirdweb::in_app_wallet_sign_in_with_auth_endpoint(ThisCopy.GetID(), TO_RUST_STRING(Payload), TO_RUST_STRING(UThirdwebRuntimeSettings::GetEncryptionKey())).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -658,6 +655,7 @@ void FInAppWalletHandle::LinkAuthEndpoint(const FInAppWalletHandle& Wallet, cons
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
 	if (Wallet.GetSource() != AuthEndpoint)
 	{
 		ErrorDelegate.Execute(TEXT("Wallet handle is not auth endpoint source"));
@@ -693,7 +691,7 @@ void FInAppWalletHandle::SignInWithGuest(const FStreamableDelegate& SuccessDeleg
 		{
 			if (Thirdweb::ecosystem_wallet_sign_in_with_guest(ThisCopy.GetID(), TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}
@@ -702,7 +700,7 @@ void FInAppWalletHandle::SignInWithGuest(const FStreamableDelegate& SuccessDeleg
 		{
 			if (Thirdweb::in_app_wallet_sign_in_with_guest(ThisCopy.GetID(), TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
 			{
-				FThirdwebAnalytics::SendConnectEvent(ThisCopy);
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
 				SuccessDelegate.Execute();
 				return;
 			}

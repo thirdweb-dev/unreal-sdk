@@ -3,13 +3,12 @@
 #include "ThirdwebRuntimeSettings.h"
 
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
 #include "ThirdwebLog.h"
+#include "ThirdwebUtils.h"
 
 #include "HAL/FileManager.h"
 
 #include "Misc/Paths.h"
-#include "Runtime/AppFramework/Public/Widgets/Colors/SColorPicker.h"
 
 // These Providers do not work with an embedded browser for various reasons:
 // - Google: https://accounts.youtube.com/accounts/SetSID does not load
@@ -124,7 +123,7 @@ bool UThirdwebRuntimeSettings::CanEditChange(const FProperty* InProperty) const
 void UThirdwebRuntimeSettings::GenerateEncryptionKey()
 {
 #if WITH_EDITOR
-	EncryptionKey = FThirdwebAnalytics::GenerateUUID();
+	EncryptionKey = ThirdwebUtils::Internal::GenerateUUID();
 	if (MarkPackageDirty())
 	{
 		PostEditChange();

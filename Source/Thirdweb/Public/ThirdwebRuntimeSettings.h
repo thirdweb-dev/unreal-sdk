@@ -107,7 +107,7 @@ public:
 	/** Static accessor to get EcosystemId */
 	static FString GetEcosystemId();
 
-	/** Static accessor to get bUsePartnerIds */
+	/** Static accessor to get PartnerId */
 	static FString GetPartnerId();
 
 	/** Static accessor to check EcosystemId validity */

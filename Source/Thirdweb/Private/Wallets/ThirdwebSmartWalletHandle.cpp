@@ -4,7 +4,6 @@
 
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebMacros.h"
 #include "ThirdwebRuntimeSettings.h"
@@ -69,7 +68,7 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
 		{
 			const FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
 			SuccessDelegate.Execute(SmartWallet);
-			FThirdwebAnalytics::SendConnectEvent(SmartWallet);
+			ThirdwebUtils::Internal::SendConnectEvent(SmartWallet);
 		}
 		else
 		{
