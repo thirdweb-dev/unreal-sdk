@@ -25,15 +25,16 @@ public:
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
 	
 	/** Stores the client identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
-	FString ClientID;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Client ID", Category=Global)
+	FString ClientId;
 
 	/** Stores the bundle identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
-	FString BundleID;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Bundle ID", Category=Global)
+	FString BundleId;
 	
 
 	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
@@ -41,12 +42,12 @@ public:
 	FString EncryptionKey;
 
 	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Ecosystem")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Ecosystem ID", Category="Wallets|Ecosystem")
 	FString EcosystemId;
 	
 	/** Ecosystem Wallet Partner ID - Needed if Allowlist-based Ecosystem */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, meta=(EditCondition="IsEcosystem()", EditConditionHides), Category="Wallets|Ecosystem")
-	FString PartnerID;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Partner ID", Category="Wallets|Ecosystem")
+	FString PartnerId;
 	
 	/** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Smart")
@@ -110,7 +111,7 @@ public:
 	static FString GetPartnerId();
 
 	/** Static accessor to check EcosystemId validity */
-	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }
+	static bool IsEcosystem();
 
 	/** Static accessor to get ClientId */
 	static FString GetClientId();

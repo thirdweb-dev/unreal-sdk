@@ -53,8 +53,8 @@ void FThirdwebAnalytics::SendConnectEvent(const FWalletHandle Wallet)
 	Request->SetHeader("x-sdk-os", UGameplayStatics::GetPlatformName());
 	Request->SetHeader("x-sdk-platform", "unreal-engine");
 	Request->SetHeader("x-sdk-version", GetPluginVersion());
-	Request->SetHeader("x-client-id", Settings->ClientID);
-	Request->SetHeader("x-bundle-id", Settings->BundleID);
+	Request->SetHeader("x-client-id", Settings->ClientId);
+	Request->SetHeader("x-bundle-id", Settings->BundleId);
 	Request->SetTimeout(5.0f);
 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
