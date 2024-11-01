@@ -12,7 +12,6 @@ namespace TwPins
 {
 	const FName Provider = FName(TEXT("Provider"));
 	const FName Input = FName(TEXT("Input"));
-	const FName PartnerId = FName(TEXT("PartnerId"));
 	const FName Wallet = FName(TEXT("Wallet"));
 	const FName InAppWallet = FName(TEXT("InAppWallet"));
 	const FName SmartWallet = FName(TEXT("SmartWallet"));
@@ -129,7 +128,6 @@ void UK2Node_ThirdwebBaseAsyncTask::RemoveHiddenPins(UK2Node* K2Node)
 	{
 		if (UEdGraphPin* Pin = Pins[i]; Pin && Pin->bHidden)
 		{
-			UE_LOG(LogTemp, Log, TEXT("K2NodeUtils::DestroyHidden::Destroying unused pin %s"), *Pin->PinName.ToString())
 			K2Node->RemovePin(Pin);
 		}
 	}
@@ -179,13 +177,6 @@ UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetProviderPin() const
 UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetInputPin() const
 {
 	UEdGraphPin* Pin = FindPin(TwPins::Input);
-	check(Pin == NULL || Pin->Direction == EGPD_Input);
-	return Pin;
-}
-
-UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetPartnerIdPin() const
-{
-	UEdGraphPin* Pin = FindPin(TwPins::PartnerId);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }

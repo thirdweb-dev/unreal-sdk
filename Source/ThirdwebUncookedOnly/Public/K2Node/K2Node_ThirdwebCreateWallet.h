@@ -10,7 +10,6 @@ namespace TwPins
 {
 	extern const FName Type;
 	extern const FName Source;
-	extern const FName Provider;
 	// Smart Wallet Pins
 	extern const FName ChainID;
 	extern const FName Gasless;

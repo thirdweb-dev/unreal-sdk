@@ -11,8 +11,8 @@ class THIRDWEB_API UAsyncTaskThirdwebCreateGuestWallet : public UAsyncTaskThirdw
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|InApp")
-	static UAsyncTaskThirdwebCreateGuestWallet* CreateGuestWallet(UObject* WorldContextObject, const FString& PartnerId) { CREATE_WALLET_TASK }
+	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|InApp")
+	static UAsyncTaskThirdwebCreateGuestWallet* CreateGuestWallet(UObject* WorldContextObject) { CREATE_WALLET_TASK }
 
 	virtual void Activate() override;
 };

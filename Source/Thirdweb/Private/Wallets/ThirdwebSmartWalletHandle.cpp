@@ -67,7 +67,7 @@ void FSmartWalletHandle::Create(const FInAppWalletHandle& InInAppWallet,
 			TO_RUST_STRING(AccountOverride)
 		).AssignResult(Error))
 		{
-			FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
+			const FSmartWalletHandle SmartWallet = FSmartWalletHandle(InInAppWallet, Error);
 			SuccessDelegate.Execute(SmartWallet);
 			FThirdwebAnalytics::SendConnectEvent(SmartWallet);
 		}

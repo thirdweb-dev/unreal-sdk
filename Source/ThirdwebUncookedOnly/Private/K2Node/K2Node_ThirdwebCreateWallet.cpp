@@ -60,7 +60,7 @@ FText UK2Node_ThirdwebCreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType)
 			}
 			else
 			{
-				if (FString Source = ResolvePinValue(GetSourcePin()); Source == TEXT("OAuth") || Source == TEXT("Email") || Source == TEXT("Phone"))
+				if (const FString Source = ResolvePinValue(GetSourcePin()); Source == TEXT("OAuth") || Source == TEXT("Email") || Source == TEXT("Phone"))
 				{
 					if (Source == TEXT("OAuth"))
 					{
@@ -160,10 +160,7 @@ void UK2Node_ThirdwebCreateWallet::AllocateDefaultPins()
 		CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FSmartWalletHandle::StaticStruct(), TwPins::SmartWallet),
 		LOCTEXT("K2Node_ThirdwebCreateWallet_ThirdwebSmartWalletOutput", "Wallet")
 	);
-
-	// Ecosystem Input Pin
-	SetPinAdvancedView(SetPinVisibility(CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::PartnerId), true));
-
+	
 	PostAllocateDefaultPins();
 }
 
@@ -250,9 +247,7 @@ void UK2Node_ThirdwebCreateWallet::UpdatePins()
 		SetPinVisibility(GetFactoryPin(), bSmart);
 		SetPinVisibility(GetAccountOverridePin(), bSmart);
 		SetPinVisibility(GetSmartWalletPin(), bSmart);
-
-		SetPinVisibility(GetPartnerIdPin(), UThirdwebRuntimeSettings::IsEcosystem());
-
+		
 		if (UEdGraph* Graph = GetGraph())
 		{
 			Graph->NotifyGraphChanged();

@@ -136,17 +136,13 @@ FString UThirdwebRuntimeSettings::GetEcosystemId()
 	return TEXT("");
 }
 
-bool UThirdwebRuntimeSettings::ShowPartnerIds()
+FString UThirdwebRuntimeSettings::GetPartnerId()
 {
-	if (!IsEcosystem())
+	if (IsEcosystem())
 	{
-		return false;
+		return Get()->PartnerID.TrimStartAndEnd();
 	}
-	if (const UThirdwebRuntimeSettings* Settings = Get())
-	{
-		return Settings->bUsePartnerIds;
-	}
-	return true;
+	return TEXT("");
 }
 
 FString UThirdwebRuntimeSettings::GetClientId()
