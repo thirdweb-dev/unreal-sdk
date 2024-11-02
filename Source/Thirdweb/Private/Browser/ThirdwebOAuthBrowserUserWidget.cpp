@@ -187,11 +187,13 @@ void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)
 #if PLATFORM_ANDROID
 void UThirdwebOAuthBrowserUserWidget::HandleDeepLink(const FString& Url)
 {
+	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleDeepLink::%s"), *Url);
 	HandleUrlChanged(Url);
 }
 
 void UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed(const FString& Url)
 {
+	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed::%s"), *Url);
 	HandleUrlChanged(Url);
 }
 #endif

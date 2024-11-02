@@ -96,22 +96,21 @@
             <activity
                     android:name="com.thirdweb.unrealengine.ThirdwebActivity"
                     android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden"
-                    android:exported="false"
+                    android:exported="true"
                     android:launchMode="singleTask"
-                    android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+                    android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+                <intent-filter android:autoVerify="true" android:name="thirdweb-intent-filter">
+                    <action android:name="android.intent.action.VIEW" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                    <category android:name="android.intent.category.BROWSABLE" />
+                </intent-filter>
+            </activity>
         </addElements>
         <loopElements tag="activity">
             <setStringFromAttribute result="activityName" tag="$" name="android:name"/>
-            <setBoolIsEqual result="bGameActivity" arg1="$S(activityName)" arg2="com.epicgames.unreal.GameActivity"/>
+            <setBoolIsEqual result="bGameActivity" arg1="$S(activityName)" arg2="com.thirdweb.unrealengine.ThirdwebActivity"/>
             <if condition="bGameActivity">
                 <true>
-                    <addElements tag="$">
-                        <intent-filter android:autoVerify="true" android:name="thirdweb-intent-filter">
-                            <action android:name="android.intent.action.VIEW" />
-                            <category android:name="android.intent.category.DEFAULT" />
-                            <category android:name="android.intent.category.BROWSABLE" />
-                        </intent-filter>
-                    </addElements>
                     <loopElements tag="$">
                         <setStringFromAttribute result="intentFilterName" tag="$" name="android:name"/>
                         <setBoolIsEqual result="bIntentFilter" arg1="$S(intentFilterName)" arg2="thirdweb-intent-filter"/>
