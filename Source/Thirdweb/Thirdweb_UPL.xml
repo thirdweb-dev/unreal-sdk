@@ -50,7 +50,6 @@
                                        property="ClientId" default="game"/>
             </false>
         </if>
-        <log text="Thirdweb Plugin OAuth Schema URI = $S(ThirdwebScheme)://$S(ThirdwebHost)"/>
     </init>
     <prebuildCopies>
         <copyDir src="$S(PluginDir)/Private/Browser/Android/Java" dst="$S(BuildDir)/src/com/thirdweb/unrealengine" />
@@ -103,20 +102,27 @@
         </addElements>
         <loopElements tag="activity">
             <setStringFromAttribute result="activityName" tag="$" name="android:name"/>
-            <log text="Thirdweb GAME ACTIVITY NAME: $S(activityName)"/>
             <setBoolIsEqual result="bGameActivity" arg1="$S(activityName)" arg2="com.epicgames.unreal.GameActivity"/>
             <if condition="bGameActivity">
                 <true>
-                    <!-- Add App Tiles to manifest file. -->
-                    <log text="Thirdweb GAME ACTIVITY : ADDING INTENT)"/>
                     <addElements tag="$">
-                        <intent-filter android:autoVerify="true">
+                        <intent-filter android:autoVerify="true" android:name="thirdweb-intent-filter">
                             <action android:name="android.intent.action.VIEW" />
                             <category android:name="android.intent.category.DEFAULT" />
                             <category android:name="android.intent.category.BROWSABLE" />
-                            <data android:scheme="$S(ThirdwebScheme)" />
                         </intent-filter>
                     </addElements>
+                    <loopElements tag="$">
+                        <setStringFromAttribute result="intentFilterName" tag="$" name="android:name"/>
+                        <setBoolIsEqual result="bIntentFilter" arg1="$S(intentFilterName)" arg2="thirdweb-intent-filter"/>
+                        <if condition="bIntentFilter">
+                            <true>
+                                <setElement result="TWIntentFilter" value="data" />
+                                <addAttribute tag="$TWIntentFilter" name="android:scheme" value="$S(ThirdwebScheme)" />
+                                <addElement tag="$" name="TWIntentFilter" />
+                            </true>
+                        </if>
+                    </loopElements>
                 </true>
             </if>
         </loopElements>
