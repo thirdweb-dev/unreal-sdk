@@ -4,10 +4,15 @@
 
 #if PLATFORM_ANDROID
 #include "ThirdwebLog.h"
-#include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Browser/ThirdwebOAuthBrowserUserWidget.h"
+
 #include "Android/AndroidPlatform.h"
+
+#include "Blueprint/WidgetBlueprintLibrary.h"
+
+#include "Browser/ThirdwebOAuthBrowserUserWidget.h"
+
 #include "Engine/GameEngine.h"
+#include "Engine/GameViewportClient.h"
 
 void ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod(JNIEnv* Env, const jclass Class, jmethodID Method, ...)
 {
@@ -23,7 +28,7 @@ UThirdwebOAuthBrowserUserWidget* GetOAuthBrowserUserWidget()
 {
 	if (UGameEngine* GameEngine = Cast<UGameEngine>(GEngine))
 	{
-		if (TObjectPtr<UGameViewportClient> Viewport = GameEngine->GameViewport; IsValid(Viewport))
+		if (TObjectPtr<UGameViewportClient> Viewport = GameEngine->GameViewport; IsValid(Viewport.Get()))
 		{
 			if (UWorld* World = Viewport->GetWorld())
 			{

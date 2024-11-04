@@ -8,15 +8,27 @@
 #include "Thirdweb.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
+
 #include "Dom/JsonObject.h"
+
+#include "Engine/ThirdwebEngineCommon.h"
+
 #include "GenericPlatform/GenericPlatformHttp.h"
+
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IPluginManager.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
+
+#include "Misc/DefaultValueHelper.h"
+
 #include "Policies/CondensedJsonPrintPolicy.h"
+
 #include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
+
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
@@ -35,7 +47,15 @@ namespace ThirdwebUtils
 
 	FText ToText(const EThirdwebOAuthProvider Provider) { return Maps::OAuthProviderToText.Contains(Provider) ? Maps::OAuthProviderToText[Provider] : FText::FromString(TEXT("Invalid")); }
 
+	FText ToText(const EThirdwebEngineTransactionStatus Status) { return Maps::TransactionStatusToText.Contains(Status) ? Maps::TransactionStatusToText[Status] : FText::FromString(TEXT("Invalid")); }
+
+	FText ToText(const EThirdwebEngineTransactionOnChainStatus Status) { return Maps::OnChainStatusToText.Contains(Status) ? Maps::OnChainStatusToText[Status] : FText::FromString(TEXT("Invalid")); }
+
 	FString ToString(const EThirdwebOAuthProvider Provider) { return ToText(Provider).ToString(); }
+
+	FString ToString(const EThirdwebEngineTransactionStatus Status) { return ToText(Status).ToString(); }
+
+	FString ToString(const EThirdwebEngineTransactionOnChainStatus Status) { return ToText(Status).ToString(); }
 
 	EThirdwebOAuthProvider ToOAuthProvider(const FText& Text)
 	{
@@ -49,7 +69,35 @@ namespace ThirdwebUtils
 		return EThirdwebOAuthProvider::None;
 	}
 
+	EThirdwebEngineTransactionStatus ToTransactionStatus(const FText& Text)
+	{
+		for (const auto& It : Maps::TransactionStatusToText)
+		{
+			if (It.Value.EqualToCaseIgnored(Text))
+			{
+				return It.Key;
+			}
+		}
+		return EThirdwebEngineTransactionStatus::Unknown;
+	}
+
+	EThirdwebEngineTransactionOnChainStatus ToOnChainStatus(const FText& Text)
+	{
+		for (const auto& It : Maps::OnChainStatusToText)
+		{
+			if (It.Value.EqualToCaseIgnored(Text))
+			{
+				return It.Key;
+			}
+		}
+		return EThirdwebEngineTransactionOnChainStatus::Unknown;
+	}
+
 	EThirdwebOAuthProvider ToOAuthProvider(const FString& String) { return ToOAuthProvider(FText::FromString(String)); }
+
+	EThirdwebEngineTransactionStatus ToTransactionStatus(const FString& String) { return ToTransactionStatus(FText::FromString(String)); }
+
+	EThirdwebEngineTransactionOnChainStatus ToOnChainStatus(const FString& String) { return ToOnChainStatus(FText::FromString(String)); }
 
 	FString ParseAuthResult(const FString& AuthResult)
 	{
@@ -112,6 +160,12 @@ namespace ThirdwebUtils
 			)
 		}
 
+		int64 ParseInt64(const FString& String)
+		{
+			int64 Result;
+			return FDefaultValueHelper::ParseInt64(String, Result) ? Result : 0;
+		}
+
 		FString GetPluginVersion()
 		{
 			if (const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("Thirdweb")); Plugin.IsValid())
@@ -120,7 +174,7 @@ namespace ThirdwebUtils
 			}
 			return "0.0.0";
 		}
-		
+
 		// https://stackoverflow.com/a/58467162/12204515
 		FString GenerateUUID()
 		{
@@ -142,7 +196,7 @@ namespace ThirdwebUtils
 			}
 			return Result.c_str();
 		}
-		
+
 		// ReSharper disable CppPassValueParameterByConstReference
 		void SendConnectEvent(const FWalletHandle Wallet)
 		{
@@ -183,9 +237,25 @@ namespace ThirdwebUtils
 			Request->SetContentAsString(ThirdwebUtils::Json::ToString(JsonObject));
 			Request->ProcessRequest();
 		}
+
 		void SendConnectEvent(const FInAppWalletHandle Wallet) { SendConnectEvent(FWalletHandle(Wallet)); }
 		void SendConnectEvent(const FSmartWalletHandle Wallet) { SendConnectEvent(FWalletHandle(Wallet)); }
 		// ReSharper restore CppPassValueParameterByConstReference
+
+		TSharedRef<IHttpRequest> CreateEngineRequest(const FString& Verb)
+		{
+			FHttpModule& HttpModule = FHttpModule::Get();
+			const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
+			Request->SetVerb(Verb);
+			if (!Verb.ToUpper().Equals("GET"))
+			{
+				Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+			}
+			Request->SetHeader(TEXT("Accept"), TEXT("application/json"));
+			Request->SetHeader(TEXT("authorization"), TEXT("Bearer ") + UThirdwebRuntimeSettings::GetEngineAccessToken());
+			Request->SetTimeout(30.0f);
+			return Request;
+		}
 	}
 
 	namespace Maps
@@ -202,6 +272,19 @@ namespace ThirdwebUtils
 			{EThirdwebOAuthProvider::Coinbase, LOCTEXT("Coinbase", "Coinbase")},
 			{EThirdwebOAuthProvider::Twitch, LOCTEXT("Twitch", "Twitch")},
 			{EThirdwebOAuthProvider::Github, LOCTEXT("Github", "Github")}
+		};
+
+		const TMap<EThirdwebEngineTransactionStatus, FText> TransactionStatusToText = {
+			{EThirdwebEngineTransactionStatus::Queued, LOCTEXT("Queued", "Queued")},
+			{EThirdwebEngineTransactionStatus::Sent, LOCTEXT("Sent", "Sent")},
+			{EThirdwebEngineTransactionStatus::Mined, LOCTEXT("Mined", "Mined")},
+			{EThirdwebEngineTransactionStatus::Errored, LOCTEXT("Errored", "Errored")},
+			{EThirdwebEngineTransactionStatus::Cancelled, LOCTEXT("Cancelled", "Cancelled")}
+		};
+
+		const TMap<EThirdwebEngineTransactionOnChainStatus, FText> OnChainStatusToText = {
+			{EThirdwebEngineTransactionOnChainStatus::Success, LOCTEXT("Success", "Success")},
+			{EThirdwebEngineTransactionOnChainStatus::Reverted, LOCTEXT("Reverted", "Reverted")}
 		};
 	}
 
@@ -233,6 +316,55 @@ namespace ThirdwebUtils
 			const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out);
 			FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
 			return Out;
+		}
+
+		FString ToString(const TArray<TSharedPtr<FJsonValue>>& JsonValueArray)
+		{
+			FString Out;
+			const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out);
+			FJsonSerializer::Serialize(JsonValueArray, Writer);
+			return Out;
+		}
+
+		FString AsString(const TSharedPtr<FJsonValue>& JsonValue)
+		{
+			if (JsonValue.IsValid() && !JsonValue->IsNull())
+			{
+				switch (JsonValue->Type)
+				{
+				case EJson::String: return JsonValue->AsString();
+				case EJson::Number: return FString::Printf(TEXT("%f"), JsonValue->AsNumber());
+				case EJson::Boolean: return JsonValue->AsBool() ? TEXT("true") : TEXT("false");
+				case EJson::Object: return ToString(JsonValue->AsObject());
+				case EJson::Array: return ToString(JsonValue->AsArray());
+				default: return TEXT("");
+				}
+			}
+			return TEXT("");
+		}
+
+		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error)
+		{
+			if (TSharedPtr<FJsonObject> ContentJsonObject = ToJson(Content); ContentJsonObject.IsValid())
+			{
+				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("error")))
+				{
+					JsonObject = ContentJsonObject->GetObjectField(TEXT("error"));
+					Error = TEXT("Unknown Error");
+					if (JsonObject->HasTypedField<EJson::String>(TEXT("message")))
+					{
+						Error = JsonObject->GetStringField(TEXT("message"));
+					}
+					return false;
+				}
+				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("result")))
+				{
+					JsonObject = ContentJsonObject->GetObjectField(TEXT("result"));
+					return true;
+				}
+			}
+			Error = TEXT("Invalid Response");
+			return false;
 		}
 	}
 }

@@ -7,6 +7,9 @@
 #include "AsyncTaskThirdwebBase.generated.h"
 
 #define NEW_TASK ThisClass* Task = NewObject<ThisClass>(WorldContextObject);
+#define RR_TASK \
+	Task->RegisterWithGameInstance(WorldContextObject); \
+	return Task;
 
 UCLASS(Abstract)
 class UAsyncTaskThirdwebBase : public UBlueprintAsyncActionBase
