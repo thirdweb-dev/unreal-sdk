@@ -10,7 +10,7 @@ UThirdwebEditorSettings::UThirdwebEditorSettings()
 	CustomScreenshotBaseName = TEXT("BlueprintGraphScreenshot");
 	ScreenshotFormat = EThirdwebEditorBlueprintImageFormat::PNG;
 	ScreenshotQuality = 100;
-	ScreenshotSaveDirectory = FDirectoryPath(FPaths::ScreenShotDir());
+	ScreenshotSaveDirectory.Path = FPaths::ScreenShotDir();
 	ScreenshotPadding = 128.0f;
 	ScreenshotSizeConstraints = FIntPoint(128, 15360);
 	ScreenshotZoom = 1.0f;

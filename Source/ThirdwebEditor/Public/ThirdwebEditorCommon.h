@@ -8,9 +8,9 @@
 UENUM()
 enum class EThirdwebEditorBlueprintImageFormat : uint8
 {
-	PNG = EImageFormat::PNG,
-	JPEG = EImageFormat::JPEG,
-	BMP = EImageFormat::BMP,
+	PNG = static_cast<uint8>(EImageFormat::PNG),
+	JPEG = static_cast<uint8>(EImageFormat::JPEG),
+	BMP = static_cast<uint8>(EImageFormat::BMP),
 };
 
 struct FThirdwebEditorScreenshotData
