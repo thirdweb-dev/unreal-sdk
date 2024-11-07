@@ -4,7 +4,7 @@ using UnrealBuildTool;
 
 public class ThirdwebEditor : ModuleRules
 {
-	public ThirdwebEditor(ReadOnlyTargetRules Target) : base(Target)
+	public ThirdwebEditor(ReadOnlyTargetRules target) : base(target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 #if UE_5_3_OR_LATER
@@ -15,7 +15,10 @@ public class ThirdwebEditor : ModuleRules
 		{
 			"Core",
 			"Thirdweb",
-			"DeveloperSettings"
+			"DeveloperSettings",
+			"ImageWriteQueue",
+			"UMG",
+			"ApplicationCore"
 		});
 
 
@@ -29,7 +32,8 @@ public class ThirdwebEditor : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			"RenderCore"
 		});
 	}
 }

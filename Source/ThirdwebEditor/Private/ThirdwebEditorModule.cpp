@@ -4,29 +4,37 @@
 
 #include "ISettingsModule.h"
 #include "ThirdwebEditorCommands.h"
+#include "ThirdwebEditorCommon.h"
+#include "ThirdwebEditorLog.h"
+#include "ThirdwebEditorScreenshotUtils.h"
+#include "ThirdwebEditorSettings.h"
 #include "ThirdwebEditorStyle.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ToolMenus.h"
-
+#include "Algo/ForEach.h"
 #include "Misc/MessageDialog.h"
 
 #define LOCTEXT_NAMESPACE "FThirdwebEditorModule"
 
 void FThirdwebEditorModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-
 	FThirdwebEditorStyle::Initialize();
 	FThirdwebEditorStyle::ReloadTextures();
 
 	FThirdwebEditorCommands::Register();
 
-	PluginCommands = MakeShareable(new FUICommandList);
+	CommandList = MakeShareable(new FUICommandList);
 
-	PluginCommands->MapAction(
-		FThirdwebEditorCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FThirdwebEditorModule::EditorToolbarButtonClicked),
-		FCanExecuteAction());
+	CommandList->MapAction(
+		FThirdwebEditorCommands::GetOpenSettingsCommand(),
+		FExecuteAction::CreateStatic(&FThirdwebEditorModule::OpenSettingsButtonClicked),
+		FCanExecuteAction()
+	);
+	CommandList->MapAction(
+		FThirdwebEditorCommands::GetTakeScreenshotCommand(),
+		FExecuteAction::CreateStatic(&FThirdwebEditorModule::TakeScreenshotButtonClicked),
+		FCanExecuteAction()
+	);
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FThirdwebEditorModule::RegisterMenus));
 }
@@ -35,42 +43,37 @@ void FThirdwebEditorModule::ShutdownModule()
 {
 	UToolMenus::UnRegisterStartupCallback(this);
 	UToolMenus::UnregisterOwner(this);
-	
+
 	FThirdwebEditorStyle::Shutdown();
-	
+
 	FThirdwebEditorCommands::Unregister();
 }
 
-// ReSharper disable once CppMemberFunctionMayBeStatic
-void FThirdwebEditorModule::EditorToolbarButtonClicked()
+void FThirdwebEditorModule::OpenSettingsButtonClicked()
 {
-	const auto Settings = GetDefault<UThirdwebRuntimeSettings>();
+	const UThirdwebRuntimeSettings* Settings = UThirdwebRuntimeSettings::Get();
 	FModuleManager::LoadModuleChecked<ISettingsModule>("Settings").ShowViewer(Settings->GetContainerName(), Settings->GetCategoryName(), Settings->GetSectionName());
+}
+
+void FThirdwebEditorModule::TakeScreenshotButtonClicked()
+{
+	FThirdwebEditorScreenshotUtils::TakeScreenshot();
 }
 
 void FThirdwebEditorModule::RegisterMenus()
 {
 	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
 	FToolMenuOwnerScoped OwnerScoped(this);
-
+	TSharedPtr<FUICommandList> Cl = CommandList;
 	{
-		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
-		{
-			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(FThirdwebEditorCommands::Get().PluginAction, PluginCommands);
-		}
+		FToolMenuSection& Section = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar")->FindOrAddSection("ThirdwebSection");
+		Section.AddEntry(FToolMenuEntry::InitToolBarButton(FThirdwebEditorCommands::GetOpenSettingsCommand())).SetCommandList(Cl);
 	}
-
 	{
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
-		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FThirdwebEditorCommands::Get().PluginAction));
-				Entry.SetCommandList(PluginCommands);
-			}
-		}
+		FToolMenuSection& Section = UToolMenus::Get()->ExtendMenu("AssetEditor.WidgetBlueprintEditor.ToolBar")->FindOrAddSection("ThirdwebSection");
+		FThirdwebEditorCommands::ForEach([&Section, Cl](const TSharedPtr<FUICommandInfo>& Ci) { Section.AddEntry(FToolMenuEntry::InitToolBarButton(Ci)).SetCommandList(Cl); });
 	}
+	
 }
 
 #undef LOCTEXT_NAMESPACE

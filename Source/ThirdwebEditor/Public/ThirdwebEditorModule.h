@@ -17,8 +17,9 @@ private:
 	void RegisterMenus();
 
 public:
-	void EditorToolbarButtonClicked();
-	
+	static void OpenSettingsButtonClicked();
+
+	static void TakeScreenshotButtonClicked();
 private:
-	TSharedPtr<FUICommandList> PluginCommands;
+	TSharedPtr<FUICommandList> CommandList;
 };

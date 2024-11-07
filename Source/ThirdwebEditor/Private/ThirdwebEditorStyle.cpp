@@ -40,18 +40,16 @@ FName FThirdwebEditorStyle::GetStyleSetName()
 	return StyleSetName;
 }
 
-
-// ReSharper disable once CppUE4CodingStandardNamingViolationWarning
-const FVector2D Icon16x16(16.0f, 16.0f);
 // ReSharper disable once CppUE4CodingStandardNamingViolationWarning
 const FVector2D Icon20x20(20.0f, 20.0f);
 
-TSharedRef< FSlateStyleSet > FThirdwebEditorStyle::Create()
+TSharedRef<FSlateStyleSet> FThirdwebEditorStyle::Create()
 {
-	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("ThirdwebEditorStyle"));
+	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("ThirdwebEditorStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Thirdweb")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("ThirdwebEditor.PluginAction", new IMAGE_BRUSH_SVG(TEXT("EditorToolbarButtonIcon"), Icon20x20));
+	Style->Set("ThirdwebEditor.OpenSettings", new IMAGE_BRUSH_SVG(TEXT("ThirdwebIcon"), Icon20x20));
+	Style->Set("ThirdwebEditor.TakeScreenshot", new IMAGE_BRUSH_SVG(TEXT("ScreenshotIcon"), Icon20x20));
 	return Style;
 }
 
