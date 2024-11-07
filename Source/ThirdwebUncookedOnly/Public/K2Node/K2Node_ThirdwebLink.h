@@ -6,15 +6,9 @@
 #include "K2Node_ThirdwebBaseAsyncTask.h"
 #include "K2Node_ThirdwebLink.generated.h"
 
-namespace LPins
+namespace TwPins
 {
-	extern const FName Input;
-	extern const FName Wallet;
 	extern const FName NewWallet;
-	extern const FName Success;
-	extern const FName Failed;
-	extern const FName Error;
-	
 }
 
 UCLASS()

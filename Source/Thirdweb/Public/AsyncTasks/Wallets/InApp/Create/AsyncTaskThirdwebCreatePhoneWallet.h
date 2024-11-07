@@ -12,7 +12,7 @@ class THIRDWEB_API UAsyncTaskThirdwebCreatePhoneWallet : public UAsyncTaskThirdw
 
 public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="PartnerId"), Category="Thirdweb|Wallets|InApp")
-	static UAsyncTaskThirdwebCreatePhoneWallet* CreatePhoneWallet(UObject* WorldContextObject, UPARAM(DisplayName="Phone Number") const FString& Input, const FString& PartnerId)
+	static UAsyncTaskThirdwebCreatePhoneWallet* CreatePhoneWallet(UObject* WorldContextObject, UPARAM(DisplayName="Phone Number") const FString& Input)
 	{
 		CREATE_WALLET_INPUT_TASK
 	}

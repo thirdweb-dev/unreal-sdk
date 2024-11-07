@@ -44,14 +44,8 @@ void UAsyncTaskThirdwebCreateSmartWallet::Activate()
 
 void UAsyncTaskThirdwebCreateSmartWallet::HandleResponse(const FSmartWalletHandle& Wallet)
 {
-	if (IsInGameThread())
+	if (!IsInGameThread())
 	{
-		Success.Broadcast(Wallet, TEXT(""));
-		SetReadyToDestroy();
-	}
-	else
-	{
-		// Retry on the GameThread.
 		TWeakObjectPtr<UAsyncTaskThirdwebCreateSmartWallet> WeakThis = this;
 		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Wallet]()
 		{
@@ -60,19 +54,17 @@ void UAsyncTaskThirdwebCreateSmartWallet::HandleResponse(const FSmartWalletHandl
 				WeakThis->HandleResponse(Wallet);
 			}
 		}, TStatId(), nullptr, ENamedThreads::GameThread);
+		return;
 	}
+	
+	Success.Broadcast(Wallet, TEXT(""));
+	SetReadyToDestroy();
 }
 
 void UAsyncTaskThirdwebCreateSmartWallet::HandleFailed(const FString& Error)
 {
-	if (IsInGameThread())
+	if (!IsInGameThread())
 	{
-		Failed.Broadcast(FSmartWalletHandle(), Error);
-		SetReadyToDestroy();
-	}
-	else
-	{
-		// Retry on the GameThread.
 		TWeakObjectPtr<UAsyncTaskThirdwebCreateSmartWallet> WeakThis = this;
 		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
 		{
@@ -81,5 +73,9 @@ void UAsyncTaskThirdwebCreateSmartWallet::HandleFailed(const FString& Error)
 				WeakThis->HandleFailed(Error);
 			}
 		}, TStatId(), nullptr, ENamedThreads::GameThread);
+		return;
 	}
+	
+	Failed.Broadcast(FSmartWalletHandle(), Error);
+	SetReadyToDestroy();
 }

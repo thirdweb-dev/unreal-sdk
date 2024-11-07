@@ -10,10 +10,7 @@ void UAsyncTaskThirdwebCreateSessionKey::Activate()
 		Signer,
 		ApprovedTargets,
 		NativeTokenLimitPerTransactionInWei,
-		PermissionStart,
 		PermissionEnd,
-		RequestValidityStart,
-		RequestValidityEnd,
 		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleResponse),
 		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
 	);
@@ -24,10 +21,7 @@ UAsyncTaskThirdwebCreateSessionKey* UAsyncTaskThirdwebCreateSessionKey::CreateSe
                                                                                          const FString& Signer,
                                                                                          const TArray<FString>& ApprovedTargets,
                                                                                          const FString& NativeTokenLimitPerTransactionInWei,
-                                                                                         const FDateTime& PermissionStart,
-                                                                                         const FDateTime& PermissionEnd,
-                                                                                         const FDateTime& RequestValidityStart,
-                                                                                         const FDateTime& RequestValidityEnd)
+                                                                                         const FDateTime& PermissionEnd)
 {
 	if (!WorldContextObject)
 	{
@@ -39,10 +33,7 @@ UAsyncTaskThirdwebCreateSessionKey* UAsyncTaskThirdwebCreateSessionKey::CreateSe
 	Task->Signer = Signer;
 	Task->ApprovedTargets = ApprovedTargets;
 	Task->NativeTokenLimitPerTransactionInWei = NativeTokenLimitPerTransactionInWei;
-	Task->PermissionStart = PermissionStart;
 	Task->PermissionEnd = PermissionEnd;
-	Task->RequestValidityStart = RequestValidityStart;
-	Task->RequestValidityEnd = RequestValidityEnd;
 
 	Task->RegisterWithGameInstance(WorldContextObject);
 	return Task;
@@ -50,14 +41,8 @@ UAsyncTaskThirdwebCreateSessionKey* UAsyncTaskThirdwebCreateSessionKey::CreateSe
 
 void UAsyncTaskThirdwebCreateSessionKey::HandleResponse(const FString& TxHash)
 {
-	if (IsInGameThread())
+	if (!IsInGameThread())
 	{
-		Success.Broadcast(TxHash, TEXT(""));
-		SetReadyToDestroy();
-	}
-	else
-	{
-		// Retry on the GameThread.
 		TWeakObjectPtr<UAsyncTaskThirdwebCreateSessionKey> WeakThis = this;
 		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, TxHash]()
 		{
@@ -66,19 +51,17 @@ void UAsyncTaskThirdwebCreateSessionKey::HandleResponse(const FString& TxHash)
 				WeakThis->HandleResponse(TxHash);
 			}
 		}, TStatId(), nullptr, ENamedThreads::GameThread);
+		return;
 	}
+	
+	Success.Broadcast(TxHash, TEXT(""));
+	SetReadyToDestroy();
 }
 
 void UAsyncTaskThirdwebCreateSessionKey::HandleFailed(const FString& Error)
 {
-	if (IsInGameThread())
+	if (!IsInGameThread())
 	{
-		Failed.Broadcast(TEXT(""), Error);
-		SetReadyToDestroy();
-	}
-	else
-	{
-		// Retry on the GameThread.
 		TWeakObjectPtr<UAsyncTaskThirdwebCreateSessionKey> WeakThis = this;
 		FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
 		{
@@ -87,5 +70,8 @@ void UAsyncTaskThirdwebCreateSessionKey::HandleFailed(const FString& Error)
 				WeakThis->HandleFailed(Error);
 			}
 		}, TStatId(), nullptr, ENamedThreads::GameThread);
+		return;
 	}
+	Failed.Broadcast(TEXT(""), Error);
+	SetReadyToDestroy();
 }

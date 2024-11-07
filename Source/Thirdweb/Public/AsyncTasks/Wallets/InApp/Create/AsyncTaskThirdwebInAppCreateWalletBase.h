@@ -17,7 +17,6 @@
 	return nullptr; \
 	} \
 	ThisClass* Task = NewObject<ThisClass>(WorldContextObject); \
-	Task->EcosystemPartnerId = PartnerId; \
 	Task->RegisterWithGameInstance(WorldContextObject); \
 	return Task;
 
@@ -28,7 +27,6 @@
 		} \
 	ThisClass* Task = NewObject<ThisClass>(WorldContextObject); \
 	Task->AuthInput = Input; \
-	Task->EcosystemPartnerId = PartnerId; \
 	Task->RegisterWithGameInstance(WorldContextObject); \
 	return Task;
 
@@ -51,9 +49,6 @@ public:
 protected:
 	UPROPERTY(Transient)
 	FString AuthInput;
-
-	UPROPERTY(Transient)
-	FString EcosystemPartnerId;
 
 	UFUNCTION()
 	void HandleResponse(const FInAppWalletHandle& Wallet);

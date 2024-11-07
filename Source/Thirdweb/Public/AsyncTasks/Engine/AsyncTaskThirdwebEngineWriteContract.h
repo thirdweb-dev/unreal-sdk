@@ -4,36 +4,14 @@
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
 
+#include "Engine/ThirdwebEngineTransactionOverrides.h"
+
 #include "Interfaces/IHttpRequest.h"
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 
 #include "AsyncTaskThirdwebEngineWriteContract.generated.h"
-
-
-class FJsonObject;
-
-USTRUCT(BlueprintType)
-struct THIRDWEB_API FThirdwebTransactionOverrides
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="Gas Limit", Category="Thirdweb|Engine")
-	int64 Gas = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Thirdweb|Engine")
-	int64 MaxFeePerGas = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Thirdweb|Engine")
-	int64 MaxPriorityFeePerGas = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Thirdweb|Engine")
-	int64 Value = 0;
-
-	bool IsDefault() const { return Gas == 0 && MaxFeePerGas == 0 && MaxPriorityFeePerGas == 0 && Value == 0; }
-	TSharedPtr<FJsonObject> ToJson() const;
-};
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskThirdwebEngineWriteContract : public UAsyncTaskThirdwebBase
@@ -51,7 +29,7 @@ public:
 	                                                            const FString& IdempotencyKey,
 	                                                            const FString& FunctionName,
 	                                                            const TArray<FString>& Args,
-	                                                            const FThirdwebTransactionOverrides& TxOverrides,
+	                                                            const FThirdwebEngineTransactionOverrides& TxOverrides,
 	                                                            const FString& Abi,
 	                                                            const bool bSimulateTx);
 
@@ -91,7 +69,7 @@ protected:
 	TArray<FString> Args;
 
 	UPROPERTY(Transient)
-	FThirdwebTransactionOverrides TxOverrides;
+	FThirdwebEngineTransactionOverrides TxOverrides;
 
 	UPROPERTY(Transient)
 	FString Abi;

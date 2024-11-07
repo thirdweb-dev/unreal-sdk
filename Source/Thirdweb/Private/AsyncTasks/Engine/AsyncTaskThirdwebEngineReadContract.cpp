@@ -7,14 +7,9 @@
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
 
-#include "Dom/JsonObject.h"
-
 #include "Interfaces/IHttpResponse.h"
 
 #include "Kismet/KismetStringLibrary.h"
-
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
 
 UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::ReadContract(
 	UObject* WorldContextObject,
@@ -39,11 +34,7 @@ UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::Read
 
 void UAsyncTaskThirdwebEngineReadContract::Activate()
 {
-	FHttpModule& HttpModule = FHttpModule::Get();
-	const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
-	Request->SetVerb(TEXT("GET"));
-	Request->SetHeader("Content-Type", TEXT("application/json"));
-	Request->SetHeader("authorization", TEXT("Bearer ") + UThirdwebRuntimeSettings::GetEngineAccessToken());
+	const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
 	Request->SetURL(
 		FString::Format(
 			TEXT("{0}/contract/{1}/{2}/read?functionName={3}{4}"),
@@ -52,12 +43,11 @@ void UAsyncTaskThirdwebEngineReadContract::Activate()
 				FString::Printf(TEXT("%lld"), ChainId),
 				ContractAddress,
 				FunctionName,
-				Args.Num() > 0 ? TEXT("&args={0}") + UKismetStringLibrary::JoinStringArray(Args, TEXT(",")) : TEXT("")
+				Args.Num() > 0 ? TEXT("&args=") + UKismetStringLibrary::JoinStringArray(Args, TEXT(",")) : TEXT("")
 			}
 		)
 	);
 	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
-	Request->SetTimeout(30.0f);
 	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
 	Request->ProcessRequest();
 }
@@ -68,24 +58,13 @@ void UAsyncTaskThirdwebEngineReadContract::HandleResponse(FHttpRequestPtr, FHttp
 	{
 		FString Content = Response->GetContentAsString();
 		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineReadContract::HandleResponse::Content=%s"), *Content)
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
-		FJsonSerializer::Deserialize(Reader, JsonObject);
-		if (JsonObject.IsValid())
+		FString Error;
+		if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
 		{
-			if (JsonObject->HasTypedField<EJson::String>(TEXT("error")))
-			{
-				FString Error = TEXT("Unknown Error");
-				if (JsonObject->HasTypedField<EJson::String>(TEXT("message")))
-				{
-					Error = JsonObject->GetStringField(TEXT("message"));
-				}
-				return HandleFailed(Error);
-			}
 			Success.Broadcast(Content, TEXT(""));
 			SetReadyToDestroy();
 		}
-		else return HandleFailed(TEXT("Invalid Response"));
+		else return HandleFailed(Error);
 	}
 	else return HandleFailed(TEXT("Network connection failed"));
 }

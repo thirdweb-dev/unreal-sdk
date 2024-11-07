@@ -17,7 +17,7 @@ public class ThirdwebUncookedOnly : ModuleRules
 			"DeveloperSettings",
 			"KismetCompiler",
 			"BlueprintGraph",
-			"UnrealEd"
+			"UnrealEd",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

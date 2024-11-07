@@ -9,7 +9,6 @@ namespace TwPins
 {
 	extern const FName Provider;
 	extern const FName Input;
-	extern const FName PartnerId;
 	extern const FName Wallet;
 	extern const FName InAppWallet;
 	extern const FName SmartWallet;
@@ -80,7 +79,6 @@ protected:
 	/** Pin Getters */
 	virtual UEdGraphPin* GetProviderPin() const;
 	virtual UEdGraphPin* GetInputPin() const;
-	virtual UEdGraphPin* GetPartnerIdPin() const;
 	virtual UEdGraphPin* GetWalletPin() const;
 	virtual UEdGraphPin* GetInAppWalletPin() const;
 	virtual UEdGraphPin* GetSmartWalletPin() const;

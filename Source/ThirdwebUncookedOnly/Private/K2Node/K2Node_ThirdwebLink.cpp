@@ -4,14 +4,9 @@
 
 #include "AsyncTasks/Wallets/InApp/Link/AsyncTaskThirdwebLink.h"
 
-namespace LPins
+namespace TwPins
 {
-	const FName Input = FName(TEXT("Input"));
-	const FName Wallet = FName(TEXT("Wallet"));
 	const FName NewWallet = FName(TEXT("NewWallet"));
-	const FName Success = FName(TEXT("Success"));
-	const FName Failed = FName(TEXT("Failed"));
-	const FName Error = FName(TEXT("Error"));
 }
 
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
@@ -53,9 +48,9 @@ void UK2Node_ThirdwebLink::AllocateDefaultPins()
 	Super::AllocateDefaultPins();
 	
 	// Input Pins
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), LPins::Wallet);
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), LPins::NewWallet);
-	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, LPins::Input);
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::Wallet);
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::NewWallet);
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Input);
 	
 	PostAllocateDefaultPins();
 }

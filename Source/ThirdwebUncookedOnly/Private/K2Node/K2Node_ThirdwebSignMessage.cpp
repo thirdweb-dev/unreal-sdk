@@ -74,7 +74,7 @@ void UK2Node_ThirdwebSignMessage::AllocateDefaultPins()
 
 void UK2Node_ThirdwebSignMessage::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
-	if (UEdGraphPin* Pin = GetWalletPin())
+	if (const UEdGraphPin* Pin = GetWalletPin())
 	{
 		if (Pin->PinType.PinSubCategoryObject == TBaseStructure<FSmartWalletHandle>::Get())
 		{
@@ -96,7 +96,7 @@ void UK2Node_ThirdwebSignMessage::UpdatePins()
 {
 	if (UEdGraphPin* Pin = GetWalletPin())
 	{
-		if (UEdGraphPin* ConnectedPin = GetConnectedPin(Pin))
+		if (const UEdGraphPin* ConnectedPin = GetConnectedPin(Pin))
 		{
 			if (Pin->PinType != ConnectedPin->PinType)
 			{

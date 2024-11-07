@@ -17,16 +17,13 @@ public:
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd",
-		AutoCreateRefTerm="PermissionStart,PermissionEnd,RequestValidityStart,RequestValidityEnd,ApprovedTargets,Signer,NativeTokenLimitPerTransactionInWei"), Category="Thirdweb|Wallets|Smart")
+		AutoCreateRefTerm="PermissionEnd,ApprovedTargets,Signer,NativeTokenLimitPerTransactionInWei"), Category="Thirdweb|Wallets|Smart")
 	static UAsyncTaskThirdwebCreateSessionKey* CreateSessionKey(UObject* WorldContextObject,
 	                                                            const FSmartWalletHandle& Wallet,
 	                                                            const FString& Signer,
 	                                                            const TArray<FString>& ApprovedTargets,
 	                                                            const FString& NativeTokenLimitPerTransactionInWei,
-	                                                            const FDateTime& PermissionStart,
-	                                                            const FDateTime& PermissionEnd,
-	                                                            const FDateTime& RequestValidityStart,
-	                                                            const FDateTime& RequestValidityEnd);
+	                                                            const FDateTime& PermissionEnd);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCreateSessionKeyDelegate, const FString&, TxHash, const FString&, Error);
 	UPROPERTY(BlueprintAssignable)
@@ -46,16 +43,7 @@ protected:
 	FString NativeTokenLimitPerTransactionInWei;
 
 	UPROPERTY(Transient)
-	FDateTime PermissionStart;
-
-	UPROPERTY(Transient)
 	FDateTime PermissionEnd;
-
-	UPROPERTY(Transient)
-	FDateTime RequestValidityStart;
-
-	UPROPERTY(Transient)
-	FDateTime RequestValidityEnd;
 
 private:
 	UFUNCTION()

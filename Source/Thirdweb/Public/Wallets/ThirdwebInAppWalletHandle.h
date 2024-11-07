@@ -89,7 +89,6 @@ public:
 	 * @param ErrorDelegate Delegate to execute upon encountering an error during wallet creation.
 	 */
 	static void CreateEmailWallet(const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	static void CreateEcosystemEmailWallet(const FString& PartnerId, const FString& Email, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
 	 * Initiates the creation of an OAuth wallet using the specified provider.
@@ -99,7 +98,6 @@ public:
 	 * @param ErrorDelegate A delegate to be called if an error occurs during wallet creation.
 	 */
 	static void CreateOAuthWallet(const EThirdwebOAuthProvider Provider, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	static void CreateEcosystemOAuthWallet(const FString& PartnerId, const EThirdwebOAuthProvider Provider, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
 	 * Creates a phone-based in-app wallet.
@@ -109,7 +107,6 @@ public:
 	 * @param ErrorDelegate The delegate called if there is an error during wallet creation.
 	 */
 	static void CreatePhoneWallet(const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	static void CreateEcosystemPhoneWallet(const FString& PartnerId, const FString& Phone, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
 	 * Creates a JWT wallet.
@@ -118,11 +115,6 @@ public:
 	 * @param ErrorDelegate The delegate to be executed if an error occurs during wallet creation.
 	 */
 	static void CreateJwtWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Jwt, SuccessDelegate, ErrorDelegate); }
-
-	static void CreateEcosystemJwtWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
-	{
-		return CreateEcosystemCustomAuthWallet(PartnerId, Jwt, SuccessDelegate, ErrorDelegate);
-	}
 
 	/**
 	 * Creates an in-app wallet with an authentication endpoint.
@@ -134,12 +126,7 @@ public:
 	{
 		return CreateCustomAuthWallet(AuthEndpoint, SuccessDelegate, ErrorDelegate);
 	}
-
-	static void CreateEcosystemAuthEndpointWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
-	{
-		return CreateEcosystemCustomAuthWallet(PartnerId, AuthEndpoint, SuccessDelegate, ErrorDelegate);
-	}
-
+	
 	/**
 	 * Creates a guest wallet by delegating to the custom authorization wallet creation function.
 	 *
@@ -147,11 +134,6 @@ public:
 	 * @param ErrorDelegate Delegate to be called if there is an error during the wallet creation process.
 	 */
 	static void CreateGuestWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Guest, SuccessDelegate, ErrorDelegate); }
-
-	static void CreateEcosystemGuestWallet(const FString& PartnerId, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
-	{
-		return CreateEcosystemCustomAuthWallet(PartnerId, Guest, SuccessDelegate, ErrorDelegate);
-	}
 
 private:
 	/**
@@ -162,7 +144,6 @@ private:
 	 * @param ErrorDelegate Delegate to be called if an error occurs during the wallet creation.
 	 */
 	static void CreateCustomAuthWallet(const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	static void CreateEcosystemCustomAuthWallet(const FString& PartnerId, const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 public:
 	/** Check if the wallet is connected to a session */
@@ -345,5 +326,4 @@ private:
 	// The current Handle type
 	EInAppSource Source = InvalidSource;
 	EThirdwebOAuthProvider Provider;
-	FString EcosystemPartnerId;
 };

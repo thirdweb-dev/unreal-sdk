@@ -25,62 +25,63 @@ public:
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
-	
+
+protected:
 	/** Stores the client identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
-	FString ClientID;
+	UPROPERTY(Config, EditAnywhere, DisplayName="Client ID", Category=Global)
+	FString ClientId;
 
 	/** Stores the bundle identifier. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Global)
-	FString BundleID;
+	UPROPERTY(Config, EditAnywhere, DisplayName="Bundle ID", Category=Global)
+	FString BundleId;
 	
-
 	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|InApp")
+	UPROPERTY(Config, EditAnywhere, Category="Wallets|InApp")
 	FString EncryptionKey;
 
 	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Ecosystem")
+	UPROPERTY(Config, EditAnywhere, DisplayName="Ecosystem ID", Category="Wallets|Ecosystem")
 	FString EcosystemId;
-
-	/** Enable if you plan to use varying partner ids. Disabling this will hide the input on relevant nodes */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Use Partner IDs", Category="Wallets|Ecosystem")
-	bool bUsePartnerIds = true;
+	
+	/** Ecosystem Wallet Partner ID - Needed if Allowlist-based Ecosystem */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Partner ID", Category="Wallets|Ecosystem")
+	FString PartnerId;
 	
 	/** Optional array of engine signers stored globally for convenience */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="Wallets|Smart")
+	UPROPERTY(Config, EditAnywhere, Category="Wallets|Smart")
 	TArray<FString> EngineSigners;
 
 	/** Publicly accessible Base URL To your Engine instance. Needed for all Engine nodes */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Base URL", Category=Engine)
+	UPROPERTY(Config, EditAnywhere, DisplayName="Base URL", Category=Engine)
 	FString EngineBaseUrl;
 
 	/** Access Token for Engine Authorization */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Access Token", Category=Engine)
+	UPROPERTY(Config, EditAnywhere, DisplayName="Access Token", Category=Engine)
 	FString EngineAccessToken;
 
 	/** Edit Condition for overriding Custom Application Schema */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
+	UPROPERTY(Config, EditAnywhere, Category=Engine)
 	bool bOverrideAppUri;
 	
 	/** Custom Application URI for oauth redirects. default is bundleid://{bundleId} */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category=Engine)
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category=Engine)
 	FString CustomAppUri;
 	
 	/** Opt in or out of connect analytics */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced)
+	UPROPERTY(Config, EditAnywhere, Category=Advanced)
 	bool bSendAnalytics;
 
 	/** Edit Condition for overriding OAuth Browser Provider Backends */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category=Advanced, meta=(InlineEditConditionToggle))
+	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(InlineEditConditionToggle))
 	bool bOverrideOAuthBrowserProviderBackends;
 
 	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
 	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
-
-protected:
-    static const TArray<EThirdwebOAuthProvider> ExternalOnlyProviders;
+	
+private:
+	static const TArray<EThirdwebOAuthProvider> ExternalOnlyProviders;
 	
 public:
 	UFUNCTION(CallInEditor, Category=Encryption)
@@ -106,11 +107,11 @@ public:
 	/** Static accessor to get EcosystemId */
 	static FString GetEcosystemId();
 
-	/** Static accessor to get bUsePartnerIds */
-	static bool ShowPartnerIds();
+	/** Static accessor to get PartnerId */
+	static FString GetPartnerId();
 
 	/** Static accessor to check EcosystemId validity */
-	static bool IsEcosystem() { return !GetEcosystemId().IsEmpty(); }
+	static bool IsEcosystem();
 
 	/** Static accessor to get ClientId */
 	static FString GetClientId();

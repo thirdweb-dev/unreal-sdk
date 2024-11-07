@@ -2,6 +2,7 @@
 <root xmlns:android="http://schemas.android.com/apk/res/android">
     <init>
         <log text="Thirdweb Plugin Init"/>
+        <!-- Oculus Setups -->
         <setBoolFromPropertyContains result="bPackageForOculusQuest" ini="Engine"
                                      section="/Script/AndroidRuntimeSettings.AndroidRuntimeSettings"
                                      property="PackageForOculusMobile" contains="Quest"/>
@@ -22,6 +23,7 @@
                 <log text="Adding com.oculus.always_draw_view_root for Oculus devices to manifest for hardware acceleration."/>
             </true>
         </if>
+        
         <log text="Thirdweb Plugin OAuth Schema URI Init"/>
         <setBoolFromProperty result="bOverrideAppUri" ini="Engine" section="/Script/Thirdweb.ThirdwebRuntimeSettings"
                              property="bOverrideAppUri" default="false"/>
@@ -40,14 +42,43 @@
                                   with=""/>
             </true>
             <false>
-                <setString result="ThirdwebScheme" value="bundleid"/>
+                <setStringFromProperty result="ThirdwebScheme" ini="Engine"
+                                       section="/Script/Thirdweb.ThirdwebRuntimeSettings"
+                                       property="BundleId" default="thirdweb"/>
                 <setStringFromProperty result="ThirdwebHost" ini="Engine"
                                        section="/Script/Thirdweb.ThirdwebRuntimeSettings"
-                                       property="BundleID" default=""/>
+                                       property="ClientId" default="game"/>
             </false>
         </if>
     </init>
+    <prebuildCopies>
+        <copyDir src="$S(PluginDir)/Private/Browser/Android/Java" dst="$S(BuildDir)/src/com/thirdweb/unrealengine" />
+    </prebuildCopies>
+    <proguardAdditions>
+        <insert>
+            <!-- Disable obfuscation -->
+            -dontwarn com.thirdweb.unrealengine
+            -keep class com.thirdweb.unrealengine.** { *; }
+            -keep interface com.thirdweb.unrealengine.** { *; }
+            -keep public class com.thirdweb.unrealengine.ThirdwebActivity { public protected *; }
+            -keep public class com.thirdweb.unrealengine.CustomTabsController { public protected *; }
+            -keep public class com.thirdweb.unrealengine.RedirectActivity { public protected *; }
 
+            -dontwarn androidx.**
+            -keep class androidx.** { *; }
+            -keep interface androidx.** { *; }
+        </insert>
+    </proguardAdditions>
+    <buildGradleAdditions>
+        <insert>
+            android {
+                compileOptions {
+                    sourceCompatibility 1.8
+                    targetCompatibility 1.8
+                }
+            }
+        </insert>
+    </buildGradleAdditions>
     <androidManifestUpdates>
         <if condition="bPackageForOculusMobile">
             <true>
@@ -56,15 +87,65 @@
                 </addElements>
             </true>
         </if>
-        <activity>
-            <intent-filter android:label="@string/filter_view_example_gizmos">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <!-- Accepts URIs that begin with "{ThirdwebScheme}://{ThirdwebHost}” -->
-                <data android:scheme="$S(ThirdwebScheme)"
-                      android:host="$S(ThirdwebHost)"/>
-            </intent-filter>
-        </activity>
+        <addElements tag="queries">
+            <intent>
+                <action android:name="android.support.customtabs.action.CustomTabsService" />
+            </intent>
+        </addElements>
+        <addElements tag="application">
+            <activity
+                    android:name="com.thirdweb.unrealengine.ThirdwebActivity"
+                    android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden"
+                    android:exported="true"
+                    android:launchMode="singleTask"
+                    android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+                <intent-filter android:autoVerify="true" android:name="thirdweb-intent-filter">
+                    <action android:name="android.intent.action.VIEW" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                    <category android:name="android.intent.category.BROWSABLE" />
+                </intent-filter>
+            </activity>
+        </addElements>
+        <loopElements tag="activity">
+            <setStringFromAttribute result="activityName" tag="$" name="android:name"/>
+            <setBoolIsEqual result="bGameActivity" arg1="$S(activityName)" arg2="com.thirdweb.unrealengine.ThirdwebActivity"/>
+            <if condition="bGameActivity">
+                <true>
+                    <loopElements tag="$">
+                        <setStringFromAttribute result="intentFilterName" tag="$" name="android:name"/>
+                        <setBoolIsEqual result="bIntentFilter" arg1="$S(intentFilterName)" arg2="thirdweb-intent-filter"/>
+                        <if condition="bIntentFilter">
+                            <true>
+                                <setElement result="TWIntentFilter" value="data" />
+                                <addAttribute tag="$TWIntentFilter" name="android:scheme" value="$S(ThirdwebScheme)" />
+                                <addElement tag="$" name="TWIntentFilter" />
+                            </true>
+                        </if>
+                    </loopElements>
+                </true>
+            </if>
+        </loopElements>
     </androidManifestUpdates>
+    <gameActivityClassAdditions>
+        <insert>
+            public static native void handleDeepLink(String Deeplink);
+
+            public static native void handleOnCustomTabsDismissed(String Url);
+
+            public static void onDeeplinkResult(String url) {
+                handleDeepLink(url);
+            }
+
+            public static void onCustomTabsDismissed(String url) {
+                handleOnCustomTabsDismissed(url);
+            }
+        </insert>
+    </gameActivityClassAdditions>
+    <buildGradleAdditions>
+        <insert>
+            dependencies {
+                implementation 'androidx.browser:browser:1.7.0'
+            }
+        </insert>
+    </buildGradleAdditions>
 </root>

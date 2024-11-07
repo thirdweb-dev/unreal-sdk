@@ -3,8 +3,8 @@
 #include "ThirdwebRuntimeSettings.h"
 
 #include "ThirdwebCommon.h"
-#include "ThirdwebInternal.h"
 #include "ThirdwebLog.h"
+#include "ThirdwebUtils.h"
 
 #include "HAL/FileManager.h"
 
@@ -33,35 +33,99 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	const TArray Trimmable = {
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, ClientId),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, BundleId),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EncryptionKey),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EcosystemId),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, PartnerId),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineBaseUrl),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineAccessToken),
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, CustomAppUri)
+	};
+
+	bool bChanged = false;
 	// ReSharper disable once CppTooWideScopeInitStatement
-	FName CurrentPropertyName = PropertyChangedEvent.GetMemberPropertyName();
-	if (CurrentPropertyName == FName(TEXT("OAuthBrowserProviderBackendOverrides")))
+	const FName CurrentPropertyName = PropertyChangedEvent.GetMemberPropertyName();
+	UE_LOG(LogTemp, Warning, TEXT("PropertyChangedEvent=%s"), *CurrentPropertyName.ToString())
+	if (CurrentPropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, OAuthBrowserProviderBackendOverrides))
 	{
-		bool bChanged = false;
 		for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders)
 		{
 			if (OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] != EThirdwebOAuthBrowserBackend::External)
 			{
 				OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
 				bChanged = true;
-				
-			}
-		}
-		if (bChanged)
-		{
-			if (MarkPackageDirty())
-			{
-				PostEditChange();
 			}
 		}
 	}
+	if (Trimmable.Contains(CurrentPropertyName))
+	{
+		FString Value;
+		PropertyChangedEvent.Property->GetValue_InContainer(this, &Value);
+		if (const FString Trimmed = Value.TrimStartAndEnd(); !Trimmed.Equals(Value))
+		{
+			PropertyChangedEvent.Property->SetValue_InContainer(this, &Trimmed);
+			bChanged = true;
+		}
+	}
+	if (CurrentPropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineBaseUrl))
+	{
+		FString Value;
+		PropertyChangedEvent.Property->GetValue_InContainer(this, &Value);
+		if (Value.EndsWith("/"))
+		{
+			const FString NewValue = Value.LeftChop(1);
+			PropertyChangedEvent.Property->SetValue_InContainer(this, &NewValue);
+		}
+	}
+	if (CurrentPropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineSigners))
+	{
+		bool bArrayChanged = false;
+		TArray<FString> Values;
+		PropertyChangedEvent.Property->GetValue_InContainer(this, &Values);
+		for (int32 i = 0; i < Values.Num(); i++)
+		{
+			if (FString NewValue = Values[i].TrimStartAndEnd(); !NewValue.Equals(Values[i]))
+			{
+				Values[i] = NewValue;
+				bArrayChanged = true;
+			}
+		}
+		if (bArrayChanged)
+		{
+			PropertyChangedEvent.Property->SetValue_InContainer(this, &Values);
+			bChanged = true;
+		}
+	}
+	
+	if (bChanged && MarkPackageDirty())
+	{
+		PostEditChange();
+	}
+}
+
+bool UThirdwebRuntimeSettings::CanEditChange(const FProperty* InProperty) const
+{
+	if (!Super::CanEditChange(InProperty))
+	{
+		return false;
+	}
+
+	// ReSharper disable once CppTooWideScopeInitStatement
+	const FName PropertyName = InProperty->GetFName();
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, PartnerId))
+	{
+		return IsEcosystem();
+	}
+	return true;
 }
 #endif
 
 void UThirdwebRuntimeSettings::GenerateEncryptionKey()
 {
 #if WITH_EDITOR
-	EncryptionKey = FThirdwebAnalytics::GenerateUUID();
+	EncryptionKey = ThirdwebUtils::Internal::GenerateUUID();
 	if (MarkPackageDirty())
 	{
 		PostEditChange();
@@ -136,24 +200,26 @@ FString UThirdwebRuntimeSettings::GetEcosystemId()
 	return TEXT("");
 }
 
-bool UThirdwebRuntimeSettings::ShowPartnerIds()
+FString UThirdwebRuntimeSettings::GetPartnerId()
 {
-	if (!IsEcosystem())
+	if (IsEcosystem())
 	{
-		return false;
+		return Get()->PartnerId.TrimStartAndEnd();
 	}
-	if (const UThirdwebRuntimeSettings* Settings = Get())
-	{
-		return Settings->bUsePartnerIds;
-	}
-	return true;
+	return TEXT("");
+}
+
+bool UThirdwebRuntimeSettings::IsEcosystem()
+{
+	const FString ID = GetEcosystemId();
+	return !ID.IsEmpty() && ID.StartsWith(TEXT("ecosystem."));
 }
 
 FString UThirdwebRuntimeSettings::GetClientId()
 {
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
-		return Settings->ClientID.TrimStartAndEnd();
+		return Settings->ClientId.TrimStartAndEnd();
 	}
 	return TEXT("");
 }
@@ -162,7 +228,7 @@ FString UThirdwebRuntimeSettings::GetBundleId()
 {
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
-		return Settings->BundleID.TrimStartAndEnd();
+		return Settings->BundleId.TrimStartAndEnd();
 	}
 	return TEXT("");
 }
@@ -201,10 +267,9 @@ FString UThirdwebRuntimeSettings::GetAppUri()
 	{
 		if (Settings->bOverrideAppUri)
 		{
-			
 			return Settings->CustomAppUri.TrimStartAndEnd();
 		}
-		return FString::Printf(TEXT("bundleid://%s"), *GetBundleId());
+		return FString::Printf(TEXT("%s://%s"), *GetBundleId(), *GetClientId());
 	}
 	return TEXT("");
 }

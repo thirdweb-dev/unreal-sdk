@@ -13,28 +13,6 @@
 
 #include "Kismet/KismetStringLibrary.h"
 
-TSharedPtr<FJsonObject> FThirdwebTransactionOverrides::ToJson() const
-{
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	if (Gas > 0)
-	{
-		JsonObject->SetStringField(TEXT("gas"), FString::Printf(TEXT("%lld"), Gas));
-	}
-	if (MaxFeePerGas > 0)
-	{
-		JsonObject->SetStringField(TEXT("maxFeePerGas"), FString::Printf(TEXT("%lld"), MaxFeePerGas));
-	}
-	if (MaxPriorityFeePerGas > 0)
-	{
-		JsonObject->SetStringField(TEXT("maxPriorityFeePerGas"), FString::Printf(TEXT("%lld"), MaxPriorityFeePerGas));
-	}
-	if (Value > 0)
-	{
-		JsonObject->SetStringField(TEXT("value"), FString::Printf(TEXT("%lld"), Value));
-	}
-	return JsonObject;
-}
-
 UAsyncTaskThirdwebEngineWriteContract* UAsyncTaskThirdwebEngineWriteContract::WriteContract(
 	UObject* WorldContextObject,
 	const int64 ChainId,
@@ -45,7 +23,7 @@ UAsyncTaskThirdwebEngineWriteContract* UAsyncTaskThirdwebEngineWriteContract::Wr
 	const FString& IdempotencyKey,
 	const FString& FunctionName,
 	const TArray<FString>& Args,
-	const FThirdwebTransactionOverrides& TxOverrides,
+	const FThirdwebEngineTransactionOverrides& TxOverrides,
 	const FString& Abi,
 	const bool bSimulateTx)
 {
@@ -71,11 +49,7 @@ UAsyncTaskThirdwebEngineWriteContract* UAsyncTaskThirdwebEngineWriteContract::Wr
 
 void UAsyncTaskThirdwebEngineWriteContract::Activate()
 {
-	FHttpModule& HttpModule = FHttpModule::Get();
-	const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
-	Request->SetVerb(TEXT("POST"));
-	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-	Request->SetHeader(TEXT("authorization"), TEXT("Bearer ") + UThirdwebRuntimeSettings::GetEngineAccessToken());
+	const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest(TEXT("POST"));
 	Request->SetHeader(TEXT("x-backend-wallet-address"), BackendWalletAddress);
 	if (!IdempotencyKey.IsEmpty())
 	{
@@ -120,7 +94,6 @@ void UAsyncTaskThirdwebEngineWriteContract::Activate()
 		)
 	);
 	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
-	Request->SetTimeout(30.0f);
 	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
 	Request->ProcessRequest();
 }
@@ -130,18 +103,10 @@ void UAsyncTaskThirdwebEngineWriteContract::HandleResponse(FHttpRequestPtr, FHtt
 	if (bConnectedSuccessfully)
 	{
 		const FString Content = Response->GetContentAsString();
-		if (TSharedPtr<FJsonObject> JsonObject = ThirdwebUtils::Json::ToJson(Content); JsonObject.IsValid())
+		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineWriteContract::HandleResponse::Content=%s"), *Content)
+		FString Error;
+		if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
 		{
-			TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineWriteContract::HandleResponse::Content=%s"), *Content)
-			if (JsonObject->HasTypedField<EJson::String>(TEXT("error")))
-			{
-				FString Error = TEXT("Unknown Error");
-				if (JsonObject->HasTypedField<EJson::String>(TEXT("message")))
-				{
-					Error = JsonObject->GetStringField(TEXT("message"));
-				}
-				return HandleFailed(Error);
-			}
 			FString QueueId = TEXT("Unknown");
 			if (JsonObject->HasTypedField<EJson::String>(TEXT("queueId")))
 			{
@@ -150,7 +115,7 @@ void UAsyncTaskThirdwebEngineWriteContract::HandleResponse(FHttpRequestPtr, FHtt
 			Success.Broadcast(QueueId, TEXT(""));
 			SetReadyToDestroy();
 		}
-		else return HandleFailed(TEXT("Invalid Response"));
+		else return HandleFailed(Error);
 	}
 	else return HandleFailed(TEXT("Network connection failed"));
 }

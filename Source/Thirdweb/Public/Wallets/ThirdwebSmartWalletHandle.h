@@ -63,10 +63,7 @@ public:
 		const FString& Signer,
 		const TArray<FString>& ApprovedTargets,
 		const FString& NativeTokenLimitPerTransactionInWei,
-		const FDateTime& PermissionStart,
 		const FDateTime& PermissionEnd,
-		const FDateTime& RequestValidityStart,
-		const FDateTime& RequestValidityEnd,
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);

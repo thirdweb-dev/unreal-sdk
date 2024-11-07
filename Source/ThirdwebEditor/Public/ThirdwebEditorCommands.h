@@ -9,13 +9,27 @@
 class FThirdwebEditorCommands : public TCommands<FThirdwebEditorCommands>
 {
 public:
-	FThirdwebEditorCommands()
-		: TCommands(TEXT("ThirdwebEditor"), NSLOCTEXT("Contexts", "ThirdwebEditor", "ThirdwebEditor Plugin"), NAME_None, FThirdwebEditorStyle::GetStyleSetName())
-	{
-	}
-	
+	FThirdwebEditorCommands();
+
 	virtual void RegisterCommands() override;
 
-public:
-	TSharedPtr<FUICommandInfo> PluginAction;
+	static TSharedPtr<FUICommandInfo> GetOpenSettingsCommand() { return Get().OpenSettings; }
+	static TSharedPtr<FUICommandInfo> GetTakeScreenshotCommand() { return Get().TakeScreenshot; }
+	// ReSharper disable once CppConstValueFunctionReturnType
+	static const TArray<TSharedPtr<FUICommandInfo>> GetCommands() { return {Get().OpenSettings, Get().TakeScreenshot}; }
+
+	template <typename CallableT>
+	static void ForEach(CallableT Callable)
+	{
+		// ReSharper disable once CppTooWideScopeInitStatement
+		const TArray<TSharedPtr<FUICommandInfo>> Commands = GetCommands();
+		for (const TSharedPtr<FUICommandInfo>& Value : Commands)
+		{
+			Invoke(Callable, Value);
+		}
+	}
+
+protected:
+	TSharedPtr<FUICommandInfo> OpenSettings;
+	TSharedPtr<FUICommandInfo> TakeScreenshot;
 };

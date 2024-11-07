@@ -10,10 +10,14 @@
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
 
-#include "Components/Button.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/PanelWidget.h"
+
+#if PLATFORM_ANDROID
+#include "Android/AndroidApplication.h"
+#include "Browser/Android/ThirdwebAndroidJNI.h"
+#endif
 
 const FString UThirdwebOAuthBrowserUserWidget::BackendUrlPrefix = TEXT("https://embedded-wallet.thirdweb.com/");
 
@@ -35,7 +39,8 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 	if (RootWidget)
 	{
 		// Construct browser widget
-		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
+		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(
+			UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
 		Browser->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
 		Browser->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
 		Browser->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
@@ -77,7 +82,7 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 		return HandleError(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-	
+
 	// Get Login URL
 	FString Link;
 	if (FString Error; !Wallet.FetchOAuthLoginURL(UThirdwebOAuthBrowserWidget::GetDummyUrl(), Link, Error))
@@ -89,6 +94,20 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 	// Check Browser Type
 	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))
 	{
+#if PLATFORM_ANDROID
+		if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+		{
+			jstring JUrl = Env->NewStringUTF(TCHAR_TO_UTF8(*Link));
+			jclass JClass = FAndroidApplication::FindJavaClass("com/thirdweb/unrealengine/ThirdwebActivity");
+			static jmethodID JLaunchUrl = FJavaWrapper::FindStaticMethod(Env, JClass, "startActivity", "(Landroid/app/Activity;Ljava/lang/String;)V", false);
+			ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod(Env, JClass, JLaunchUrl, FJavaWrapper::GameActivityThis, JUrl);
+			TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Opening CustomTabs"));
+			return;
+		}
+		TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::No JNIEnv found"));
+		return;
+#endif
+
 		return ExternalBrowser->Authenticate(Link);
 	}
 	return Browser->Authenticate(Link);
@@ -97,7 +116,7 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 
 bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
 {
-	FString Url = Browser->GetUrl();
+	const FString Url = Browser->GetUrl();
 
 	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
 }
@@ -141,11 +160,11 @@ void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
 
 void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, const FString& Frame)
 {
-
 	if (UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget()))
 	{
 		// Construct browser widget
-		UThirdwebOAuthBrowserWidget* Popup = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOAuthBrowserPopUp"));
+		UThirdwebOAuthBrowserWidget* Popup = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(
+			UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOAuthBrowserPopUp"));
 		Popup->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
 		Popup->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
 		Popup->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
@@ -164,6 +183,20 @@ void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)
 {
 	OnError.Broadcast(Error);
 }
+
+#if PLATFORM_ANDROID
+void UThirdwebOAuthBrowserUserWidget::HandleDeepLink(const FString& Url)
+{
+	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleDeepLink::%s"), *Url);
+	HandleUrlChanged(Url);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed(const FString& Url)
+{
+	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed::%s"), *Url);
+	HandleUrlChanged(Url);
+}
+#endif
 
 void UThirdwebOAuthBrowserUserWidget::SetVisible(const bool bVisible)
 {
