@@ -128,9 +128,9 @@ namespace ThirdwebUtils
 		extern FString GetPluginVersion();
 		extern FString GenerateUUID();
 
-		static void SendConnectEvent(const FWalletHandle Wallet);
-		static void SendConnectEvent(const FInAppWalletHandle Wallet);
-		static void SendConnectEvent(const FSmartWalletHandle Wallet);
+		extern void SendConnectEvent(const FWalletHandle Wallet);
+		extern void SendConnectEvent(const FInAppWalletHandle Wallet);
+		extern void SendConnectEvent(const FSmartWalletHandle Wallet);
 
 		extern TSharedRef<IHttpRequest> CreateEngineRequest(const FString& Verb = TEXT("GET"));
 	}
