@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Misc/DateTime.h"
-
 #include "ThirdwebSigner.generated.h"
 
 USTRUCT(BlueprintType)
