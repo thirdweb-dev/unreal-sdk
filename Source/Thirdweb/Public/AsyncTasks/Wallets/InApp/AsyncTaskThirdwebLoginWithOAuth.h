@@ -3,9 +3,7 @@
 #pragma once
 
 #include "AsyncTaskThirdwebInAppBase.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "AsyncTaskThirdwebLoginWithOAuth.generated.h"
 
 class UThirdwebOAuthBrowserUserWidget;
