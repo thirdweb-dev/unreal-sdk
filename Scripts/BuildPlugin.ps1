@@ -4,8 +4,9 @@ param (
     [string]$Mode = 'build',
     [string[]]$EngineVersion = 'All',
     [string[]]$Platforms = @('Win64', 'Android', 'Linux', 'LinuxArm64'),
-    [string]$Destination = "$env:UserProfile\Downloads\ThirdwebSDK",
+    [string]$Destination = "$env:UserProfile\Downloads",
     [string]$EnginePath,
+    [switch]$IncludeHost = $false,
     [switch]$Reverse = $false
 )
 
@@ -98,6 +99,7 @@ class Config
 
 $ConfigFile = Join-Path -Path "$env:USERPROFILE" -ChildPath ".build-plugin.json"
 $PluginDir = Split-Path -Path $PSScriptRoot -Parent
+$UPlugin = Get-Content -Path (Join-Path -Path $PluginDir -ChildPath "Thirdweb.uplugin") | ConvertFrom-Json
 
 if (!(Test-Path -Path $ConfigFile))
 {
@@ -172,18 +174,22 @@ switch ($Mode)
             }
             SetUERoot($Config.getVersionPath($Version))
             SetClang($Version)
-            $VersionDestination = $Destination + "_" + $Version
+            $FolderNameParts = @("ThirdwebSDK", $UPlugin.VersionName, $Version)
+            $FullDestination = Join-Path -Path $Destination -ChildPath ($FolderNameParts -join "-")
             $TargetPlatforms = $Platforms -join "+"
-
+            $Args = @(
+                "package",
+                "-TargetPlatforms=`"$TargetPlatforms`"",
+                "-Package=`"$FullDestination`""
+            )
+            if (!($IncludeHost)) {
+                $Args += "-NoHostPlatform"
+            }
             Start-Process ue4 `
                     -Wait `
                     -NoNewWindow `
                     -WorkingDirectory $PluginDir `
-                    -ArgumentList `
-                        "package", `
-                                "-NoHostPlatform", `
-                                "-TargetPlatforms=`"$TargetPlatforms`"", `
-                                "-Package=`"$VersionDestination`""
+                    -ArgumentList $Args
         }
     }
     'save' {

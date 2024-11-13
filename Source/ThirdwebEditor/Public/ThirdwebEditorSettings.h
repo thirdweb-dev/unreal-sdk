@@ -24,7 +24,7 @@ public:
 #endif
 
 protected:
-	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle))
+	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle), Category=Screenshots)
 	bool bCustomScreenshotBaseName;
 
 	UPROPERTY(Config, EditAnywhere, DisplayName="Base Name", meta=(EditCondition="bCustomScreenshotBaseName"), Category=Screenshots)
