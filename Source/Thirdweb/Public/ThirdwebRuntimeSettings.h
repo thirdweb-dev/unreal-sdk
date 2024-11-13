@@ -88,11 +88,11 @@ public:
 	void GenerateEncryptionKey();
 
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
-	static TArray<FString> GetThirdwebGlobalEngineSigners();
+	static TArray<FString> GetEngineSigners();
 
-	/** Gets the first global engine signer in the array, if any */
+	/** Gets the first engine signer in the array, if any */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signer"))
-	static FString GetThirdwebGlobalEngineSigner(bool& bFound);
+	static FString GetEngineSigner();
 
 	/** Static accessor to get EncryptionKey */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
@@ -132,6 +132,6 @@ public:
 	static FString GetAppUri();
 	
 	/** Convenience Getter */
-	UFUNCTION(BlueprintPure, Category="Thirdweb", DisplayName="Get Thirdweb Runtime Settings")
+	UFUNCTION(BlueprintPure, DisplayName="Get Thirdweb Runtime Settings", meta=(ReturnDisplayName="Settings"), Category="Thirdweb|Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 };

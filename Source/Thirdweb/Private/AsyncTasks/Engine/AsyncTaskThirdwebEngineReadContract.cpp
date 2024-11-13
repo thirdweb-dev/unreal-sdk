@@ -6,14 +6,12 @@
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
-
 #include "Interfaces/IHttpResponse.h"
-
 #include "Kismet/KismetStringLibrary.h"
 
 UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::ReadContract(
 	UObject* WorldContextObject,
-	const int64 ChainId,
+	const int64 ChainID,
 	const FString& ContractAddress,
 	const FString& FunctionName,
 	const TArray<FString>& Args
@@ -24,7 +22,7 @@ UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::Read
 		return nullptr;
 	}
 	NEW_TASK
-	Task->ChainId = ChainId;
+	Task->ChainId = ChainID;
 	Task->ContractAddress = ContractAddress;
 	Task->FunctionName = FunctionName;
 	Task->Args = Args;
