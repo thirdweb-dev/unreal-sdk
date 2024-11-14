@@ -23,11 +23,11 @@ FSigner FSigner::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 		}
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("startTimestamp")))
 		{
-			Signer.StartTime = FDateTime::FromUnixTimestampDecimal(FCString::Atoi(*JsonObject->GetStringField(TEXT("startTimestamp"))));
+			Signer.StartTime = FDateTime::FromUnixTimestamp(FCString::Atoi(*JsonObject->GetStringField(TEXT("startTimestamp"))));
 		}
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("endTimestamp")))
 		{
-			Signer.EndTime = FDateTime::FromUnixTimestampDecimal(FCString::Atoi(*JsonObject->GetStringField(TEXT("endTimestamp"))));
+			Signer.EndTime = FDateTime::FromUnixTimestamp(FCString::Atoi(*JsonObject->GetStringField(TEXT("endTimestamp"))));
 		}
 	}
 	return Signer;

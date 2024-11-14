@@ -3,9 +3,7 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "AsyncTaskThirdwebCreateSmartWallet.generated.h"
 
 struct FSmartWalletHandle;

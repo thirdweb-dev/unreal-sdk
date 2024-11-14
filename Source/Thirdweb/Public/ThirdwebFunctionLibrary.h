@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
-
 #include "ThirdwebFunctionLibrary.generated.h"
 
 struct FThirdwebEngineTransactionStatusResult;

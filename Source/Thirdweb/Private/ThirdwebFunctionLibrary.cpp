@@ -7,10 +7,8 @@
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
 #include "ThirdwebUtils.h"
-
 #include "Containers/ThirdwebCountryCodes.h"
 #include "Engine/ThirdwebEngineTransactionStatusResult.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"

@@ -102,9 +102,9 @@ namespace ThirdwebUtils
 		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error);
 		
 		template <EJson JsonType>
-		bool IsNotNullField(const TSharedPtr<FJsonObject>& JsonObject, const FStringView FieldName)
+		bool IsNotNullField(const TSharedPtr<FJsonObject>& JsonObject, const FString FieldName)
 		{
-			return JsonObject.IsValid() && JsonObject->HasField(FieldName) ? !JsonObject->GetField(FieldName, JsonType)->IsNull() : false;
+			return JsonObject.IsValid() && JsonObject->HasField(FieldName) ? !JsonObject->GetField<JsonType>(FieldName)->IsNull() : false;
 		}
 	}
 

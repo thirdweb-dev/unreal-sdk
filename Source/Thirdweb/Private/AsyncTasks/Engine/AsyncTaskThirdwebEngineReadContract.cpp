@@ -6,9 +6,7 @@
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "ThirdwebUtils.h"
-
 #include "Interfaces/IHttpResponse.h"
-
 #include "Kismet/KismetStringLibrary.h"
 
 UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::ReadContract(
