@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebInAppCreateWalletBase.h"
 #include "AsyncTaskThirdwebCreateAuthEndpointWallet.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebCreateAuthEndpointWallet : public UAsyncTaskThirdwebInAppCreateWalletBase
 {
 	GENERATED_BODY()

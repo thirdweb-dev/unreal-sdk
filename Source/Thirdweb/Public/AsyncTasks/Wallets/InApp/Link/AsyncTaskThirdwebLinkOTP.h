@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebLinkBase.h"
 #include "AsyncTaskThirdwebLinkOTP.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebLinkOTP : public UAsyncTaskThirdwebLinkBase
 {
 	GENERATED_BODY()

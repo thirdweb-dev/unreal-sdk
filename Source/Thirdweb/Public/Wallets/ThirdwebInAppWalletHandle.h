@@ -3,9 +3,7 @@
 #pragma once
 
 #include "ThirdwebWalletHandle.h"
-
 #include "Engine/StreamableManager.h"
-
 #include "ThirdwebInAppWalletHandle.generated.h"
 
 struct FThirdwebLinkedAccount;
@@ -19,7 +17,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 
 	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
 	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FThirdwebLinkedAccount>&);
-	
+
 	enum EInAppSource
 	{
 		InvalidSource,
@@ -116,6 +114,8 @@ public:
 	 */
 	static void CreateJwtWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Jwt, SuccessDelegate, ErrorDelegate); }
 
+	static void CreateSiweWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
 	/**
 	 * Creates an in-app wallet with an authentication endpoint.
 	 *
@@ -126,7 +126,7 @@ public:
 	{
 		return CreateCustomAuthWallet(AuthEndpoint, SuccessDelegate, ErrorDelegate);
 	}
-	
+
 	/**
 	 * Creates a guest wallet by delegating to the custom authorization wallet creation function.
 	 *
@@ -160,7 +160,7 @@ public:
 	 *
 	 */
 	void SendOTP(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with a One-Time Password (OTP) for the in-app wallet handle.
 	 *
@@ -208,7 +208,7 @@ public:
 	 * @param ErrorDelegate A delegate that will be called if there is an error during the linking process, providing an error message.
 	 */
 	void LinkOAuth(const FInAppWalletHandle& Wallet, const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with a JSON Web Token (JWT) for authentication.
 	 *
@@ -227,7 +227,7 @@ public:
  	 * @param ErrorDelegate Delegate to be executed if an error occurs during authentication.
  	 */
 	void LinkJwt(const FInAppWalletHandle& Wallet, const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with the authentication endpoint using the provided payload.
 	 *
@@ -246,7 +246,7 @@ public:
 	 * @param ErrorDelegate The delegate to be executed if an error occurs, should be bound to handle error messages.
 	 */
 	void LinkAuthEndpoint(const FInAppWalletHandle& Wallet, const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with guest authentication.
 	 *
@@ -271,14 +271,14 @@ public:
 	 * @param ErrorDelegate Delegate that will be executed with an error message if the operation fails.
 	 */
 	void GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Retrieves the source of the in-app wallet.
 	 *
 	 * @return The source of the in-app wallet as an EInAppSource enum.
 	 */
 	EInAppSource GetSource() const { return Source; }
-	
+
 	/**
 	 * Retrieves the source string.
 	 *

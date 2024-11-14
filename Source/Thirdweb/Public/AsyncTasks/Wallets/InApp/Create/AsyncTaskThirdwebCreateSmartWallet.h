@@ -10,7 +10,7 @@
 
 struct FSmartWalletHandle;
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebCreateSmartWallet : public UAsyncTaskThirdwebBase
 {
 	GENERATED_BODY()

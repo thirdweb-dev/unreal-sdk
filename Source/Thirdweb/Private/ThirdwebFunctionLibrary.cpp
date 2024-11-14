@@ -9,6 +9,7 @@
 #include "ThirdwebUtils.h"
 
 #include "Containers/ThirdwebCountryCodes.h"
+#include "Engine/ThirdwebEngineTransactionStatusResult.h"
 
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
@@ -143,5 +144,11 @@ FThirdwebCountryCode UThirdwebFunctionLibrary::BP_GetCountryCodeData(const int32
 TArray<FThirdwebCountryCode> UThirdwebFunctionLibrary::BP_GetAllCountryCodeData()
 {
 	return ThirdwebCountryCodes::GetCountryCodesArray();
+}
+
+void UThirdwebFunctionLibrary::BP_GetTransactionReceiptInputs(const FThirdwebEngineTransactionStatusResult& TransactionStatus, FString& TxHash, int64& ChainID)
+{
+	TxHash = TransactionStatus.TransactionHash;
+	ChainID = TransactionStatus.ChainId;
 }
 

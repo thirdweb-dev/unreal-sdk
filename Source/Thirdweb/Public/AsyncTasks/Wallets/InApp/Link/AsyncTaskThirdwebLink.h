@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebLinkBase.h"
 #include "AsyncTaskThirdwebLink.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebLink : public UAsyncTaskThirdwebLinkBase
 {
 	GENERATED_BODY()

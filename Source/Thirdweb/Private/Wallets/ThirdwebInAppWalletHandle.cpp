@@ -211,6 +211,50 @@ void FInAppWalletHandle::CreatePhoneWallet(const FString& Phone, const FCreateIn
 	});
 }
 
+void FInAppWalletHandle::CreateSiweWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Phone, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
+		{
+			if (Thirdweb::create_ecosystem_wallet(
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetEcosystemId()),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetPartnerId()),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+				nullptr,
+				nullptr,
+				TO_RUST_STRING(Phone),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+				nullptr
+			).AssignResult(Error))
+			{
+				SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Phone, Error));
+				return;
+			}
+		}
+		else
+		{
+			if (Thirdweb::create_in_app_wallet(
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetClientId()),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
+				nullptr,
+				nullptr,
+				TO_RUST_STRING(Phone),
+				TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
+				nullptr
+			).AssignResult(Error))
+			{
+				SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Phone, Error));
+				return;
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
 void FInAppWalletHandle::CreateCustomAuthWallet(const EInAppSource Source, const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)

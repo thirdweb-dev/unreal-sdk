@@ -21,7 +21,7 @@ class THIRDWEB_API UAsyncTaskThirdwebEngineReadContract : public UAsyncTaskThird
 
 public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AutoCreateRefTerm="Args"), Category="Thirdweb|Engine")
-	static UAsyncTaskThirdwebEngineReadContract* ReadContract(UObject* WorldContextObject, const int64 ChainId, const FString& ContractAddress, const FString& FunctionName, const TArray<FString>& Args);
+	static UAsyncTaskThirdwebEngineReadContract* ReadContract(UObject* WorldContextObject, const int64 ChainID, const FString& ContractAddress, const FString& FunctionName, const TArray<FString>& Args);
 
 	virtual void Activate() override;
 

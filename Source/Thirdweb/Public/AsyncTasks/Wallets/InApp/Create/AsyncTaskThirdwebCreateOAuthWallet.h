@@ -7,7 +7,7 @@
 
 enum class EThirdwebOAuthProvider : uint8;
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebCreateOAuthWallet : public UAsyncTaskThirdwebInAppCreateWalletBase
 {
 	GENERATED_BODY()

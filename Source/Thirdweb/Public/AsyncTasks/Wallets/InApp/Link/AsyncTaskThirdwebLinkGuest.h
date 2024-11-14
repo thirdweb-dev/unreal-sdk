@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebLinkBase.h"
 #include "AsyncTaskThirdwebLinkGuest.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebLinkGuest : public UAsyncTaskThirdwebLinkBase
 {
 	GENERATED_BODY()

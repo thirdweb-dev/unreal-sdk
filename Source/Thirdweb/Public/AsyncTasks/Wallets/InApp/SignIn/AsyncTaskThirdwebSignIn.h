@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebSignInBase.h"
 #include "AsyncTaskThirdwebSignIn.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebSignIn : public UAsyncTaskThirdwebSignInBase
 {
 	GENERATED_BODY()

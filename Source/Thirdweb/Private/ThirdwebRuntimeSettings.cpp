@@ -133,7 +133,7 @@ void UThirdwebRuntimeSettings::GenerateEncryptionKey()
 #endif
 }
 
-TArray<FString> UThirdwebRuntimeSettings::GetThirdwebGlobalEngineSigners()
+TArray<FString> UThirdwebRuntimeSettings::GetEngineSigners()
 {
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
@@ -142,14 +142,12 @@ TArray<FString> UThirdwebRuntimeSettings::GetThirdwebGlobalEngineSigners()
 	return {};
 }
 
-FString UThirdwebRuntimeSettings::GetThirdwebGlobalEngineSigner(bool& bFound)
+FString UThirdwebRuntimeSettings::GetEngineSigner()
 {
-	bFound = false;
 	if (const UThirdwebRuntimeSettings* Settings = Get())
 	{
 		if (Settings->EngineSigners.Num() > 0)
 		{
-			bFound = true;
 			return Settings->EngineSigners[0];
 		}
 	}
