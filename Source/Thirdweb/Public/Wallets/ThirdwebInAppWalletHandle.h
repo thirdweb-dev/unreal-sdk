@@ -26,6 +26,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 		Phone,
 		Jwt,
 		AuthEndpoint,
+		Siwe,
 		Guest
 	};
 
@@ -114,8 +115,14 @@ public:
 	 */
 	static void CreateJwtWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Jwt, SuccessDelegate, ErrorDelegate); }
 
+	/**
+	 * Creates a Sign-In with Ethereum (SIWE) wallet.
+	 *
+	 * @param SuccessDelegate The delegate to be executed upon successful wallet creation.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs during wallet creation.
+	 */
 	static void CreateSiweWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Creates an in-app wallet with an authentication endpoint.
 	 *
@@ -265,6 +272,27 @@ public:
 	void LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
+	 * Initiates a sign-in process using Ethereum credentials.
+	 *
+	 * @param Payload The payload containing the sign-in data.
+	 * @param Signature The signature authenticating the payload.
+	 * @param SuccessDelegate Delegate to execute upon successful sign-in.
+	 * @param ErrorDelegate Delegate to execute upon encountering an error.
+	 */
+	void SignInWithEthereum(const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Links an in-app wallet using the SIWE (Sign-In with Ethereum) protocol.
+	 *
+	 * @param Wallet The in-app wallet handle to be linked, must be a valid wallet.
+	 * @param Payload The payload containing the sign-in data.
+	 * @param Signature The signature authenticating the payload.
+	 * @param SuccessDelegate The delegate to be executed upon successful linking.
+	 * @param ErrorDelegate The delegate to be executed in case of an error during the linking process.
+	 */
+	void LinkSiwe(const FInAppWalletHandle& Wallet, const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
 	 * Retrieves the linked accounts associated with this FInAppWalletHandle.
 	 *
 	 * @param SuccessDelegate Delegate that will be executed with the linked accounts information if the operation is successful.
@@ -303,6 +331,7 @@ public:
 			{Phone, TEXT("Phone")},
 			{Jwt, TEXT("JWT")},
 			{AuthEndpoint, TEXT("AuthEndpoint")},
+			{Siwe, TEXT("SIWE")},
 			{Guest, TEXT("Guest")},
 		};
 		return Map.Contains(Source) ? Map[Source] : TEXT("Unknown");

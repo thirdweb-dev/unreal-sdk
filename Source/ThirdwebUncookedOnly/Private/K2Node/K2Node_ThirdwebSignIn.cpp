@@ -4,6 +4,11 @@
 
 #include "AsyncTasks/Wallets/InApp/SignIn/AsyncTaskThirdwebSignIn.h"
 
+namespace TwPins
+{
+	const FName Signature = FName(TEXT("Signature"));
+}
+
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
 
 UK2Node_ThirdwebSignIn::UK2Node_ThirdwebSignIn()
@@ -45,7 +50,7 @@ void UK2Node_ThirdwebSignIn::AllocateDefaultPins()
 	// Input Pins
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::Wallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Input);
-	
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Signature);
 	PostAllocateDefaultPins();
 }
 

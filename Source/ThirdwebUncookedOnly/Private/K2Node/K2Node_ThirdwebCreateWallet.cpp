@@ -16,6 +16,7 @@
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateJwtWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateOAuthWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreatePhoneWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSiweWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Styling/SlateIconFinder.h"
@@ -220,6 +221,12 @@ void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerCo
 				ProxyFactoryClass = UAsyncTaskThirdwebCreateGuestWallet::StaticClass();
 				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateGuestWallet, CreateGuestWallet);
 				break;
+			}
+		case EThirdwebInAppWalletSource::Siwe:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSiweWallet, CreateSiweWallet);
 			}
 		}
 	}

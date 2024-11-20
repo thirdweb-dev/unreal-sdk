@@ -3,7 +3,6 @@
 #pragma once
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebInAppBase.h"
-
 #include "AsyncTaskThirdwebSignInBase.generated.h"
 
 #define SIGN_IN_TASK \

@@ -3,13 +3,9 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
-#include "Interfaces/IHttpRequest.h"
-
 #include "AsyncTaskThirdwebEngineGetTransactionReceipt.generated.h"
 
 struct FThirdwebEngineTransactionReceipt;
-class FJsonObject;
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskThirdwebEngineGetTransactionReceipt : public UAsyncTaskThirdwebBase
@@ -38,6 +34,6 @@ protected:
 	int64 ChainId;
 
 private:
-	virtual void HandleResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+	virtual void HandleResponse(const FThirdwebEngineTransactionReceipt& Receipt);
 	void HandleFailed(const FString& Error);
 };

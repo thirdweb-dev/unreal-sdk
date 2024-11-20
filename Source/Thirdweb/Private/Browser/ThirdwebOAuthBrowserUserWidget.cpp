@@ -55,6 +55,7 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 		ExternalBrowser = NewObject<UThirdwebOAuthExternalBrowser>(this);
 		ExternalBrowser->OnAuthenticated.BindUObject(this, &ThisClass::HandleAuthenticated);
 		ExternalBrowser->OnError.BindUObject(this, &ThisClass::HandleError);
+		ExternalBrowser->OnSiweComplete.BindUObject(this, &ThisClass::HandleSiweComplete);
 	}
 
 	return Super::RebuildWidget();
@@ -73,6 +74,19 @@ void UThirdwebOAuthBrowserUserWidget::OnWidgetRebuilt()
 	SetVisible(false);
 }
 
+void UThirdwebOAuthBrowserUserWidget::BeginDestroy()
+{
+	if (ExternalBrowser)
+	{
+		ExternalBrowser->ConditionalBeginDestroy();
+	}
+	if (Browser)
+	{
+		Browser->ConditionalBeginDestroy();
+	}
+	Super::BeginDestroy();
+}
+
 void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InAppWallet)
 {
 	// Validate Wallet
@@ -82,7 +96,14 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 		return HandleError(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-
+	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet Type::%s"), Wallet.GetSourceString());
+	if (Wallet.GetSource() == FInAppWalletHandle::Siwe)
+	{
+		TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against SIWE"));
+		ExternalBrowser->SignInWithEthereum();
+		return;
+	}
+	
 	// Get Login URL
 	FString Link;
 	if (FString Error; !Wallet.FetchOAuthLoginURL(UThirdwebOAuthBrowserWidget::GetDummyUrl(), Link, Error))
@@ -177,6 +198,11 @@ void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, co
 void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString& AuthResult)
 {
 	OnAuthenticated.Broadcast(AuthResult);
+}
+
+inline void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString& Signature, const FString& Payload)
+{
+	OnSiweComplete.Broadcast(Signature, Payload);
 }
 
 void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)

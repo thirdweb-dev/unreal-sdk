@@ -10,6 +10,11 @@
 
 #define TO_RUST_TIMESTAMP(v) v == FDateTime::MinValue() ? 0 : v.ToUnixTimestamp()
 
+#define EXECUTE_IF_BOUND(Delegate, ...) \
+	if (Delegate.IsBound()) { \
+		Delegate.Execute(__VA_ARGS__); \
+	}
+	
 DECLARE_DELEGATE_OneParam(FStringDelegate, const FString&);
 DECLARE_DELEGATE_OneParam(FStringArrayDelegate, const TArray<FString>&);
 DECLARE_DELEGATE_OneParam(FBoolDelegate, const bool&);

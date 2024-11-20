@@ -3,15 +3,10 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
-#include "Engine/ThirdwebEngineTransactionOverrides.h"
-
-#include "Interfaces/IHttpRequest.h"
-
-#include "Wallets/ThirdwebInAppWalletHandle.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionOverrides.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
-
 #include "AsyncTaskThirdwebEngineWriteContract.generated.h"
+
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskThirdwebEngineWriteContract : public UAsyncTaskThirdwebBase
@@ -78,6 +73,6 @@ protected:
 	bool bSimulateTx;
 
 private:
-	virtual void HandleResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+	virtual void HandleResponse(const FString& QueueId);
 	void HandleFailed(const FString& Error);
 };

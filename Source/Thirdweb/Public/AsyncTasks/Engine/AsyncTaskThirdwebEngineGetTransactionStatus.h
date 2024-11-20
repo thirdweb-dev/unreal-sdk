@@ -3,13 +3,9 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
-#include "Interfaces/IHttpRequest.h"
-
 #include "AsyncTaskThirdwebEngineGetTransactionStatus.generated.h"
 
 struct FThirdwebEngineTransactionStatusResult;
-class FJsonObject;
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskThirdwebEngineGetTransactionStatus : public UAsyncTaskThirdwebBase
@@ -35,6 +31,6 @@ protected:
 	FString QueueId;
 
 private:
-	virtual void HandleResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+	virtual void HandleResponse(const FThirdwebEngineTransactionStatusResult& Result);
 	void HandleFailed(const FString& Error);
 };

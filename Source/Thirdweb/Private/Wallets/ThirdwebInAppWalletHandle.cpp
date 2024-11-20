@@ -25,11 +25,17 @@
 		return; \
 	}
 
-#define CHECK_SOURCE(InSource) \
+#define CHECK_SOURCE(InSource, ErrorDelegate) \
 	if (Source != InSource) \
 	{ \
-		TW_LOG(Error, TEXT("Wallet handle is not %s source"), FInAppWalletHandle::GetSourceString(InSource)) \
-		ErrorDelegate.Execute(FString::Format(TEXT("Wallet handle is not %s source"), FInAppWalletHandle::GetSourceString(InSource))); \
+		ErrorDelegate.Execute(FString::Printf(TEXT("Wallet handle is not %s source"), GetSourceString(InSource))); \
+		return; \
+	}
+
+#define CHECK_WALLET_SOURCE(InWallet, InSource, ErrorDelegate) \
+	if (InWallet.GetSource() != InSource) \
+	{ \
+		ErrorDelegate.Execute(FString::Printf(TEXT("Wallet handle is not %s source"), GetSourceString(InSource))); \
 		return; \
 	}
 
@@ -214,8 +220,9 @@ void FInAppWalletHandle::CreatePhoneWallet(const FString& Phone, const FCreateIn
 void FInAppWalletHandle::CreateSiweWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
-	UE::Tasks::Launch(UE_SOURCE_LOCATION, [Phone, SuccessDelegate, ErrorDelegate]
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [SuccessDelegate, ErrorDelegate]
 	{
+		static FString Provider = TEXT("SIWE");
 		FString Error;
 		if (UThirdwebRuntimeSettings::IsEcosystem())
 		{
@@ -226,12 +233,12 @@ void FInAppWalletHandle::CreateSiweWallet(const FCreateInAppWalletDelegate& Succ
 				TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
 				nullptr,
 				nullptr,
-				TO_RUST_STRING(Phone),
+				nullptr,
 				TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-				nullptr
+				TO_RUST_STRING(Provider)
 			).AssignResult(Error))
 			{
-				SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Phone, Error));
+				SuccessDelegate.Execute(FInAppWalletHandle(Siwe, Error));
 				return;
 			}
 		}
@@ -242,12 +249,12 @@ void FInAppWalletHandle::CreateSiweWallet(const FCreateInAppWalletDelegate& Succ
 				TO_RUST_STRING(UThirdwebRuntimeSettings::GetBundleId()),
 				nullptr,
 				nullptr,
-				TO_RUST_STRING(Phone),
+				nullptr,
 				TO_RUST_STRING(UThirdwebRuntimeSettings::GetStorageDirectory()),
-				nullptr
+				TO_RUST_STRING(Provider)
 			).AssignResult(Error))
 			{
-				SuccessDelegate.Execute(FInAppWalletHandle(EInAppSource::Phone, Error));
+				SuccessDelegate.Execute(FInAppWalletHandle(Siwe, Error));
 				return;
 			}
 		}
@@ -474,7 +481,7 @@ void FInAppWalletHandle::LinkOTP(const FInAppWalletHandle& Wallet, const FString
 		{
 		case Phone:
 			{
-				if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), TO_RUST_STRING(OTP), nullptr, nullptr, nullptr).AssignResult(Error, true))
+				if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), TO_RUST_STRING(OTP), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).AssignResult(Error, true))
 				{
 					SuccessDelegate.Execute();
 					return;
@@ -535,11 +542,8 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
-	if (Source != OAuthProvider)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
-		return;
-	}
+	CHECK_SOURCE(OAuthProvider, ErrorDelegate)
+
 	FString Result = ThirdwebUtils::ParseAuthResult(AuthResult);
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Result, SuccessDelegate, ErrorDelegate]
@@ -573,17 +577,14 @@ void FInAppWalletHandle::LinkOAuth(const FInAppWalletHandle& Wallet, const FStri
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_ECOSYSTEM(ErrorDelegate)
-	if (Wallet.GetSource() != OAuthProvider)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not OAuth source"));
-		return;
-	}
+	CHECK_WALLET_SOURCE(Wallet, OAuthProvider, ErrorDelegate)
+
 	FString Result = ThirdwebUtils::ParseAuthResult(AuthResult);
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, Result, SuccessDelegate, ErrorDelegate]
 	{
 		FString Error;
-		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, TO_RUST_STRING(Result), nullptr, nullptr).AssignResult(Error, true))
+		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, TO_RUST_STRING(Result), nullptr, nullptr, nullptr, nullptr, nullptr).AssignResult(Error, true))
 		{
 			SuccessDelegate.Execute();
 			return;
@@ -596,11 +597,8 @@ void FInAppWalletHandle::SignInWithJwt(const FString& Jwt, const FStreamableDele
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
-	if (Source != EInAppSource::Jwt)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not JWT source"));
-		return;
-	}
+	CHECK_SOURCE(EInAppSource::Jwt, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Jwt, SuccessDelegate, ErrorDelegate]
 	{
@@ -637,16 +635,13 @@ void FInAppWalletHandle::LinkJwt(const FInAppWalletHandle& Wallet, const FString
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_ECOSYSTEM(ErrorDelegate)
-	if (Wallet.GetSource() != EInAppSource::Jwt)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not JWT source"));
-		return;
-	}
+	CHECK_WALLET_SOURCE(Wallet, EInAppSource::Jwt, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, Jwt, SuccessDelegate, ErrorDelegate]
 	{
 		FString Error;
-		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, TO_RUST_STRING(Jwt), nullptr).AssignResult(Error, true))
+		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, TO_RUST_STRING(Jwt), nullptr, nullptr, nullptr, nullptr).AssignResult(Error, true))
 		{
 			SuccessDelegate.Execute();
 			return;
@@ -659,11 +654,8 @@ void FInAppWalletHandle::SignInWithAuthEndpoint(const FString& Payload, const FS
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
-	if (Source != AuthEndpoint)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not auth endpoint source"));
-		return;
-	}
+	CHECK_SOURCE(AuthEndpoint, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Payload, SuccessDelegate, ErrorDelegate]
 	{
@@ -700,16 +692,13 @@ void FInAppWalletHandle::LinkAuthEndpoint(const FInAppWalletHandle& Wallet, cons
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_ECOSYSTEM(ErrorDelegate)
-	if (Wallet.GetSource() != AuthEndpoint)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not auth endpoint source"));
-		return;
-	}
+	CHECK_WALLET_SOURCE(Wallet, AuthEndpoint, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, Payload, SuccessDelegate, ErrorDelegate]
 	{
 		FString Error;
-		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, nullptr, TO_RUST_STRING(Payload)).AssignResult(Error, true))
+		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, nullptr, TO_RUST_STRING(Payload), nullptr, nullptr, nullptr).AssignResult(Error, true))
 		{
 			SuccessDelegate.Execute();
 			return;
@@ -722,11 +711,8 @@ void FInAppWalletHandle::SignInWithGuest(const FStreamableDelegate& SuccessDeleg
 {
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
-	if (Source != Guest)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not guest source"));
-		return;
-	}
+	CHECK_SOURCE(Guest, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, SuccessDelegate, ErrorDelegate]
 	{
@@ -758,16 +744,68 @@ void FInAppWalletHandle::LinkGuest(const FInAppWalletHandle& Wallet, const FStre
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_ECOSYSTEM(ErrorDelegate)
-	if (Wallet.GetSource() != Guest)
-	{
-		ErrorDelegate.Execute(TEXT("Wallet handle is not guest source"));
-		return;
-	}
+	CHECK_WALLET_SOURCE(Wallet, Guest, ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, SuccessDelegate, ErrorDelegate]
 	{
 		FString Error;
-		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, nullptr, TO_RUST_STRING(FPlatformMisc::GetLoginId())).AssignResult(Error, true))
+		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, nullptr, nullptr, TO_RUST_STRING(FPlatformMisc::GetLoginId()), nullptr, nullptr).
+			AssignResult(Error, true))
+		{
+			SuccessDelegate.Execute();
+			return;
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::SignInWithEthereum(const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_SOURCE(Siwe, ErrorDelegate)
+
+	FInAppWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Payload, Signature, SuccessDelegate, ErrorDelegate]
+	{
+		UE_LOG(LogTemp, VeryVerbose, TEXT("FInAppWalletHandle::SignInWithEthereum::Task::WalletHandle=%lld | Signature=%s | Payload=%s"), ThisCopy.GetID(), *Signature, *Payload);
+		FString Error;
+		if (UThirdwebRuntimeSettings::IsEcosystem())
+		{
+			if (Thirdweb::ecosystem_wallet_sign_in_with_siwe(ThisCopy.GetID(), TO_RUST_STRING(Payload), TO_RUST_STRING(Signature)).AssignResult(Error, true))
+			{
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
+				SuccessDelegate.Execute();
+				return;
+			}
+		}
+		else
+		{
+			if (Thirdweb::in_app_wallet_sign_in_with_siwe(ThisCopy.GetID(), TO_RUST_STRING(Payload), TO_RUST_STRING(Signature)).AssignResult(Error, true))
+			{
+				ThirdwebUtils::Internal::SendConnectEvent(ThisCopy);
+				SuccessDelegate.Execute();
+				return;
+			}
+		}
+		ErrorDelegate.Execute(Error);
+	});
+}
+
+void FInAppWalletHandle::LinkSiwe(const FInAppWalletHandle& Wallet, const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+{
+	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
+	CHECK_VALIDITY(ErrorDelegate)
+	CHECK_ECOSYSTEM(ErrorDelegate)
+	CHECK_WALLET_SOURCE(Wallet, Siwe, ErrorDelegate)
+
+	FInAppWalletHandle ThisCopy = *this;
+	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Wallet, Payload, Signature, SuccessDelegate, ErrorDelegate]
+	{
+		FString Error;
+		if (Thirdweb::ecosystem_wallet_link_account(ThisCopy.GetID(), Wallet.GetID(), nullptr, nullptr, nullptr, nullptr, nullptr, TO_RUST_STRING(Signature), TO_RUST_STRING(Payload)).
+			AssignResult(Error, true))
 		{
 			SuccessDelegate.Execute();
 			return;
@@ -781,6 +819,7 @@ void FInAppWalletHandle::GetLinkedAccounts(const FGetLinkedAccountsDelegate& Suc
 	CHECK_DELEGATES(SuccessDelegate, ErrorDelegate)
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_ECOSYSTEM(ErrorDelegate)
+
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, SuccessDelegate, ErrorDelegate]
 	{

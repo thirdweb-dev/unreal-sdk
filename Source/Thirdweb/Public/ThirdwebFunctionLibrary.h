@@ -117,6 +117,9 @@ public:
 	UFUNCTION(BlueprintPure, DisplayName="Zero Address", Category="Utilities|String")
 	static FString BP_ZeroAddress();
 
+	UFUNCTION(BlueprintPure, DisplayName="Create QR Code", Category="Utilities|String")
+	static UTexture2D* BP_CreateQrCode(const FString& Text);
+	
 	/// Data
 
 	/** Gets the country code data for the input country code, if it exists */

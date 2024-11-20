@@ -13,10 +13,21 @@ class THIRDWEB_API UAsyncTaskThirdwebSignIn : public UAsyncTaskThirdwebSignInBas
 public:
 	/** Multi-Purpose runtime sign-in node covering all sign in options based upon Wallet. Input is ignored if guest wallet */
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), DisplayName="Sign In", Category="Thirdweb|Wallets|In App")
-	static UAsyncTaskThirdwebSignIn* SignIn(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& Input)
+	static UAsyncTaskThirdwebSignIn* SignIn(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& Input, const FString& Signature)
 	{
-		SIGN_IN_INPUT_TASK
+		UE_LOG(LogTemp, Display, TEXT("UAsyncTaskThirdwebSignIn::Creating"));
+		NEW_TASK
+		Task->InAppWallet = Wallet;
+		Task->AuthInput = Input;
+		Task->SignatureInput = Signature;
+		UE_LOG(LogTemp, Display, TEXT("UAsyncTaskThirdwebSignIn::Variables set"));
+		RR_TASK
 	}
-	
+
+protected:
+	UPROPERTY(Transient)
+	FString SignatureInput;
+
+public:
 	virtual void Activate() override;
 };

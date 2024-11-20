@@ -111,6 +111,7 @@ public:
 	static FString GetPartnerId();
 
 	/** Static accessor to check EcosystemId validity */
+	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
 	static bool IsEcosystem();
 
 	/** Static accessor to get ClientId */

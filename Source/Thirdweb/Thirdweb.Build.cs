@@ -65,7 +65,7 @@ public class Thirdweb : ModuleRules
 
 		PublicSystemLibraryPaths.Add(LibDir);
 		PublicAdditionalLibraries.Add(Path.Combine(LibDir, "libthirdweb" + LibExt));
-
+		
 		if (IsWin64)
 		{
 			PublicSystemLibraries.AddRange(new[]
@@ -108,7 +108,10 @@ public class Thirdweb : ModuleRules
 			// OAuth Widget UI deps
 			"UMG",
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			// Utils Deps
+			"RHI",
+			"RenderCore"
 		});
 
 		// ReSharper disable once InvertIf

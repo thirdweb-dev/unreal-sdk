@@ -6,6 +6,8 @@
 
 void UAsyncTaskThirdwebSignIn::Activate()
 {
+	
+	UE_LOG(LogTemp, Display, TEXT("UAsyncTaskThirdwebSignIn::Activate::%s - %s - %lld"), InAppWallet.GetSourceString(), InAppWallet.GetTypeString(), InAppWallet.GetID());
 	switch (InAppWallet.GetSource())
 	{
 	case FInAppWalletHandle::Email: return InAppWallet.SignInWithOTP(AuthInput, BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
@@ -16,6 +18,8 @@ void UAsyncTaskThirdwebSignIn::Activate()
 	case FInAppWalletHandle::Guest: return InAppWallet.SignInWithGuest(BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse), BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 	case FInAppWalletHandle::AuthEndpoint: return InAppWallet.SignInWithAuthEndpoint(AuthInput, BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse),
 	                                                                                 BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
+	case FInAppWalletHandle::Siwe: return InAppWallet.SignInWithEthereum(AuthInput, SignatureInput, BIND_UOBJECT_DELEGATE(FStreamableDelegate, HandleResponse),
+	                                                                     BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 	default: return HandleFailed(TEXT("Invalid Wallet"));
 	}
 }

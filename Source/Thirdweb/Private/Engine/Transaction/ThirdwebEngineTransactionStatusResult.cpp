@@ -1,9 +1,8 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "Engine/ThirdwebEngineTransactionStatusResult.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionStatusResult.h"
 
 #include "ThirdwebUtils.h"
-
 #include "Engine/ThirdwebEngineCommon.h"
 
 FThirdwebEngineTransactionStatusResult::FThirdwebEngineTransactionStatusResult()

@@ -8,7 +8,7 @@
 #include "ThirdwebCommon.h"
 #include "ThirdwebUtils.h"
 #include "Containers/ThirdwebCountryCodes.h"
-#include "Engine/ThirdwebEngineTransactionStatusResult.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionStatusResult.h"
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
@@ -132,6 +132,11 @@ FText UThirdwebFunctionLibrary::Conv_TextAddressToStringChecksummedAddress(const
 FString UThirdwebFunctionLibrary::BP_ZeroAddress()
 {
 	return ThirdwebUtils::ZeroAddress;
+}
+
+UTexture2D* UThirdwebFunctionLibrary::BP_CreateQrCode(const FString& Text)
+{
+	return ThirdwebUtils::CreateQrCode(Text);
 }
 
 FThirdwebCountryCode UThirdwebFunctionLibrary::BP_GetCountryCodeData(const int32 CountryCode)

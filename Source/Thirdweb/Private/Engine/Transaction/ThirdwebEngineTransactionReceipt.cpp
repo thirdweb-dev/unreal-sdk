@@ -1,9 +1,8 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "Engine/ThirdwebEngineTransactionReceipt.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionReceipt.h"
 
 #include "ThirdwebUtils.h"
-
 #include "Dom/JsonObject.h"
 
 FThirdwebEngineTransactionReceiptLog FThirdwebEngineTransactionReceiptLog::FromJson(const TSharedPtr<FJsonObject>& JsonObject)

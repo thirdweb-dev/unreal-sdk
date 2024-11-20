@@ -17,6 +17,10 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAuthenticatedDelegate, const FString&, AuthResult);
 	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
 	FOnAuthenticatedDelegate OnAuthenticated;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSiweCompleteDelegate, const FString&, Signature, const FString&, Payload);
+	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
+	FOnSiweCompleteDelegate OnSiweComplete;
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnErrorDelegate, const FString&, Error);
 	UPROPERTY(BlueprintAssignable, Category="Thirdweb|OAuth Browser")
@@ -58,6 +62,7 @@ private:
 public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void OnWidgetRebuilt() override;
+	virtual void BeginDestroy() override;
 	
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
@@ -70,6 +75,7 @@ protected:
 	virtual void HandleOnBeforePopup(const FString& Url, const FString& Frame);
 
 	virtual void HandleAuthenticated(const FString& AuthResult);
+	virtual void HandleSiweComplete(const FString& Signature, const FString& Payload);
 	virtual void HandleError(const FString& Error);
 	
 public:
@@ -88,3 +94,4 @@ public:
 	UFUNCTION(BlueprintPure, Category="Thirdweb|OAuth Browser")
 	FString GetUrl() const;
 };
+

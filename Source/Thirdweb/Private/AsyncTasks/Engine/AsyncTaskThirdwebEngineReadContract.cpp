@@ -2,12 +2,8 @@
 
 #include "AsyncTasks/Engine/AsyncTaskThirdwebEngineReadContract.h"
 
-#include "HttpModule.h"
-#include "ThirdwebLog.h"
-#include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebUtils.h"
-#include "Interfaces/IHttpResponse.h"
-#include "Kismet/KismetStringLibrary.h"
+#include "Components/SlateWrapperTypes.h"
+#include "Engine/ThirdwebEngine.h"
 
 UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::ReadContract(
 	UObject* WorldContextObject,
@@ -17,54 +13,31 @@ UAsyncTaskThirdwebEngineReadContract* UAsyncTaskThirdwebEngineReadContract::Read
 	const TArray<FString>& Args
 )
 {
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
 	NEW_TASK
 	Task->ChainId = ChainID;
 	Task->ContractAddress = ContractAddress;
 	Task->FunctionName = FunctionName;
 	Task->Args = Args;
-	Task->RegisterWithGameInstance(WorldContextObject);
-	return Task;
+	RR_TASK
 }
 
 void UAsyncTaskThirdwebEngineReadContract::Activate()
 {
-	const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-	Request->SetURL(
-		FString::Format(
-			TEXT("{0}/contract/{1}/{2}/read?functionName={3}{4}"),
-			{
-				UThirdwebRuntimeSettings::GetEngineBaseUrl(),
-				FString::Printf(TEXT("%lld"), ChainId),
-				ContractAddress,
-				FunctionName,
-				Args.Num() > 0 ? TEXT("&args=") + UKismetStringLibrary::JoinStringArray(Args, TEXT(",")) : TEXT("")
-			}
-		)
+	ThirdwebEngine::Contract::Read(
+		this,
+		ChainId,
+		ContractAddress,
+		FunctionName,
+		Args,
+		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleResponse),
+		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
 	);
-	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
-	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
-	Request->ProcessRequest();
 }
 
-void UAsyncTaskThirdwebEngineReadContract::HandleResponse(FHttpRequestPtr, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UAsyncTaskThirdwebEngineReadContract::HandleResponse(const FString& Content)
 {
-	if (bConnectedSuccessfully)
-	{
-		FString Content = Response->GetContentAsString();
-		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineReadContract::HandleResponse::Content=%s"), *Content)
-		FString Error;
-		if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
-		{
-			Success.Broadcast(Content, TEXT(""));
-			SetReadyToDestroy();
-		}
-		else return HandleFailed(Error);
-	}
-	else return HandleFailed(TEXT("Network connection failed"));
+	Success.Broadcast(Content, TEXT(""));
+	SetReadyToDestroy();
 }
 
 void UAsyncTaskThirdwebEngineReadContract::HandleFailed(const FString& Error)

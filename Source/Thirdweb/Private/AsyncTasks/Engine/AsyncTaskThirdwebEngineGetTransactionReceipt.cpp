@@ -2,28 +2,12 @@
 
 #include "AsyncTasks/Engine/AsyncTaskThirdwebEngineGetTransactionReceipt.h"
 
-#include "HttpModule.h"
-#include "ThirdwebLog.h"
-#include "ThirdwebRuntimeSettings.h"
-#include "ThirdwebUtils.h"
-
-#include "Dom/JsonObject.h"
-
-#include "Engine/ThirdwebEngineTransactionReceipt.h"
-
-#include "Interfaces/IHttpResponse.h"
-
-#include "Kismet/KismetStringLibrary.h"
-
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
+#include "Components/SlateWrapperTypes.h"
+#include "Engine/ThirdwebEngine.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionReceipt.h"
 
 UAsyncTaskThirdwebEngineGetTransactionReceipt* UAsyncTaskThirdwebEngineGetTransactionReceipt::GetTransactionReceipt(UObject* WorldContextObject, const FString& TxHash, const int64 ChainID)
 {
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
 	NEW_TASK
 	Task->TransactionHash = TxHash;
 	Task->ChainId = ChainID;
@@ -32,28 +16,19 @@ UAsyncTaskThirdwebEngineGetTransactionReceipt* UAsyncTaskThirdwebEngineGetTransa
 
 void UAsyncTaskThirdwebEngineGetTransactionReceipt::Activate()
 {
-	const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-	Request->SetURL(FString::Printf(TEXT("%s/transaction/%lld/tx-hash/%s"), *UThirdwebRuntimeSettings::GetEngineBaseUrl(), ChainId, *TransactionHash));
-	ThirdwebUtils::Internal::LogRequest(Request, {UThirdwebRuntimeSettings::GetEngineAccessToken()});
-	Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::HandleResponse);
-	Request->ProcessRequest();
+	ThirdwebEngine::Transaction::GetReceipt(
+		this,
+		TransactionHash,
+		ChainId,
+		BIND_UOBJECT_DELEGATE(ThirdwebEngine::Transaction::FGetTransactionReceiptDelegate, HandleResponse),
+		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
+	);
 }
 
-void UAsyncTaskThirdwebEngineGetTransactionReceipt::HandleResponse(FHttpRequestPtr, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UAsyncTaskThirdwebEngineGetTransactionReceipt::HandleResponse(const FThirdwebEngineTransactionReceipt& Receipt)
 {
-	if (bConnectedSuccessfully)
-	{
-		FString Content = Response->GetContentAsString();
-		TW_LOG(Verbose, TEXT("UAsyncTaskThirdwebEngineGetTransactionReceipt::HandleResponse::Content=%s"), *Content)
-		FString Error;
-		if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
-		{
-			Success.Broadcast(FThirdwebEngineTransactionReceipt::FromJson(JsonObject), TEXT(""));
-			SetReadyToDestroy();
-		}
-		else return HandleFailed(Error);
-	}
-	else return HandleFailed(TEXT("Network connection failed"));
+	Success.Broadcast(Receipt, TEXT(""));
+	SetReadyToDestroy();
 }
 
 void UAsyncTaskThirdwebEngineGetTransactionReceipt::HandleFailed(const FString& Error)

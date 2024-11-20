@@ -3,13 +3,7 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
-#include "Interfaces/IHttpRequest.h"
-
-#include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "AsyncTaskThirdwebEngineReadContract.generated.h"
-
 
 /**
  * 
@@ -46,6 +40,6 @@ protected:
 	TArray<FString> Args;
 
 private:
-	virtual void HandleResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+	virtual void HandleResponse(const FString& Content);
 	void HandleFailed(const FString& Error);
 };
