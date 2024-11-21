@@ -4,12 +4,9 @@
 
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
-
 #include "Blueprint/WidgetTree.h"
-
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
-
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/PanelWidget.h"
@@ -200,7 +197,7 @@ void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString& AuthRes
 	OnAuthenticated.Broadcast(AuthResult);
 }
 
-inline void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString& Signature, const FString& Payload)
+void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString& Signature, const FString& Payload)
 {
 	OnSiweComplete.Broadcast(Signature, Payload);
 }
