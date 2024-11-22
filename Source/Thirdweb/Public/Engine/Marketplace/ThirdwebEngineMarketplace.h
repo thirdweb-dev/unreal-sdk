@@ -4,6 +4,10 @@
 
 #include "ThirdwebMacros.h"
 
+struct FThirdwebMarketplaceOffer;
+struct FThirdwebMarketplaceBid;
+struct FThirdwebAssetCurrencyValue;
+struct FThirdwebMarketplaceEnglishAuction;
 struct FThirdwebMarketplaceListing;
 struct FThirdwebMarketplaceMakeOfferRequest;
 struct FThirdwebMarketplaceCreateAuctionRequest;
@@ -36,7 +40,7 @@ namespace ThirdwebEngine::Marketplace
 			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
-		
+
 		extern THIRDWEB_API void GetAllValid(
 			const UObject* Outer,
 			const int32 Count,
@@ -49,7 +53,7 @@ namespace ThirdwebEngine::Marketplace
 			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
-		
+
 		DECLARE_DELEGATE_OneParam(FGetListingDelegate, const FThirdwebMarketplaceListing& /* Listing */)
 		extern THIRDWEB_API void GetListing(
 			const UObject* Outer,
@@ -59,6 +63,7 @@ namespace ThirdwebEngine::Marketplace
 			const FGetListingDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void IsBuyerApprovedForListing(
 			const UObject* Outer,
 			const FString& ListingId,
@@ -68,6 +73,7 @@ namespace ThirdwebEngine::Marketplace
 			const FBoolDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void IsCurrencyApprovedForListing(
 			const UObject* Outer,
 			const FString& ListingId,
@@ -77,6 +83,7 @@ namespace ThirdwebEngine::Marketplace
 			const FBoolDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetTotalCount(
 			const UObject* Outer,
 			const int64 Chain,
@@ -145,6 +152,9 @@ namespace ThirdwebEngine::Marketplace
 
 	namespace EnglishAuctions
 	{
+		extern FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const TCHAR* InFormatString);
+
+		DECLARE_DELEGATE_OneParam(FGetAllDelegate, const TArray<FThirdwebMarketplaceEnglishAuction>& /* Auctions */)
 		extern THIRDWEB_API void GetAll(
 			const UObject* Outer,
 			const int32 Count,
@@ -154,9 +164,10 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetAllValid(
 			const UObject* Outer,
 			const int32 Count,
@@ -166,41 +177,49 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
+		DECLARE_DELEGATE_OneParam(FGetAuctionDelegate, const FThirdwebMarketplaceEnglishAuction& /* Listing */)
 		extern THIRDWEB_API void GetAuction(
 			const UObject* Outer,
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAuctionDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetBidBufferBps(
 			const UObject* Outer,
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FInt32Delegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
+		DECLARE_DELEGATE_OneParam(FGetCurrencyValueDelegate, const FThirdwebAssetCurrencyValue& /* Value */)
 		extern THIRDWEB_API void GetMinimumNextBid(
 			const UObject* Outer,
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetCurrencyValueDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
+		DECLARE_DELEGATE_OneParam(FGetBidDelegate, const FThirdwebMarketplaceBid& /* Bid */)
 		extern THIRDWEB_API void GetWinningBid(
 			const UObject* Outer,
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetBidDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetTotalCount(
 			const UObject* Outer,
 			const int64 Chain,
@@ -208,15 +227,17 @@ namespace ThirdwebEngine::Marketplace
 			const FStringDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void IsWinningBid(
 			const UObject* Outer,
 			const FString& ListingId,
 			const FString& BidAmount,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FBoolDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetWinner(
 			const UObject* Outer,
 			const FString& ListingId,
@@ -294,6 +315,9 @@ namespace ThirdwebEngine::Marketplace
 
 	namespace Offers
 	{
+		extern FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const TCHAR* InFormatString);
+
+		DECLARE_DELEGATE_OneParam(FGetAllDelegate, const TArray<FThirdwebMarketplaceOffer>& /* Offers */)
 		extern THIRDWEB_API void GetAll(
 			const UObject* Outer,
 			const int32 Count,
@@ -303,9 +327,10 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
+
 		extern THIRDWEB_API void GetAllValid(
 			const UObject* Outer,
 			const int32 Count,
@@ -315,11 +340,29 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
+			const FGetAllDelegate& SuccessDelegate,
+			const FStringDelegate& ErrorDelegate
+		);
+
+		DECLARE_DELEGATE_OneParam(FGetOfferDelegate, const FThirdwebMarketplaceOffer& /* Offer */)
+		extern THIRDWEB_API void GetOffer(
+			const UObject* Outer,
+			const FString& OfferId,
+			const int64 Chain,
+			const FString& ContractAddress,
+			const FGetOfferDelegate& SuccessDelegate,
+			const FStringDelegate& ErrorDelegate
+		);
+
+		extern THIRDWEB_API void GetTotalCount(
+			const UObject* Outer,
+			const FString& OfferId,
+			const int64 Chain,
+			const FString& ContractAddress,
 			const FStringDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		);
-		extern THIRDWEB_API void GetOffer(const UObject* Outer, const FString& OfferId, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-		extern THIRDWEB_API void GetTotalCount(const UObject* Outer, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+		
 		extern THIRDWEB_API void MakeOffer(
 			const UObject* Outer,
 			DIRECT_LISTING_POST_PARAMS,

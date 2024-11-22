@@ -96,27 +96,73 @@ FThirdwebAsset FThirdwebAsset::FromJson(const TSharedPtr<FJsonObject>& JsonObjec
 	return Asset;
 }
 
-FThirdwebMarketplaceListing FThirdwebMarketplaceListing::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+FThirdwebMarketplaceBaseAuction FThirdwebMarketplaceBaseAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
-	FThirdwebMarketplaceListing Listing = {};
+	FThirdwebMarketplaceBaseAuction Base = {};
 	if (JsonObject.IsValid())
 	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("assetContractAddress")))
 		{
-			Listing.AssetContractAddress = JsonObject->GetStringField(TEXT("assetContractAddress"));
+			Base.AssetContractAddress = JsonObject->GetStringField(TEXT("assetContractAddress"));
 		}
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("tokenId")))
 		{
-			Listing.TokenId = JsonObject->GetStringField(TEXT("tokenId"));
+			Base.TokenId = JsonObject->GetStringField(TEXT("tokenId"));
 		}
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("currencyContractAddress")))
 		{
-			Listing.CurrencyContractAddress = JsonObject->GetStringField(TEXT("currencyContractAddress"));
+			Base.CurrencyContractAddress = JsonObject->GetStringField(TEXT("currencyContractAddress"));
 		}
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("quantity")))
 		{
-			Listing.Quantity = JsonObject->GetStringField(TEXT("quantity"));
+			Base.Quantity = JsonObject->GetStringField(TEXT("quantity"));
 		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("id")))
+		{
+			Base.Id = JsonObject->GetStringField(TEXT("id"));
+		}
+		if (JsonObject->HasTypedField<EJson::Object>(TEXT("asset")))
+		{
+			Base.Asset = FThirdwebAsset::FromJson(JsonObject->GetObjectField(TEXT("asset")));
+		}
+		if (JsonObject->HasTypedField<EJson::Number>(TEXT("status")))
+		{
+			int32 Status = JsonObject->GetIntegerField(TEXT("status"));
+			Base.Status = Status >= 0 && Status <= static_cast<int32>(EThirdwebMarketplaceListingStatus::Max)
+				                 ? static_cast<EThirdwebMarketplaceListingStatus>(Status)
+				                 : EThirdwebMarketplaceListingStatus::Invalid;
+		}
+		if (JsonObject->HasTypedField<EJson::Number>(TEXT("startTimeInSeconds")))
+		{
+			Base.StartTimeInSeconds = FDateTime::FromUnixTimestamp(JsonObject->GetNumberField(TEXT("startTimeInSeconds")));
+		}
+		if (JsonObject->HasTypedField<EJson::Number>(TEXT("endTimeInSeconds")))
+		{
+			Base.EndTimeInSeconds = FDateTime::FromUnixTimestamp(JsonObject->GetNumberField(TEXT("endTimeInSeconds")));
+		}
+	}
+	return Base;
+}
+
+TArray<FThirdwebMarketplaceBaseAuction> FThirdwebMarketplaceBaseAuction::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
+{
+	TArray<FThirdwebMarketplaceBaseAuction> Bases;
+	for (const TSharedPtr<FJsonValue>& Value : JsonArray)
+	{
+		
+		if (Value->Type == EJson::Object)
+		{
+			Bases.Add(FromJson(Value->AsObject()));
+		}
+	}
+	return Bases;
+}
+
+FThirdwebMarketplaceListing FThirdwebMarketplaceListing::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+{
+	FThirdwebMarketplaceListing Listing = FThirdwebMarketplaceListing(Super::FromJson(JsonObject));
+	if (JsonObject.IsValid())
+	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("pricePerToken")))
 		{
 			Listing.PricePerToken = JsonObject->GetStringField(TEXT("pricePerToken"));
@@ -125,32 +171,9 @@ FThirdwebMarketplaceListing FThirdwebMarketplaceListing::FromJson(const TSharedP
 		{
 			Listing.bIsReservedListing = JsonObject->GetBoolField(TEXT("isReservedListing"));
 		}
-		if (JsonObject->HasTypedField<EJson::String>(TEXT("id")))
-		{
-			Listing.Id = JsonObject->GetStringField(TEXT("id"));
-		}
 		if (JsonObject->HasTypedField<EJson::Object>(TEXT("currencyValuePerToken")))
 		{
 			Listing.CurrencyValuePerToken = FThirdwebAssetCurrencyValue::FromJson(JsonObject->GetObjectField(TEXT("currencyValuePerToken")));
-		}
-		if (JsonObject->HasTypedField<EJson::Object>(TEXT("asset")))
-		{
-			Listing.Asset = FThirdwebAsset::FromJson(JsonObject->GetObjectField(TEXT("asset")));
-		}
-		if (JsonObject->HasTypedField<EJson::Number>(TEXT("status")))
-		{
-			int32 Status = JsonObject->GetIntegerField(TEXT("status"));
-			Listing.Status = Status >= 0 && Status <= static_cast<int32>(EThirdwebMarketplaceListingStatus::Max)
-				                 ? static_cast<EThirdwebMarketplaceListingStatus>(Status)
-				                 : EThirdwebMarketplaceListingStatus::Invalid;
-		}
-		if (JsonObject->HasTypedField<EJson::Number>(TEXT("startTimeInSeconds")))
-		{
-			Listing.StartTimeInSeconds = FDateTime::FromUnixTimestamp(JsonObject->GetNumberField(TEXT("startTimeInSeconds")));
-		}
-		if (JsonObject->HasTypedField<EJson::Number>(TEXT("endTimeInSeconds")))
-		{
-			Listing.EndTimeInSeconds = FDateTime::FromUnixTimestamp(JsonObject->GetNumberField(TEXT("endTimeInSeconds")));
 		}
 	}
 	return Listing;
@@ -163,8 +186,127 @@ TArray<FThirdwebMarketplaceListing> FThirdwebMarketplaceListing::FromJson(const 
 	{
 		if (Value->Type == EJson::Object)
 		{
-			Attributes.Add(FromJson(Value->AsObject()));
+			Listings.Add(FromJson(Value->AsObject()));
 		}
 	}
-	return Attributes;
+	return Listings;
+}
+
+FThirdwebMarketplaceEnglishAuction FThirdwebMarketplaceEnglishAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+{
+	FThirdwebMarketplaceEnglishAuction Auction = FThirdwebMarketplaceEnglishAuction(Super::FromJson(JsonObject));
+	if (JsonObject.IsValid())
+	{
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("minimumBidAmount")))
+		{
+			Auction.MinimumBidAmount = JsonObject->GetStringField(TEXT("minimumBidAmount"));
+		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("buyoutBidAmount")))
+		{
+			Auction.BuyoutBidAmount = JsonObject->GetStringField(TEXT("buyoutBidAmount"));
+		}
+		if (JsonObject->HasTypedField<EJson::Object>(TEXT("buyoutCurrencyValue")))
+		{
+			Auction.BuyoutCurrencyValue = FThirdwebAssetCurrencyValue::FromJson(JsonObject->GetObjectField(TEXT("buyoutCurrencyValue")));
+		}
+		if (JsonObject->HasTypedField<EJson::Number>(TEXT("timeBufferInSeconds")))
+		{
+			Auction.TimeBufferInSeconds = FDateTime::FromUnixTimestamp(JsonObject->GetNumberField(TEXT("timeBufferInSeconds")));
+		}
+		if (JsonObject->HasTypedField<EJson::Number>(TEXT("bidBufferBps")))
+		{
+			Auction.BidBufferBps = JsonObject->GetIntegerField(TEXT("bidBufferBps"));
+		}
+	}
+	return Auction;
+}
+
+TArray<FThirdwebMarketplaceEnglishAuction> FThirdwebMarketplaceEnglishAuction::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
+{
+	TArray<FThirdwebMarketplaceEnglishAuction> Auctions;
+	for (const TSharedPtr<FJsonValue>& Value : JsonArray)
+	{
+		if (Value->Type == EJson::Object)
+		{
+			Auctions.Add(FromJson(Value->AsObject()));
+		}
+	}
+	return Auctions;
+}
+
+FThirdwebMarketplaceOffer FThirdwebMarketplaceOffer::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+{
+	FThirdwebMarketplaceOffer Offer = FThirdwebMarketplaceOffer(Super::FromJson(JsonObject));
+	if (JsonObject.IsValid())
+	{
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("offerorAddress")))
+		{
+			Offer.OfferorAddress = JsonObject->GetStringField(TEXT("offerorAddress"));
+		}
+		if (JsonObject->HasTypedField<EJson::Object>(TEXT("currencyValue")))
+		{
+			Offer.CurrencyValue = FThirdwebAssetCurrencyValue::FromJson(JsonObject->GetObjectField(TEXT("currencyValue")));
+		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("totalPrice")))
+		{
+			Offer.TotalPrice = JsonObject->GetStringField(TEXT("totalPrice"));
+		}
+	}
+	return Offer;
+}
+
+TArray<FThirdwebMarketplaceOffer> FThirdwebMarketplaceOffer::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
+{
+	TArray<FThirdwebMarketplaceOffer> Offers;
+	for (const TSharedPtr<FJsonValue>& Value : JsonArray)
+	{
+		if (Value->Type == EJson::Object)
+		{
+			Offers.Add(FromJson(Value->AsObject()));
+		}
+	}
+	return Offers;
+}
+
+FThirdwebMarketplaceBid FThirdwebMarketplaceBid::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+{
+	FThirdwebMarketplaceBid Bid;
+	if (JsonObject.IsValid())
+	{
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("auctionId")))
+		{
+			Bid.AuctionId = JsonObject->GetStringField(TEXT("auctionId"));
+		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("bidderAddress")))
+		{
+			Bid.BidderAddress = JsonObject->GetStringField(TEXT("bidderAddress"));
+		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("currencyContractAddress")))
+		{
+			Bid.CurrencyContractAddress = JsonObject->GetStringField(TEXT("currencyContractAddress"));
+		}
+		if (JsonObject->HasTypedField<EJson::String>(TEXT("bidAmount")))
+		{
+			Bid.BidAmount = JsonObject->GetStringField(TEXT("bidAmount"));
+		}
+		if (JsonObject->HasTypedField<EJson::Object>(TEXT("bidAmountCurrencyValue")))
+		{
+			Bid.BidAmountCurrencyValue = FThirdwebAssetCurrencyValue::FromJson(JsonObject->GetObjectField(TEXT("bidAmountCurrencyValue")));
+		}
+		
+	}
+	return Bid;
+}
+
+TArray<FThirdwebMarketplaceBid> FThirdwebMarketplaceBid::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
+{
+	TArray<FThirdwebMarketplaceBid> Bids;
+	for (const TSharedPtr<FJsonValue>& Value : JsonArray)
+	{
+		if (Value->Type == EJson::Object)
+		{
+			Bids.Add(FromJson(Value->AsObject()));
+		}
+	}
+	return Bids;
 }

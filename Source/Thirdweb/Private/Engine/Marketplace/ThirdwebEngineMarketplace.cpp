@@ -39,6 +39,7 @@ namespace ThirdwebEngine::Marketplace
 		{
 			return FormatUrl(ChainId, ContractAddress, InFormatString, {});
 		}
+
 		FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const TCHAR* InFormatString, const FStringFormatOrderedArguments& InOrderedArguments)
 		{
 			return Marketplace::FormatUrl(ChainId, ContractAddress, TEXT("direct-listings"), InFormatString, InOrderedArguments);
@@ -58,14 +59,14 @@ namespace ThirdwebEngine::Marketplace
 		)
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-			
+
 			FThirdwebURLSearchParams Params;
 			Params.Set(TEXT("count"), Count, Count > 0);
 			Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
 			Params.Set(TEXT("start"), Start, Start >= 0);
 			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
 			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
-			
+
 			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all")) + Params.ToString(true));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
@@ -101,14 +102,14 @@ namespace ThirdwebEngine::Marketplace
 		)
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-			
+
 			FThirdwebURLSearchParams Params;
 			Params.Set(TEXT("count"), Count, Count > 0);
 			Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
 			Params.Set(TEXT("start"), Start, Start >= 0);
 			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
 			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
-			
+
 			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all-valid")) + Params.ToString(true));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
@@ -140,10 +141,10 @@ namespace ThirdwebEngine::Marketplace
 		)
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-			
+
 			FThirdwebURLSearchParams Params;
 			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
-			
+
 			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-listing")) + Params.ToString(true));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
@@ -176,11 +177,11 @@ namespace ThirdwebEngine::Marketplace
 		)
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-			
+
 			FThirdwebURLSearchParams Params;
 			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
 			Params.Set(TEXT("walletAddress"), WalletAddress, !WalletAddress.IsEmpty());
-			
+
 			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/is-buyer-approved-for-listing")) + Params.ToString(true));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
@@ -213,11 +214,11 @@ namespace ThirdwebEngine::Marketplace
 		)
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-			
+
 			FThirdwebURLSearchParams Params;
 			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
 			Params.Set(TEXT("currencyContractAddress"), CurrencyContractAddress, !CurrencyContractAddress.IsEmpty());
-			
+
 			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/is-currency-approved-for-listing")) + Params.ToString(true));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
@@ -243,7 +244,7 @@ namespace ThirdwebEngine::Marketplace
 		{
 			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
 
-			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/is-currency-approved-for-listing")));
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-total-count")));
 
 			ThirdwebUtils::Internal::LogRequest(Request);
 			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
@@ -391,6 +392,11 @@ namespace ThirdwebEngine::Marketplace
 
 	namespace EnglishAuctions
 	{
+		FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const TCHAR* InFormatString)
+		{
+			return Marketplace::FormatUrl(ChainId, ContractAddress, TEXT("english-auctions"), InFormatString, {});
+		}
+
 		void GetAll(
 			const UObject* Outer,
 			const int32 Count,
@@ -400,10 +406,38 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("count"), Count, Count > 0);
+			Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
+			Params.Set(TEXT("start"), Start, Start >= 0);
+			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
+			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetAll::Content=%s"), *Content)
+				FString Error;
+				if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceEnglishAuction::FromJson(JsonArray))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetAllValid(
@@ -415,14 +449,73 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("count"), Count, Count > 0);
+			Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
+			Params.Set(TEXT("start"), Start, Start >= 0);
+			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
+			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all-valid")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetAllValid::Content=%s"), *Content)
+				FString Error;
+				if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceEnglishAuction::FromJson(JsonArray))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
-		void GetAuction(const UObject* Outer, const FString& ListingId, const int64 Chain, const FString& ContractAddress, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+		void GetAuction(
+			const UObject* Outer,
+			const FString& ListingId,
+			const int64 Chain,
+			const FString& ContractAddress,
+			const FGetAuctionDelegate& SuccessDelegate,
+			const FStringDelegate& ErrorDelegate
+		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-auction")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetAuction::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceEnglishAuction::FromJson(JsonObject))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetBidBufferBps(
@@ -430,10 +523,34 @@ namespace ThirdwebEngine::Marketplace
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FInt32Delegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-bid-buffer-bps")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetBidBufferBps::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsNumber())
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetMinimumNextBid(
@@ -441,10 +558,34 @@ namespace ThirdwebEngine::Marketplace
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetCurrencyValueDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-minimum-next-bid")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetMinimumNextBid::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebAssetCurrencyValue::FromJson(JsonObject))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetWinningBid(
@@ -452,14 +593,59 @@ namespace ThirdwebEngine::Marketplace
 			const FString& ListingId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetBidDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-winning-bid")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetWinningBid::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceBid::FromJson(JsonObject))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetTotalCount(const UObject* Outer, const int64 Chain, const FString& ContractAddress, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-total-count")));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetTotalCount::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsString())
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void IsWinningBid(
@@ -468,10 +654,35 @@ namespace ThirdwebEngine::Marketplace
 			const FString& BidAmount,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FBoolDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+			Params.Set(TEXT("bidAmount"), BidAmount, !BidAmount.IsEmpty());
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/is-winning-bid")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::IsWinningBid::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsBool())
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetWinner(
@@ -483,6 +694,30 @@ namespace ThirdwebEngine::Marketplace
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("listingId"), ListingId, ListingId.IsNumeric() && !ListingId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-winner")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetWinner::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsString())
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void BuyoutAuction(
@@ -573,6 +808,11 @@ namespace ThirdwebEngine::Marketplace
 
 	namespace Offers
 	{
+		FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const TCHAR* InFormatString)
+		{
+			return Marketplace::FormatUrl(ChainId, ContractAddress, TEXT("offers"), InFormatString, {});
+		}
+
 		void GetAll(
 			const UObject* Outer,
 			const int32 Count,
@@ -582,10 +822,38 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
-			const FStringDelegate& SuccessDelegate,
+			const FGetAllDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("count"), Count, Count > 0);
+			Params.Set(TEXT("offeror"), Offeror, !Offeror.IsEmpty());
+			Params.Set(TEXT("start"), Start, Start >= 0);
+			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
+			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetAll::Content=%s"), *Content)
+				FString Error;
+				if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceOffer::FromJson(JsonArray))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void GetAllValid(
@@ -597,18 +865,97 @@ namespace ThirdwebEngine::Marketplace
 			const FString& TokenId,
 			const int64 Chain,
 			const FString& ContractAddress,
+			const FGetAllDelegate& SuccessDelegate,
+			const FStringDelegate& ErrorDelegate
+		)
+		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("count"), Count, Count > 0);
+			Params.Set(TEXT("offeror"), Offeror, !Offeror.IsEmpty());
+			Params.Set(TEXT("start"), Start, Start >= 0);
+			Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
+			Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all-valid")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetAllValid::Content=%s"), *Content)
+				FString Error;
+				if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceOffer::FromJson(JsonArray))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
+		}
+
+		void GetOffer(const UObject* Outer, const FString& OfferId, const int64 Chain, const FString& ContractAddress, const FGetOfferDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+		{
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
+
+			FThirdwebURLSearchParams Params;
+			Params.Set(TEXT("offerId"), OfferId, OfferId.IsNumeric() && !OfferId.StartsWith("-"));
+
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-offer")) + Params.ToString(true));
+
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetOffer::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceOffer::FromJson(JsonObject))
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
+		}
+
+		void GetTotalCount(
+			const UObject* Outer,
+			const int64 Chain,
+			const FString& ContractAddress,
 			const FStringDelegate& SuccessDelegate,
 			const FStringDelegate& ErrorDelegate
 		)
 		{
-		}
+			const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
 
-		void GetOffer(const UObject* Outer, const FString& OfferId, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
-		{
-		}
+			Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-total-count")));
 
-		void GetTotalCount(const UObject* Outer, const FStringDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
-		{
+			ThirdwebUtils::Internal::LogRequest(Request);
+			Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
+			{
+				CHECK_NETWORK
+				FString Content = Response->GetContentAsString();
+				TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetTotalCount::Content=%s"), *Content)
+				FString Error;
+				if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
+				{
+					EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsString())
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(ErrorDelegate, Error)
+				}
+			});
+			Request->ProcessRequest();
 		}
 
 		void MakeOffer(
