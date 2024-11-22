@@ -73,8 +73,8 @@ struct THIRDWEB_API FThirdwebAsset
 	static FThirdwebAsset FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 };
 
-USTRUCT()
-struct FThirdwebMarketplaceBaseAuction
+USTRUCT(BlueprintType)
+struct FThirdwebMarketplaceInternalBaseAuction
 {
 	GENERATED_BODY()
 
@@ -105,12 +105,12 @@ struct FThirdwebMarketplaceBaseAuction
 	UPROPERTY(BlueprintReadWrite, Category="Core")
 	FDateTime EndTimeInSeconds;
 	
-	static FThirdwebMarketplaceBaseAuction FromJson(const TSharedPtr<FJsonObject>& JsonObject);
-	static TArray<FThirdwebMarketplaceBaseAuction> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
+	static FThirdwebMarketplaceInternalBaseAuction FromJson(const TSharedPtr<FJsonObject>& JsonObject);
+	static TArray<FThirdwebMarketplaceInternalBaseAuction> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
 };
 
 USTRUCT(BlueprintType, DisplayName="Marketplace Listing")
-struct THIRDWEB_API FThirdwebMarketplaceListing : public FThirdwebMarketplaceBaseAuction
+struct THIRDWEB_API FThirdwebMarketplaceListing : public FThirdwebMarketplaceInternalBaseAuction
 {
 	GENERATED_BODY()
 	
@@ -128,7 +128,7 @@ struct THIRDWEB_API FThirdwebMarketplaceListing : public FThirdwebMarketplaceBas
 };
 
 USTRUCT(BlueprintType, DisplayName="Marketplace English Auction")
-struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketplaceBaseAuction
+struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketplaceInternalBaseAuction
 {
 	GENERATED_BODY()
 
@@ -153,7 +153,7 @@ struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketp
 };
 
 USTRUCT(BlueprintType, DisplayName="Marketplace Offer")
-struct THIRDWEB_API FThirdwebMarketplaceOffer : public FThirdwebMarketplaceBaseAuction
+struct THIRDWEB_API FThirdwebMarketplaceOffer : public FThirdwebMarketplaceInternalBaseAuction
 {
 	GENERATED_BODY()
 	

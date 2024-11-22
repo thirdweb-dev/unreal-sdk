@@ -96,9 +96,9 @@ FThirdwebAsset FThirdwebAsset::FromJson(const TSharedPtr<FJsonObject>& JsonObjec
 	return Asset;
 }
 
-FThirdwebMarketplaceBaseAuction FThirdwebMarketplaceBaseAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
+FThirdwebMarketplaceInternalBaseAuction FThirdwebMarketplaceInternalBaseAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
-	FThirdwebMarketplaceBaseAuction Base = {};
+	FThirdwebMarketplaceInternalBaseAuction Base = {};
 	if (JsonObject.IsValid())
 	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("assetContractAddress")))
@@ -144,9 +144,9 @@ FThirdwebMarketplaceBaseAuction FThirdwebMarketplaceBaseAuction::FromJson(const 
 	return Base;
 }
 
-TArray<FThirdwebMarketplaceBaseAuction> FThirdwebMarketplaceBaseAuction::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
+TArray<FThirdwebMarketplaceInternalBaseAuction> FThirdwebMarketplaceInternalBaseAuction::FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray)
 {
-	TArray<FThirdwebMarketplaceBaseAuction> Bases;
+	TArray<FThirdwebMarketplaceInternalBaseAuction> Bases;
 	for (const TSharedPtr<FJsonValue>& Value : JsonArray)
 	{
 		

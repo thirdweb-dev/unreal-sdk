@@ -4,30 +4,9 @@
 
 #include "GenericPlatform/GenericPlatformHttp.h"
 
-FThirdwebURLSearchParams::FThirdwebURLSearchParams(const FString& QueryString)
-{
-	if (!QueryString.IsEmpty())
-	{
-		ParseQueryString(QueryString);
-	}
-}
-
-FThirdwebURLSearchParams::FThirdwebURLSearchParams(const TMap<FString, TArray<FString>>& InParams)
-{
-	Params = InParams;
-}
-
-FThirdwebURLSearchParams::FThirdwebURLSearchParams(const TMap<FString, FString>& InParams)
-{
-	for (const TPair<FString, FString>& Pair : InParams)
-	{
-		Params.Emplace(Pair.Key, {Pair.Value});
-	}
-}
-
 void FThirdwebURLSearchParams::Append(const FString& Key, const FString& Value)
 {
-	Params.Emplace(Key, Value);
+	Params.FindOrAdd(Key).Add(Value);
 }
 
 FString FThirdwebURLSearchParams::Get(const FString& Key) const
@@ -107,4 +86,31 @@ FString FThirdwebURLSearchParams::DecodeURIComponent(const FString& Component)
 	FString Decoded = Component;
 	Decoded = FGenericPlatformHttp::UrlDecode(Decoded);
 	return Decoded.Replace(TEXT("%20"), TEXT("+"));
+}
+
+FThirdwebURLSearchParams FThirdwebURLSearchParams::Create(const FString& QueryString)
+{
+	FThirdwebURLSearchParams Params;
+	if (!QueryString.IsEmpty())
+	{
+		Params.ParseQueryString(QueryString);
+	}
+	return Params;
+}
+
+FThirdwebURLSearchParams FThirdwebURLSearchParams::Create(const TMap<FString, TArray<FString>>& InParams)
+{
+	FThirdwebURLSearchParams Params;
+	Params.Params = InParams;
+	return Params;
+}
+
+FThirdwebURLSearchParams FThirdwebURLSearchParams::Create(const TMap<FString, FString>& InParams)
+{
+	FThirdwebURLSearchParams Params;
+	for (const TPair<FString, FString>& Pair : InParams)
+	{
+		Params.Params.Emplace(Pair.Key, {Pair.Value});
+	}
+	return Params;
 }

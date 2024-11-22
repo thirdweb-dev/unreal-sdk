@@ -14,6 +14,8 @@ struct FInAppWalletHandle;
 struct FSmartWalletHandle;
 class FJsonValue;
 class IHttpRequest;
+class UTexture2D;
+class UTexture2DDynamic;
 enum class EThirdwebOAuthProvider : uint8;
 
 

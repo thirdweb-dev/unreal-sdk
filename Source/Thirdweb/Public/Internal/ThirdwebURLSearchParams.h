@@ -4,10 +4,7 @@
 
 struct FThirdwebURLSearchParams {
 
-	explicit FThirdwebURLSearchParams() {}
-	explicit FThirdwebURLSearchParams(const FString& QueryString = "");
-	explicit FThirdwebURLSearchParams(const TMap<FString, TArray<FString>>& InParams = {});
-	explicit FThirdwebURLSearchParams(const TMap<FString, FString>& InParams = {});
+	FThirdwebURLSearchParams() = default;
 	
 private:
 	TMap<FString, TArray<FString>> Params;
@@ -44,10 +41,10 @@ public:
 			SetIf(Condition, Key, Value);
 		} else if constexpr (std::is_same_v<T, int32>)
 		{
-			Set(Condition, Key, FString::FromInt(Value));
+			SetIf(Condition, Key, FString::FromInt(Value));
 		} else if constexpr (std::is_same_v<T, int64>)
 		{
-			Set(Condition, Key, FString::Printf(TEXT("%lld"), Value));
+			SetIf(Condition, Key, FString::Printf(TEXT("%lld"), Value));
 		} else
 		{
 			static_assert(std::is_same_v<T, FString> || std::is_same_v<T, int32> || std::is_same_v<T, int64>, "Unsupported type");
@@ -64,4 +61,9 @@ private:
 	void ParseQueryString(const FString& QueryString);
 	static FString EncodeURIComponent(const FString& Component);
 	static FString DecodeURIComponent(const FString& Component);
+
+public:
+	static FThirdwebURLSearchParams Create(const FString& QueryString = "");
+	static FThirdwebURLSearchParams Create(const TMap<FString, TArray<FString>>& InParams = {});
+	static FThirdwebURLSearchParams Create(const TMap<FString, FString>& InParams = {});
 };
