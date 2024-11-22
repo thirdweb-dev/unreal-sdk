@@ -102,7 +102,10 @@ namespace ThirdwebUtils
 		extern TArray<TSharedPtr<FJsonValue>> ToJsonArray(const FString& String);
 		extern FString ToString(const TSharedPtr<FJsonObject>& JsonObject);
 		extern FString AsString(const TSharedPtr<FJsonValue>& JsonValue);
+		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonValue>& JsonValue, FString& Error);
 		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error);
+		extern bool ParseEngineResponse(const FString& Content, TArray<TSharedPtr<FJsonValue>>& JsonArray, FString& Error);
+		extern FString ParseEngineError(const TSharedPtr<FJsonObject>& Error);
 
 		template <EJson JsonType>
 		bool IsNotNullField(const TSharedPtr<FJsonObject>& JsonObject, const FString FieldName)

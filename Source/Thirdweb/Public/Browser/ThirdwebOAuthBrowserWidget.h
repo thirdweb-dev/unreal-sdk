@@ -6,9 +6,7 @@
 #include "SWebBrowser.h"
 #endif
 #include "Components/Widget.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FSimpleStringDelegate, const FString&);

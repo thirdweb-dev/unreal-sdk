@@ -3,9 +3,7 @@
 #pragma once
 
 #include "ThirdwebCommon.h"
-
 #include "Engine/DeveloperSettings.h"
-
 #include "ThirdwebRuntimeSettings.generated.h"
 
 enum class EThirdwebOAuthBrowserBackend : uint8;

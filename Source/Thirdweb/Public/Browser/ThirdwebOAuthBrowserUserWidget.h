@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "Blueprint/UserWidget.h"
-
+#include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "ThirdwebOAuthBrowserUserWidget.generated.h"
 
 UCLASS(DisplayName="OAuth Browser")

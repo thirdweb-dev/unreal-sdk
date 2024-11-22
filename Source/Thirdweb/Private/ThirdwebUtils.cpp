@@ -566,28 +566,58 @@ namespace ThirdwebUtils
 			return TEXT("");
 		}
 
-		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error)
+		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonValue>& JsonValue, FString& Error)
 		{
 			if (TSharedPtr<FJsonObject> ContentJsonObject = ToJson(Content); ContentJsonObject.IsValid())
 			{
 				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("error")))
 				{
-					JsonObject = ContentJsonObject->GetObjectField(TEXT("error"));
-					Error = TEXT("Unknown Error");
-					if (JsonObject->HasTypedField<EJson::String>(TEXT("message")))
-					{
-						Error = JsonObject->GetStringField(TEXT("message"));
-					}
+					Error = ParseEngineError(ContentJsonObject->GetObjectField(TEXT("error")));
 					return false;
 				}
-				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("result")))
+				if (ContentJsonObject->HasField(TEXT("result")))
 				{
-					JsonObject = ContentJsonObject->GetObjectField(TEXT("result"));
-					return true;
+					JsonValue = ContentJsonObject->TryGetField(TEXT("result"));
+					if (JsonValue.IsValid())
+					{
+						return true;
+					}
+					Error = TEXT("Invalid Result Type");
+					return false;
 				}
 			}
 			Error = TEXT("Invalid Response");
 			return false;
+		}
+
+		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error)
+		{
+			if (TSharedPtr<FJsonValue> JsonValue; ParseEngineResponse(Content, JsonValue, Error))
+			{
+				JsonObject = JsonValue->AsObject();
+				return true;
+			}
+			return false;
+		}
+
+		bool ParseEngineResponse(const FString& Content, TArray<TSharedPtr<FJsonValue>>& JsonArray, FString& Error)
+		{
+			if (TSharedPtr<FJsonValue> JsonValue; ParseEngineResponse(Content, JsonValue, Error))
+			{
+				JsonArray = JsonValue->AsArray();
+				return true;
+			}
+			return false;
+		}
+
+		FString ParseEngineError(const TSharedPtr<FJsonObject>& Error)
+		{
+			FString Message = TEXT("Unknown Error");
+			if (Error->HasTypedField<EJson::String>(TEXT("message")))
+			{
+				Message = Error->GetStringField(TEXT("message"));
+			}
+			return Message;
 		}
 	}
 }
