@@ -96,6 +96,19 @@ FThirdwebAsset FThirdwebAsset::FromJson(const TSharedPtr<FJsonObject>& JsonObjec
 	return Asset;
 }
 
+void FThirdwebMarketplaceInternalBaseAuction::Load(const FThirdwebMarketplaceInternalBaseAuction& Base)
+{
+	AssetContractAddress = Base.AssetContractAddress;
+	TokenId = Base.TokenId;
+	CurrencyContractAddress = Base.CurrencyContractAddress;
+	Quantity = Base.Quantity;
+	Id = Base.Id;
+	Asset = Base.Asset;
+	Status = Base.Status;
+	StartTimeInSeconds = Base.StartTimeInSeconds;
+	EndTimeInSeconds = Base.EndTimeInSeconds;
+}
+
 FThirdwebMarketplaceInternalBaseAuction FThirdwebMarketplaceInternalBaseAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	FThirdwebMarketplaceInternalBaseAuction Base = {};
@@ -160,7 +173,9 @@ TArray<FThirdwebMarketplaceInternalBaseAuction> FThirdwebMarketplaceInternalBase
 
 FThirdwebMarketplaceListing FThirdwebMarketplaceListing::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
-	FThirdwebMarketplaceListing Listing = FThirdwebMarketplaceListing(Super::FromJson(JsonObject));
+	FThirdwebMarketplaceListing Listing;
+	Listing.Load(Super::FromJson(JsonObject));
+
 	if (JsonObject.IsValid())
 	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("pricePerToken")))
@@ -194,7 +209,9 @@ TArray<FThirdwebMarketplaceListing> FThirdwebMarketplaceListing::FromJson(const 
 
 FThirdwebMarketplaceEnglishAuction FThirdwebMarketplaceEnglishAuction::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
-	FThirdwebMarketplaceEnglishAuction Auction = FThirdwebMarketplaceEnglishAuction(Super::FromJson(JsonObject));
+	FThirdwebMarketplaceEnglishAuction Auction;
+	Auction.Load(Super::FromJson(JsonObject));
+	
 	if (JsonObject.IsValid())
 	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("minimumBidAmount")))
@@ -236,7 +253,9 @@ TArray<FThirdwebMarketplaceEnglishAuction> FThirdwebMarketplaceEnglishAuction::F
 
 FThirdwebMarketplaceOffer FThirdwebMarketplaceOffer::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
-	FThirdwebMarketplaceOffer Offer = FThirdwebMarketplaceOffer(Super::FromJson(JsonObject));
+	FThirdwebMarketplaceOffer Offer;
+	Offer.Load(Super::FromJson(JsonObject));
+	
 	if (JsonObject.IsValid())
 	{
 		if (JsonObject->HasTypedField<EJson::String>(TEXT("offerorAddress")))

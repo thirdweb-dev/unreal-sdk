@@ -107,6 +107,9 @@ struct FThirdwebMarketplaceInternalBaseAuction
 	
 	static FThirdwebMarketplaceInternalBaseAuction FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 	static TArray<FThirdwebMarketplaceInternalBaseAuction> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
+
+protected:
+	void Load(const FThirdwebMarketplaceInternalBaseAuction& Base);
 };
 
 USTRUCT(BlueprintType, DisplayName="Marketplace Listing")
