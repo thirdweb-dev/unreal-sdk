@@ -827,9 +827,7 @@ void FInAppWalletHandle::GetLinkedAccounts(const FGetLinkedAccountsDelegate& Suc
 		if (Thirdweb::ecosystem_wallet_get_linked_accounts(ThisCopy.GetID()).AssignResult(Output))
 		{
 			TArray<FThirdwebLinkedAccount> LinkedAccounts;
-			TArray<TSharedPtr<FJsonValue>> JsonValueArray;
-			const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Output);
-			FJsonSerializer::Deserialize(Reader, JsonValueArray);
+			TArray<TSharedPtr<FJsonValue>> JsonValueArray = ThirdwebUtils::Json::ToJsonArray(Output);
 			for (int i = 0; i < JsonValueArray.Num(); i++)
 			{
 				if (JsonValueArray[i]->Type == EJson::Object)

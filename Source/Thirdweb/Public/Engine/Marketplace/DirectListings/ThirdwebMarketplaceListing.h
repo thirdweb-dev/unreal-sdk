@@ -8,7 +8,7 @@ class FJsonValue;
 enum class EThirdwebMarketplaceListingStatus : uint8;
 
 USTRUCT(BlueprintType)
-struct FThirdwebAssetCurrencyValue
+struct THIRDWEB_API FThirdwebAssetCurrencyValue
 {
 	GENERATED_BODY()
     
@@ -71,6 +71,49 @@ struct THIRDWEB_API FThirdwebAsset
 	TArray<FThirdwebAssetAttribute> Attributes;
 
 	static FThirdwebAsset FromJson(const TSharedPtr<FJsonObject>& JsonObject);
+};
+
+USTRUCT(BlueprintType, DisplayName="Marketplace Create Listing Request")
+struct THIRDWEB_API FThirdwebMarketplaceCreateListingRequest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString AssetContractAddress;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString TokenId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString CurrencyContractAddress;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString PricePerToken;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	bool bIsReservedListing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString Quantity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FDateTime StartTimestamp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FDateTime EndTimestamp;
+
+	TSharedPtr<FJsonObject> ToJson() const;
+};
+
+USTRUCT(BlueprintType, DisplayName="Marketplace Update Listing Request")
+struct THIRDWEB_API FThirdwebMarketplaceUpdateListingRequest : public FThirdwebMarketplaceCreateListingRequest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Listing")
+	FString ListingId;
+
+	TSharedPtr<FJsonObject> ToJson() const;
 };
 
 USTRUCT(BlueprintType)
@@ -149,7 +192,7 @@ struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketp
 	FDateTime TimeBufferInSeconds;
 
 	UPROPERTY(BlueprintReadWrite, Category="Auction")
-	int32 BidBufferBps;
+	int32 BidBufferBps = 0;
 	
 	static FThirdwebMarketplaceEnglishAuction FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 	static TArray<FThirdwebMarketplaceEnglishAuction> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);

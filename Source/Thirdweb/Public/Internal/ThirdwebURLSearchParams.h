@@ -2,10 +2,10 @@
 
 #pragma once
 
-struct FThirdwebURLSearchParams {
-
+struct FThirdwebURLSearchParams
+{
 	FThirdwebURLSearchParams() = default;
-	
+
 private:
 	TMap<FString, TArray<FString>> Params;
 
@@ -15,47 +15,59 @@ public:
 	TArray<FString> GetAll(const FString& Key) const;
 	bool Has(const FString& Key) const;
 
-	template<typename T = FString>
-	void Set(const FString& Key, const T& Value)
-	{
-		if constexpr (std::is_same_v<T, FString>)
-		{
-			SetIf(true, Key, Value);
-		} else if constexpr (std::is_same_v<T, int32>)
-		{
-			SetIf(true, Key, FString::FromInt(Value));
-		} else if constexpr (std::is_same_v<T, int64>)
-		{
-			SetIf(true, Key, FString::Printf(TEXT("%lld"), Value));
-		} else
-		{
-			static_assert(std::is_same_v<T, FString> || std::is_same_v<T, int32> || std::is_same_v<T, int64>, "Unsupported type");
-		}
-	}
-	
-	template<typename T = FString>
+	template <typename T = FString>
 	void Set(const FString& Key, const T& Value, const bool Condition)
 	{
 		if constexpr (std::is_same_v<T, FString>)
 		{
 			SetIf(Condition, Key, Value);
-		} else if constexpr (std::is_same_v<T, int32>)
+		}
+		else if constexpr (std::is_same_v<T, int32>)
 		{
 			SetIf(Condition, Key, FString::FromInt(Value));
-		} else if constexpr (std::is_same_v<T, int64>)
+		}
+		else if constexpr (std::is_same_v<T, int64>)
 		{
 			SetIf(Condition, Key, FString::Printf(TEXT("%lld"), Value));
-		} else
+		}
+		else if constexpr (std::is_same_v<T, bool>)
 		{
-			static_assert(std::is_same_v<T, FString> || std::is_same_v<T, int32> || std::is_same_v<T, int64>, "Unsupported type");
+			SetIf(Condition, Key, Value ? TEXT("true") : TEXT("false"));
+		}
+		else
+		{
+			static_assert(std::is_same_v<T, FString> || std::is_same_v<T, int32> || std::is_same_v<T, int64> || std::is_same_v<T, bool>, "Unsupported type");
 		}
 	}
-	
-	
-	
+
+	template <typename T = FString>
+	void Set(const FString& Key, const T& Value)
+	{
+		if constexpr (std::is_same_v<T, FString>)
+		{
+			SetIf(true, Key, Value);
+		}
+		else if constexpr (std::is_same_v<T, int32>)
+		{
+			SetIf(true, Key, FString::FromInt(Value));
+		}
+		else if constexpr (std::is_same_v<T, int64>)
+		{
+			SetIf(true, Key, FString::Printf(TEXT("%lld"), Value));
+		}
+		else if constexpr (std::is_same_v<T, bool>)
+		{
+			SetIf(true, Key, Value ? TEXT("true") : TEXT("false"));
+		}
+		else
+		{
+			static_assert(std::is_same_v<T, FString> || std::is_same_v<T, int32> || std::is_same_v<T, int64> || std::is_same_v<T, bool>, "Unsupported type");
+		}
+	}
+
 	void Delete(const FString& Key);
 	FString ToString(const bool bIncludeSeparator = false) const;
-	
+
 private:
 	void SetIf(const bool Condition, const FString& Key, const FString& Value);
 	void ParseQueryString(const FString& QueryString);
