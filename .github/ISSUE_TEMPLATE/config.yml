@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Thirdweb Official Support
+    url: https://thirdweb.com/support
+    about: You can alternatively get support through our traditional support system
+  - name: Discord Server
+    url: https://portal.thirdweb.com/unreal-engine
+    about: A great place for community support
+  - name: Plugin Documentation
+    url: https://portal.thirdweb.com/unreal-engine
+    about: Your go-to for plugin docs
