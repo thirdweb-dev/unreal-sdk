@@ -4,6 +4,8 @@
 
 #include "ThirdwebMarketplaceCreateEnglishAuctionRequest.generated.h"
 
+class FJsonObject;
+
 USTRUCT(BlueprintType, DisplayName="Marketplace Create English Auction Request")
 struct THIRDWEB_API FThirdwebMarketplaceCreateEnglishAuctionRequest
 {

@@ -136,7 +136,7 @@ bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
 {
 	const FString Url = Browser->GetUrl();
 
-	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
+	return  Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
 }
 
 FString UThirdwebOAuthBrowserUserWidget::GetUrl() const

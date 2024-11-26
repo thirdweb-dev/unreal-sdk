@@ -6,6 +6,8 @@
 
 #include "ThirdwebIPFSUploadResult.generated.h"
 
+class FJsonObject;
+
 USTRUCT(BlueprintType, DisplayName="IPFS Upload Result")
 struct THIRDWEB_API FThirdwebIPFSUploadResult
 {
