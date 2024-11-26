@@ -28,6 +28,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& TokenId,
 		const int64 Chain,
 		const FString& ContractAddress,
+		const bool bOnlyValid,
 		const FGetAllDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	)
@@ -41,7 +42,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
 		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
 
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("get-all"), Params));
+		Request->SetURL(FormatUrl(Chain, ContractAddress, bOnlyValid ? TEXT("get-all-valid") : TEXT("get-all"), Params));
 		ThirdwebUtils::Internal::LogRequest(Request);
 		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
 		{
@@ -61,50 +62,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		Request->ProcessRequest();
 	}
 
-	void GetAllValid(
-		const UObject* Outer,
-		const int32 Count,
-		const FString& Seller,
-		const int32 Start,
-		const FString& TokenContract,
-		const FString& TokenId,
-		const int64 Chain,
-		const FString& ContractAddress,
-		const FGetAllDelegate& SuccessDelegate,
-		const FStringDelegate& ErrorDelegate
-	)
-	{
-		const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-
-		FThirdwebURLSearchParams Params;
-		Params.Set(TEXT("count"), Count, Count > 0);
-		Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
-		Params.Set(TEXT("start"), Start, Start >= 0);
-		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
-		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
-
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("get-all-valid"), Params));
-
-		ThirdwebUtils::Internal::LogRequest(Request);
-		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
-		{
-			CHECK_NETWORK
-			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::GetAllValid::Content=%s"), *Content)
-			FString Error;
-			if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
-			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceListing::FromJson(JsonArray))
-			}
-			else
-			{
-				EXECUTE_IF_BOUND(ErrorDelegate, Error)
-			}
-		});
-		Request->ProcessRequest();
-	}
-
-	void GetListing(
+	void Get(
 		const UObject* Outer,
 		const FString& ListingId,
 		const int64 Chain,
@@ -125,7 +83,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::GetListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::Get::Content=%s"), *Content)
 			FString Error;
 			if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
 			{
@@ -139,7 +97,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		Request->ProcessRequest();
 	}
 
-	void IsBuyerApprovedForListing(
+	void IsBuyerApproved(
 		const UObject* Outer,
 		const FString& ListingId,
 		const FString& WalletAddress,
@@ -162,7 +120,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::IsBuyerApprovedForListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::IsBuyerApproved::Content=%s"), *Content)
 			FString Error;
 			if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
 			{
@@ -176,7 +134,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		Request->ProcessRequest();
 	}
 
-	void IsCurrencyApprovedForListing(
+	void IsCurrencyApproved(
 		const UObject* Outer,
 		const FString& ListingId,
 		const FString& CurrencyContractAddress,
@@ -199,7 +157,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::IsCurrencyApprovedForListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::IsCurrencyApproved::Content=%s"), *Content)
 			FString Error;
 			if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
 			{
@@ -238,7 +196,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		Request->ProcessRequest();
 	}
 
-	void CreateListing(
+	void Create(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -266,13 +224,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::CreateListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::Create::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void UpdateListing(
+	void Update(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -300,13 +258,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::UpdateListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::Update::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void BuyFromListing(
+	void Buy(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -340,13 +298,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::BuyFromListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::Buy::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void ApproveBuyerForReservedListing(
+	void ApproveReservedBuyer(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -378,13 +336,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::ApproveBuyerForReservedListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::ApproveReservedBuyer::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void RevokeBuyerApprovalForReservedListing(
+	void RevokeReservedBuyerApproval(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -416,13 +374,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::RevokeBuyerApprovalForReservedListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::RevokeReservedBuyerApproval::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void RevokeCurrencyApprovalForListing(
+	void RevokeReservedCurrencyApproval(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -454,13 +412,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::RevokeCurrencyApprovalForListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::RevokeReservedCurrencyApproval::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void CancelListing(
+	void Cancel(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -490,7 +448,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::CancelListing::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::DirectListings::Cancel::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();

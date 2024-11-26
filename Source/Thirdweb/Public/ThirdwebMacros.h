@@ -39,5 +39,5 @@
 
 DECLARE_DELEGATE_OneParam(FStringDelegate, const FString&);
 DECLARE_DELEGATE_OneParam(FStringArrayDelegate, const TArray<FString>&);
-DECLARE_DELEGATE_OneParam(FBoolDelegate, const bool&);
-DECLARE_DELEGATE_OneParam(FInt32Delegate, const int32&);
+DECLARE_DELEGATE_OneParam(FBoolDelegate, const bool);
+DECLARE_DELEGATE_OneParam(FInt32Delegate, const int32);

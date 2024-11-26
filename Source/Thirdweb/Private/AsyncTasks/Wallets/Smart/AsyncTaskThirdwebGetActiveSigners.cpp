@@ -3,7 +3,6 @@
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebGetActiveSigners.h"
 
 #include "Components/SlateWrapperTypes.h"
-
 #include "Containers/ThirdwebSigner.h"
 
 void UAsyncTaskThirdwebGetActiveSigners::Activate()
@@ -24,7 +23,7 @@ UAsyncTaskThirdwebGetActiveSigners* UAsyncTaskThirdwebGetActiveSigners::GetActiv
 	return Task;
 }
 
-void UAsyncTaskThirdwebGetActiveSigners::HandleIsDeployedResponse(const bool& bDeployed)
+void UAsyncTaskThirdwebGetActiveSigners::HandleIsDeployedResponse(const bool bDeployed)
 {
 	if (bDeployed)
 	{

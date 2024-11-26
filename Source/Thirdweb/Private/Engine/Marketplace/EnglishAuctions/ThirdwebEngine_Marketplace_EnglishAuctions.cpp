@@ -28,6 +28,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FString& TokenId,
 		const int64 Chain,
 		const FString& ContractAddress,
+		const bool bOnlyValid,
 		const FGetAllDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	)
@@ -41,7 +42,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
 		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
 
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all"), Params));
+		Request->SetURL(FormatUrl(Chain, ContractAddress,  bOnlyValid ? TEXT("/get-all-valid") : TEXT("/get-all"), Params));
 
 		ThirdwebUtils::Internal::LogRequest(Request);
 		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
@@ -62,50 +63,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		Request->ProcessRequest();
 	}
 
-	void GetAllValid(
-		const UObject* Outer,
-		const int32 Count,
-		const FString& Seller,
-		const int32 Start,
-		const FString& TokenContract,
-		const FString& TokenId,
-		const int64 Chain,
-		const FString& ContractAddress,
-		const FGetAllDelegate& SuccessDelegate,
-		const FStringDelegate& ErrorDelegate
-	)
-	{
-		const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-
-		FThirdwebURLSearchParams Params;
-		Params.Set(TEXT("count"), Count, Count > 0);
-		Params.Set(TEXT("seller"), Seller, !Seller.IsEmpty());
-		Params.Set(TEXT("start"), Start, Start >= 0);
-		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
-		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
-
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all-valid"), Params));
-
-		ThirdwebUtils::Internal::LogRequest(Request);
-		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
-		{
-			CHECK_NETWORK
-			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetAllValid::Content=%s"), *Content)
-			FString Error;
-			if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
-			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceEnglishAuction::FromJson(JsonArray))
-			}
-			else
-			{
-				EXECUTE_IF_BOUND(ErrorDelegate, Error)
-			}
-		});
-		Request->ProcessRequest();
-	}
-
-	void GetAuction(
+	void Get(
 		const UObject* Outer,
 		const FString& ListingId,
 		const int64 Chain,
@@ -180,7 +138,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FString& ListingId,
 		const int64 Chain,
 		const FString& ContractAddress,
-		const FGetCurrencyValueDelegate& SuccessDelegate,
+		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	)
 	{
@@ -198,9 +156,9 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 			FString Content = Response->GetContentAsString();
 			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::GetMinimumNextBid::Content=%s"), *Content)
 			FString Error;
-			if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+			if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
 			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebAssetCurrencyValue::FromJson(JsonObject))
+				EXECUTE_IF_BOUND(SuccessDelegate, JsonValue->AsString())
 			}
 			else
 			{
@@ -342,7 +300,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		Request->ProcessRequest();
 	}
 
-	void BuyoutAuction(
+	void Buyout(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -378,7 +336,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		Request->ProcessRequest();
 	}
 
-	void CancelAuction(
+	void Cancel(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -408,13 +366,13 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CancelAuction::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::Cancel::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void CreateAuction(
+	void Create(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -442,13 +400,13 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CancelAuction::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::Cancel::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void CloseAuctionForBidder(
+	void CloseForBidder(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -478,13 +436,13 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CloseAuctionForBidder::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CloseForBidder::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void CloseAuctionForSeller(
+	void CloseForSeller(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -514,7 +472,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CloseAuctionForSeller::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::CloseForSeller::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
@@ -556,7 +514,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		Request->ProcessRequest();
 	}
 
-	void MakeBid(
+	void Bid(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -588,7 +546,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::MakeBid::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::EnglishAuctions::Bid::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();

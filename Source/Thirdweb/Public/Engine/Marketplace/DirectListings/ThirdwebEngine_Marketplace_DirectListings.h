@@ -25,25 +25,13 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& TokenId,
 		const int64 Chain,
 		const FString& ContractAddress,
-		const FGetAllDelegate& SuccessDelegate,
-		const FStringDelegate& ErrorDelegate
-	);
-
-	extern THIRDWEB_API void GetAllValid(
-		const UObject* Outer,
-		const int32 Count,
-		const FString& Seller,
-		const int32 Start,
-		const FString& TokenContract,
-		const FString& TokenId,
-		const int64 Chain,
-		const FString& ContractAddress,
+		const bool bOnlyValid,
 		const FGetAllDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
 
 	DECLARE_DELEGATE_OneParam(FGetListingDelegate, const FThirdwebMarketplaceListing& /* Listing */)
-	extern THIRDWEB_API void GetListing(
+	extern THIRDWEB_API void Get(
 		const UObject* Outer,
 		const FString& ListingId,
 		const int64 Chain,
@@ -52,7 +40,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void IsBuyerApprovedForListing(
+	extern THIRDWEB_API void IsBuyerApproved(
 		const UObject* Outer,
 		const FString& ListingId,
 		const FString& WalletAddress,
@@ -62,7 +50,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void IsCurrencyApprovedForListing(
+	extern THIRDWEB_API void IsCurrencyApproved(
 		const UObject* Outer,
 		const FString& ListingId,
 		const FString& CurrencyContractAddress,
@@ -80,7 +68,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void CreateListing(
+	extern THIRDWEB_API void Create(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -93,7 +81,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void UpdateListing(
+	extern THIRDWEB_API void Update(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -106,7 +94,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void BuyFromListing(
+	extern THIRDWEB_API void Buy(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -121,7 +109,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void ApproveBuyerForReservedListing(
+	extern THIRDWEB_API void ApproveReservedBuyer(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -135,7 +123,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void RevokeBuyerApprovalForReservedListing(
+	extern THIRDWEB_API void RevokeReservedBuyerApproval(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -149,7 +137,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void RevokeCurrencyApprovalForListing(
+	extern THIRDWEB_API void RevokeReservedCurrencyApproval(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -162,7 +150,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void CancelListing(
+	extern THIRDWEB_API void Cancel(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,

@@ -29,6 +29,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		const FString& TokenId,
 		const int64 Chain,
 		const FString& ContractAddress,
+		const bool bOnlyValid,
 		const FGetAllDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	)
@@ -42,7 +43,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
 		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
 
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all"), Params));
+		Request->SetURL(FormatUrl(Chain, ContractAddress, bOnlyValid ? TEXT("/get-all-valid") : TEXT("/get-all"), Params));
 
 		ThirdwebUtils::Internal::LogRequest(Request);
 		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
@@ -63,50 +64,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		Request->ProcessRequest();
 	}
 
-	void GetAllValid(
-		const UObject* Outer,
-		const int32 Count,
-		const FString& Offeror,
-		const int32 Start,
-		const FString& TokenContract,
-		const FString& TokenId,
-		const int64 Chain,
-		const FString& ContractAddress,
-		const FGetAllDelegate& SuccessDelegate,
-		const FStringDelegate& ErrorDelegate
-	)
-	{
-		const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
-
-		FThirdwebURLSearchParams Params;
-		Params.Set(TEXT("count"), Count, Count > 0);
-		Params.Set(TEXT("offeror"), Offeror, !Offeror.IsEmpty());
-		Params.Set(TEXT("start"), Start, Start >= 0);
-		Params.Set(TEXT("tokenContract"), TokenContract, !TokenContract.IsEmpty());
-		Params.Set(TEXT("tokenId"), TokenContract, TokenId.IsNumeric() && !TokenId.StartsWith("-"));
-
-		Request->SetURL(FormatUrl(Chain, ContractAddress, TEXT("/get-all-valid"), Params));
-
-		ThirdwebUtils::Internal::LogRequest(Request);
-		Request->OnProcessRequestComplete().BindWeakLambda(Outer, [SuccessDelegate, ErrorDelegate](HTTP_LAMBDA_PARAMS)
-		{
-			CHECK_NETWORK
-			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetAllValid::Content=%s"), *Content)
-			FString Error;
-			if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
-			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceOffer::FromJson(JsonArray))
-			}
-			else
-			{
-				EXECUTE_IF_BOUND(ErrorDelegate, Error)
-			}
-		});
-		Request->ProcessRequest();
-	}
-
-	void GetOffer(const UObject* Outer, const FString& OfferId, const int64 Chain, const FString& ContractAddress, const FGetOfferDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
+	void Get(const UObject* Outer, const FString& OfferId, const int64 Chain, const FString& ContractAddress, const FGetOfferDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate)
 	{
 		const TSharedRef<IHttpRequest> Request = ThirdwebUtils::Internal::CreateEngineRequest();
 
@@ -120,7 +78,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::GetOffer::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::Get::Content=%s"), *Content)
 			FString Error;
 			if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
 			{
@@ -165,7 +123,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		Request->ProcessRequest();
 	}
 
-	void MakeOffer(
+	void Offer(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -193,13 +151,13 @@ namespace ThirdwebEngine::Marketplace::Offers
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::MakeOffer::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::Offer::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void CancelOffer(
+	void Cancel(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -229,13 +187,13 @@ namespace ThirdwebEngine::Marketplace::Offers
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::CancelOffer::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::Cancel::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();
 	}
 
-	void AcceptOffer(
+	void Accept(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -264,7 +222,7 @@ namespace ThirdwebEngine::Marketplace::Offers
 		{
 			CHECK_NETWORK
 			FString Content = Response->GetContentAsString();
-			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::AcceptOffer::Content=%s"), *Content)
+			TW_LOG(Verbose, TEXT("ThirdwebEngine::Marketplace::Offers::Accept::Content=%s"), *Content)
 			HANDLE_QUEUE_ID_RESPONSE
 		});
 		Request->ProcessRequest();

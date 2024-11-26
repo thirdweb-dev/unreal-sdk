@@ -4,26 +4,52 @@
 
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"
+#include "Engine/Marketplace/ThirdwebMarketplace.h"
 
-UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll* UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::GetAllDirectListings(
+UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll* UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::GetAll(
 	UObject* WorldContextObject,
+	const int64 ChainId,
+	const FString& Contract,
+	const bool bOnlyValid,
 	const int32 Count,
-	const FString& Seller,
 	const int32 Start,
-	const FString& TokenContract,
-	const FString& TokenId,
-	const int64 Chain,
-	const FString& ContractAddress
+	const FString& Seller,
+	const FString& TokenAddress,
+	const FString& TokenId
 )
 {
 	NEW_TASK
 	Task->Count = Count;
+	Task->bOnlyValid = bOnlyValid;
 	Task->Start = Start;
 	Task->Seller = Seller;
-	Task->TokenContract = TokenContract;
+	Task->TokenContract = TokenAddress;
 	Task->TokenId = TokenId;
-	Task->Chain = Chain;
-	Task->ContractAddress = ContractAddress;
+	Task->Chain = ChainId;
+	Task->MarketplaceContract = Contract;
+	RR_TASK
+}
+
+UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll* UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::MarketplaceGetAll(
+	UObject* WorldContextObject,
+	const UThirdwebMarketplace* Marketplace,
+	const bool bOnlyValid,
+	const int32 Count,
+	const int32 Start,
+	const FString& Seller,
+	const FString& TokenAddress,
+	const FString& TokenId
+)
+{
+	NEW_MARKETPLACE_TASK
+	Task->Count = Count;
+	Task->bOnlyValid = bOnlyValid;
+	Task->Start = Start;
+	Task->Seller = Seller;
+	Task->TokenContract = TokenAddress;
+	Task->TokenId = TokenId;
+	Task->Chain = Marketplace->GetChainId();
+	Task->MarketplaceContract = Marketplace->GetContractAddress();
 	RR_TASK
 }
 
@@ -49,7 +75,8 @@ void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::Activate()
 		TokenContract,
 		TokenId,
 		Chain,
-		ContractAddress,
+		MarketplaceContract,
+		bOnlyValid,
 		BIND_UOBJECT_DELEGATE(ThirdwebEngine::Marketplace::DirectListings::FGetAllDelegate, HandleResponse),
 		BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed)
 	);

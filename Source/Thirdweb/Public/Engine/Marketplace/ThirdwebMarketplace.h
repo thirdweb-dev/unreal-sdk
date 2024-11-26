@@ -5,20 +5,22 @@
 #include "UObject/Object.h"
 #include "ThirdwebMarketplace.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UThirdwebMarketplace : public UObject
 {
 	GENERATED_BODY()
-
-public:
-
-	int64 GetChainId() const { return ChainId; }
 	
 protected:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Details")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn), Category="Details")
 	FString ContractAddress;
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="Chain ID", Category="Details")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn), DisplayName="Chain ID", Category="Details")
 	int64 ChainId;
+
+public:
+	UFUNCTION(BlueprintPure, DisplayName="Get Chain ID", Category="Thirdweb|Marketplace|Details")
+	int64 GetChainId() const { return ChainId; }
 	
+	UFUNCTION(BlueprintPure, DisplayName="Get Contract Address", Category="Thirdweb|Marketplace|Details")
+	FString GetContractAddress() const { return ContractAddress; }
 };

@@ -25,25 +25,13 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FString& TokenId,
 		const int64 Chain,
 		const FString& ContractAddress,
-		const FGetAllDelegate& SuccessDelegate,
-		const FStringDelegate& ErrorDelegate
-	);
-
-	extern THIRDWEB_API void GetAllValid(
-		const UObject* Outer,
-		const int32 Count,
-		const FString& Seller,
-		const int32 Start,
-		const FString& TokenContract,
-		const FString& TokenId,
-		const int64 Chain,
-		const FString& ContractAddress,
+		const bool bOnlyValid,
 		const FGetAllDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
 
 	DECLARE_DELEGATE_OneParam(FGetAuctionDelegate, const FThirdwebMarketplaceEnglishAuction& /* Listing */)
-	extern THIRDWEB_API void GetAuction(
+	extern THIRDWEB_API void Get(
 		const UObject* Outer,
 		const FString& ListingId,
 		const int64 Chain,
@@ -67,7 +55,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FString& ListingId,
 		const int64 Chain,
 		const FString& ContractAddress,
-		const FGetCurrencyValueDelegate& SuccessDelegate,
+		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
 
@@ -108,7 +96,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& ErrorDelegate
 	);
 
-	extern THIRDWEB_API void BuyoutAuction(
+	extern THIRDWEB_API void Buyout(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -120,7 +108,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void CancelAuction(
+	extern THIRDWEB_API void Cancel(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -132,7 +120,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void CreateAuction(
+	extern THIRDWEB_API void Create(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -144,7 +132,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void CloseAuctionForBidder(
+	extern THIRDWEB_API void CloseForBidder(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -156,7 +144,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void CloseAuctionForSeller(
+	extern THIRDWEB_API void CloseForSeller(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,
@@ -180,7 +168,7 @@ namespace ThirdwebEngine::Marketplace::EnglishAuctions
 		const FStringDelegate& SuccessDelegate,
 		const FStringDelegate& ErrorDelegate
 	);
-	extern THIRDWEB_API void MakeBid(
+	extern THIRDWEB_API void Bid(
 		const UObject* Outer,
 		const int64 Chain,
 		const FString& ContractAddress,

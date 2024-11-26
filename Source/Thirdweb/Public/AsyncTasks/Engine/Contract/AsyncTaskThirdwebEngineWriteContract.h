@@ -14,7 +14,7 @@ class THIRDWEB_API UAsyncTaskThirdwebEngineWriteContract : public UAsyncTaskThir
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="IdempotencyKey,FactoryAddress,TxOverrides,Abi,bSimulateTx", AutoCreateRefTerm="Args,SmartWallet,TxOverrides"), Category="Thirdweb|Engine")
+	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="IdempotencyKey,FactoryAddress,TxOverrides,Abi,bSimulateTx", AutoCreateRefTerm="Args,SmartWallet,TxOverrides"), Category="Thirdweb|Engine|Contract")
 	static UAsyncTaskThirdwebEngineWriteContract* WriteContract(UObject* WorldContextObject,
 	                                                            const int64 ChainId,
 	                                                            const FString& ContractAddress,

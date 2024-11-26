@@ -220,8 +220,7 @@ USTRUCT(BlueprintType, DisplayName="Marketplace Bid")
 struct THIRDWEB_API FThirdwebMarketplaceBid
 {
 	GENERATED_BODY()
-
-		
+	
 	UPROPERTY(BlueprintReadWrite, Category="Bid")
 	FString AuctionId;
 	

@@ -13,7 +13,7 @@ class THIRDWEB_API UAsyncTaskThirdwebEngineGetTransactionReceipt : public UAsync
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Engine")
+	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Engine|Transaction")
 	static UAsyncTaskThirdwebEngineGetTransactionReceipt* GetTransactionReceipt(UObject* WorldContextObject, const FString& TxHash, const int64 ChainID);
 
 	virtual void Activate() override;
