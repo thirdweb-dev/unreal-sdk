@@ -1,8 +1,18 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/Wallets/InApp/SignIn/AsyncTaskThirdwebSignIn.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignIn.h"
 
 #include "Components/SlateWrapperTypes.h"
+
+UAsyncTaskThirdwebSignIn* UAsyncTaskThirdwebSignIn::SignIn(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& Input, const FString& Signature)
+{
+	NEW_TASK
+	Task->InAppWallet = Wallet;
+	Task->AuthInput = Input;
+	Task->SignatureInput = Signature;
+	UE_LOG(LogTemp, Display, TEXT("UAsyncTaskThirdwebSignIn::Variables set"));
+	RR_TASK
+}
 
 void UAsyncTaskThirdwebSignIn::Activate()
 {
@@ -22,4 +32,41 @@ void UAsyncTaskThirdwebSignIn::Activate()
 	                                                                     BIND_UOBJECT_DELEGATE(FStringDelegate, HandleFailed));
 	default: return HandleFailed(TEXT("Invalid Wallet"));
 	}
+}
+
+void UAsyncTaskThirdwebSignIn::HandleResponse()
+{
+	if (IsInGameThread())
+	{
+		Success.Broadcast(TEXT(""));
+		return SetReadyToDestroy();
+	}
+
+	// Retry on the GameThread.
+	TWeakObjectPtr<UAsyncTaskThirdwebSignIn> WeakThis = this;
+	FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis]()
+	{
+		if (WeakThis.IsValid())
+		{
+			WeakThis->HandleResponse();
+		}
+	}, TStatId(), nullptr, ENamedThreads::GameThread);
+}
+
+void UAsyncTaskThirdwebSignIn::HandleFailed(const FString& Error)
+{
+	if (IsInGameThread())
+	{
+		Failed.Broadcast(Error);
+		return SetReadyToDestroy();
+	}
+
+	TWeakObjectPtr<UAsyncTaskThirdwebSignIn> WeakThis = this;
+	FFunctionGraphTask::CreateAndDispatchWhenReady([WeakThis, Error]()
+	{
+		if (WeakThis.IsValid())
+		{
+			WeakThis->HandleFailed(Error);
+		}
+	}, TStatId(), nullptr, ENamedThreads::GameThread);
 }

@@ -2,7 +2,7 @@
 
 #include "K2Node/K2Node_ThirdwebSignIn.h"
 
-#include "AsyncTasks/Wallets/InApp/SignIn/AsyncTaskThirdwebSignIn.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignIn.h"
 
 namespace TwPins
 {
