@@ -34,6 +34,14 @@ protected:
 	/** Stores the bundle identifier. */
 	UPROPERTY(Config, EditAnywhere, DisplayName="Bundle ID", Category=Global)
 	FString BundleId;
+
+	/** Edit Condition for overriding the final page shown after auth is complete */
+	UPROPERTY(Config, EditAnywhere, Category=Wallets)
+	bool bOverrideExternalAuthRedirectUri;
+	
+	/** Custom URI shown after external auth is complete */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom External Auth Redirect URI", Category=Wallets)
+	FString CustomExternalAuthRedirectUri;
 	
 	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
 	UPROPERTY(Config, EditAnywhere, Category="Wallets|InApp")
@@ -60,7 +68,7 @@ protected:
 	FString EngineAccessToken;
 
 	/** Edit Condition for overriding Custom Application Schema */
-	UPROPERTY(Config, EditAnywhere, Category=Engine)
+	UPROPERTY(Config, EditAnywhere, DisplayName="Override App URI", Category=Engine)
 	bool bOverrideAppUri;
 	
 	/** Custom Application URI for oauth redirects. default is bundleid://{bundleId} */
@@ -82,7 +90,7 @@ private:
 	static const TArray<EThirdwebOAuthProvider> ExternalOnlyProviders;
 	
 public:
-	UFUNCTION(CallInEditor, Category=Encryption)
+	UFUNCTION(CallInEditor, Category="Wallets|InApp")
 	void GenerateEncryptionKey();
 
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
@@ -92,6 +100,10 @@ public:
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings", meta=(ReturnDisplayName="Signer"))
 	static FString GetEngineSigner();
 
+	/** Static accessor to get EncryptionKey */
+	UFUNCTION(BlueprintPure, DisplayName="Get External Auth Redirect URI", Category="Thirdweb|Settings")
+	static FString GetExternalAuthRedirectUri();
+	
 	/** Static accessor to get EncryptionKey */
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
 	static FString GetEncryptionKey();
@@ -133,4 +145,7 @@ public:
 	/** Convenience Getter */
 	UFUNCTION(BlueprintPure, DisplayName="Get Thirdweb Runtime Settings", meta=(ReturnDisplayName="Settings"), Category="Thirdweb|Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
+
+private:
+	static const FString DefaultExternalAuthRedirectUri;
 };

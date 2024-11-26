@@ -20,9 +20,13 @@ const TArray<EThirdwebOAuthProvider> UThirdwebRuntimeSettings::ExternalOnlyProvi
 	EThirdwebOAuthProvider::Telegram,
 };
 
+const FString UThirdwebRuntimeSettings::DefaultExternalAuthRedirectUri = TEXT("https://static.thirdweb.com/auth/complete");
+
 UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 {
 	bSendAnalytics = true;
+	bOverrideExternalAuthRedirectUri = false;
+	CustomExternalAuthRedirectUri = DefaultExternalAuthRedirectUri;
 	bOverrideOAuthBrowserProviderBackends = false;
 	bOverrideAppUri = false;
 	for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders) OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
@@ -153,6 +157,20 @@ FString UThirdwebRuntimeSettings::GetEngineSigner()
 	}
 	return TEXT("");
 }
+
+FString UThirdwebRuntimeSettings::GetExternalAuthRedirectUri()
+{
+	if (const UThirdwebRuntimeSettings* Settings = Get())
+	{
+		if (Settings->bOverrideExternalAuthRedirectUri && !Settings->CustomExternalAuthRedirectUri.IsEmpty())
+		{
+			return Settings->CustomExternalAuthRedirectUri;
+		} 
+	}
+	return DefaultExternalAuthRedirectUri;
+}
+
+
 
 FString UThirdwebRuntimeSettings::GetEncryptionKey()
 {

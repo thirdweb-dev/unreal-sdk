@@ -21,7 +21,6 @@ public:
 	UThirdwebOAuthExternalBrowser();
 	
 	void Authenticate(const FString& Link);
-	void SignInWithEthereum();
 	
 	/** FTickableGameObject implementation */
 	virtual void Tick(float DeltaTime) override;
@@ -29,8 +28,7 @@ public:
 	virtual void BeginDestroy() override;
 	
 private:
-	bool OAuthCallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
-	bool SiweCallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
+	bool CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
 	void HandleSuccess();
 	void HandleError(const FString& Error);
 

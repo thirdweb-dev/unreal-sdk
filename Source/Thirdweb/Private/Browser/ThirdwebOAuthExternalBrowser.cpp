@@ -6,6 +6,7 @@
 #include "HttpServerModule.h"
 #include "IHttpRouter.h"
 #include "ThirdwebLog.h"
+#include "ThirdwebRuntimeSettings.h"
 #include "Delegates/DelegateSignatureImpl.inl"
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "HAL/Event.h"
@@ -20,6 +21,7 @@ UThirdwebOAuthExternalBrowser::UThirdwebOAuthExternalBrowser()
 
 void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 {
+	FString Url = Link;
 	EModuleLoadResult ModuleResult;
 	FModuleManager::Get().LoadModuleWithFailureReason(FName(TEXT("HTTPServer")), ModuleResult);
 	if (ModuleResult != EModuleLoadResult::Success)
@@ -40,12 +42,12 @@ void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 	{
 		if (WeakThis.IsValid())
 		{
-			return WeakThis->OAuthCallbackRequestHandler(Request, OnComplete);
+			return WeakThis->CallbackRequestHandler(Request, OnComplete);
 		}
 		return false;
 	};
 #else
-	FHttpRequestHandler Handler = FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::OAuthCallbackRequestHandler);
+	FHttpRequestHandler Handler = FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::CallbackRequestHandler);
 #endif
 	
 	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET, Handler);
@@ -60,60 +62,14 @@ void UThirdwebOAuthExternalBrowser::Authenticate(const FString& Link)
 	FHttpServerModule::Get().StartAllListeners();
 	TW_LOG(VeryVerbose, TEXT("OAuth HTTP Server started and listening on port 8789"));
 
+	bIsSiwe = Url.ToUpper().TrimStartAndEnd().Equals(TEXT("SIWE"));
+	if (bIsSiwe)
+	{
+		Url = FString::Printf(TEXT("http://static.thirdweb.com/auth/siwe?redirectUrl=%s"), *FGenericPlatformHttp::UrlEncode(TEXT("http://localhost:8789/callback")));
+	}
 	// Open the browser with the login URL
 	FPlatformProcess::LaunchURL(*Link, nullptr, nullptr);
 	TW_LOG(Verbose, TEXT("Browser opened with URL: %s"), *Link);
-	State = AuthPending;
-}
-
-void UThirdwebOAuthExternalBrowser::SignInWithEthereum()
-{
-	EModuleLoadResult ModuleResult;
-	FModuleManager::Get().LoadModuleWithFailureReason(FName(TEXT("HTTPServer")), ModuleResult);
-	if (ModuleResult != EModuleLoadResult::Success)
-	{
-		return HandleError(TEXT("Failed to load HTTPServer"));
-	}
-
-	Router = FHttpServerModule::Get().GetHttpRouter(8789, true);
-	if (!Router.IsValid())
-	{
-		return HandleError(TEXT("Failed to get HTTP Router"));
-	}
-	
-	AuthEvent = FPlatformProcess::GetSynchEventFromPool(false);
-
-#if UE_VERSION_OLDER_THAN(5, 4, 0)
-	FHttpRequestHandler Handler = [WeakThis = MakeWeakObjectPtr(this)](const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
-	{
-		if (WeakThis.IsValid())
-		{
-			return WeakThis->SiweCallbackRequestHandler(Request, OnComplete);
-		}
-		return false;
-	};
-#else
-	FHttpRequestHandler Handler = FHttpRequestHandler::CreateUObject(this, &UThirdwebOAuthExternalBrowser::SiweCallbackRequestHandler);
-#endif
-	
-	RouteHandle = Router->BindRoute(FHttpPath(TEXT("/callback")), EHttpServerRequestVerbs::VERB_GET, Handler);
-
-	if (!RouteHandle.IsValid())
-	{
-		FPlatformProcess::ReturnSynchEventToPool(AuthEvent);
-		return HandleError(TEXT("Failed to bind route"));
-	}
-
-	// Start the HTTP server
-	FHttpServerModule::Get().StartAllListeners();
-	TW_LOG(VeryVerbose, TEXT("OAuth HTTP Server started and listening on port 8789"));
-	
-	bIsSiwe = true;
-	
-	// Open the browser with the login URL
-	const FString RedirectUrl = FGenericPlatformHttp::UrlEncode(TEXT("http://localhost:8789/callback"));
-	FPlatformProcess::LaunchURL(*FString::Printf(TEXT("http://static.thirdweb.com/auth/siwe?redirectUrl=%s"), *RedirectUrl), nullptr, nullptr);
-	TW_LOG(Verbose, TEXT("Browser opened with URL: %s"), TEXT("http://localhost:8789"));
 	State = AuthPending;
 }
 
@@ -163,36 +119,15 @@ void UThirdwebOAuthExternalBrowser::BeginDestroy()
 	UObject::BeginDestroy();
 }
 
-bool UThirdwebOAuthExternalBrowser::OAuthCallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
+bool UThirdwebOAuthExternalBrowser::CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
 {
 	AuthResult = Request.QueryParams.FindRef(TEXT("authResult"));
-	if (AuthResult.IsEmpty())
-	{
-		FString Error = TEXT("AuthResult query parameter is missing.");
-		TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(Error, TEXT("text/plain"));
-		OnComplete(MoveTemp(Response));
-		HandleError(Error);
-	}
-	else
-	{
-		State = AuthComplete;
-		AuthEvent->Trigger();
-		TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(
-			TEXT("<script>window.location.replace('https://static.thirdweb.com/auth/complete')</script>"), TEXT("text/html")
-		);
-		OnComplete(MoveTemp(Response));
-	}
-	return true;
-}
-
-bool UThirdwebOAuthExternalBrowser::SiweCallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
-{
 	Signature = Request.QueryParams.FindRef(TEXT("signature"));
 	Payload = FGenericPlatformHttp::UrlDecode(Request.QueryParams.FindRef(TEXT("payload")));
-	UE_LOG(LogTemp, VeryVerbose, TEXT("UThirdwebOAuthExternalBrowser::SiweCallbackRequestHandler::Signature=%s|Payload=%s"), *Signature, *Payload)
-	if (Signature.IsEmpty() || Payload.IsEmpty())
+	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthExternalBrowser::CallbackRequestHandler::Signature=%s|Payload=%s|AuthResult=%s"), *Signature, *Payload, *AuthResult)
+	if (bIsSiwe ? Signature.IsEmpty() || Payload.IsEmpty() : AuthResult.IsEmpty())
 	{
-		FString Error = TEXT("Signature/Payload query parameter is missing.");
+		FString Error = FString::Printf(TEXT("%s query parameter is missing"), bIsSiwe ? TEXT("Signature/Payload") : TEXT("AuthResult"));
 		TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(Error, TEXT("text/plain"));
 		OnComplete(MoveTemp(Response));
 		HandleError(Error);
@@ -202,7 +137,8 @@ bool UThirdwebOAuthExternalBrowser::SiweCallbackRequestHandler(const FHttpServer
 		State = AuthComplete;
 		AuthEvent->Trigger();
 		TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(
-			TEXT("<script>window.location.replace('https://static.thirdweb.com/auth/complete')</script>"), TEXT("text/html")
+			FString::Printf(TEXT("<script>window.location.replace('%s')</script>"), *UThirdwebRuntimeSettings::GetExternalAuthRedirectUri()),
+			TEXT("text/html")
 		);
 		OnComplete(MoveTemp(Response));
 	}
@@ -236,3 +172,6 @@ void UThirdwebOAuthExternalBrowser::HandleError(const FString& Error)
 		OnError.Execute(Error);
 	}
 }
+
+
+

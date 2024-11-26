@@ -93,11 +93,11 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 		return HandleError(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet Type::%s"), Wallet.GetSourceString());
-	if (Wallet.GetSource() == FInAppWalletHandle::Siwe)
+	TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet Type::%s"), Wallet.GetSourceString());
+	if (Wallet == FInAppWalletHandle::Siwe)
 	{
-		TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against SIWE"));
-		ExternalBrowser->SignInWithEthereum();
+		TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against SIWE"));
+		ExternalBrowser->Authenticate(TEXT("SIWE"));
 		return;
 	}
 	
@@ -107,7 +107,7 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 	{
 		return HandleError(Error);
 	}
-	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
+	TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
 
 	// Check Browser Type
 	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))

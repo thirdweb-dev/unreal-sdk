@@ -351,6 +351,36 @@ public:
 	 */
 	EThirdwebOAuthProvider GetOAuthProvider() const { return Provider; }
 
+	bool operator==(const FInAppWalletHandle& Other) const
+	{
+		return GetID() == Other.GetID();
+	}
+
+	bool operator!=(const FInAppWalletHandle& Other) const
+	{
+		return GetID() != Other.GetID();
+	}
+	
+	bool operator==(const EInAppSource& InSource) const
+	{
+		return GetSource() == InSource;
+	}
+
+	bool operator!=(const EInAppSource& InSource) const
+	{
+		return GetSource() != InSource;
+	}
+
+	bool operator==(const EThirdwebOAuthProvider& InProvider) const
+	{
+		return GetOAuthProvider() == InProvider;
+	}
+
+	bool operator!=(const EThirdwebOAuthProvider& InProvider) const
+	{
+		return GetOAuthProvider() != InProvider;
+	}
+	
 private:
 	// The current Handle type
 	EInAppSource Source = InvalidSource;
