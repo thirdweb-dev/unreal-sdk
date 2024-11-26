@@ -146,6 +146,10 @@ public:
 	UFUNCTION(BlueprintPure, DisplayName="Get Thirdweb Runtime Settings", meta=(ReturnDisplayName="Settings"), Category="Thirdweb|Settings")
 	static const UThirdwebRuntimeSettings* Get() { return GetDefault<UThirdwebRuntimeSettings>(); }
 
+protected:
+	// UFUNCTION(CallInEditor, Category="Wallets|Smart")
+	void FetchEngineSigners();
+	
 private:
 	static const FString DefaultExternalAuthRedirectUri;
 };

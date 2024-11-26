@@ -4,6 +4,7 @@
 
 struct FThirdwebURLSearchParams;
 
+#include "Engine/BackendWallet/ThirdwebEngine_BackendWallet.h"
 #include "Engine/Contract/ThirdwebEngine_Contract.h"
 #include "Engine/Marketplace/ThirdwebEngine_Marketplace.h"
 #include "Engine/Transaction/ThirdwebEngine_Transaction.h"

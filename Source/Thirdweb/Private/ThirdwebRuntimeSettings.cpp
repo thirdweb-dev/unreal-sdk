@@ -5,9 +5,9 @@
 #include "ThirdwebCommon.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebUtils.h"
-
+#include "Engine/ThirdwebEngine.h"
+#include "Engine/BackendWallet/ThirdwebBackendWallet.h"
 #include "HAL/FileManager.h"
-
 #include "Misc/Paths.h"
 
 // These Providers do not work with an embedded browser for various reasons:
@@ -102,7 +102,7 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 			bChanged = true;
 		}
 	}
-	
+
 	if (bChanged && MarkPackageDirty())
 	{
 		PostEditChange();
@@ -165,12 +165,10 @@ FString UThirdwebRuntimeSettings::GetExternalAuthRedirectUri()
 		if (Settings->bOverrideExternalAuthRedirectUri && !Settings->CustomExternalAuthRedirectUri.IsEmpty())
 		{
 			return Settings->CustomExternalAuthRedirectUri;
-		} 
+		}
 	}
 	return DefaultExternalAuthRedirectUri;
 }
-
-
 
 FString UThirdwebRuntimeSettings::GetEncryptionKey()
 {
@@ -288,4 +286,29 @@ FString UThirdwebRuntimeSettings::GetAppUri()
 		return FString::Printf(TEXT("%s://%s"), *GetBundleId(), *GetClientId());
 	}
 	return TEXT("");
+}
+
+void UThirdwebRuntimeSettings::FetchEngineSigners()
+{
+#if WITH_EDITOR
+	ThirdwebEngine::BackendWallet::FGetAllDelegate SuccessDelegate = ThirdwebEngine::BackendWallet::FGetAllDelegate::CreateWeakLambda(this, [this](const TArray<FThirdwebBackendWallet>& BackendWallets)
+	{
+		TArray<FString> Addresses;
+		for (const FThirdwebBackendWallet& BackendWallet : BackendWallets)
+		{
+			Addresses.Emplace(BackendWallet.Address);
+		}
+
+		EngineSigners = Addresses;
+		if (MarkPackageDirty())
+		{
+			PostEditChange();
+		}
+	});
+	FStringDelegate ErrorDelegate = FStringDelegate::CreateWeakLambda(this, [](const FString& ErrorMessage)
+	{
+		TW_LOG(Error, TEXT("UThirdwebRuntimeSettings::FetchEngineSigners::Failed to fetch engine signers::Error=%s"), *ErrorMessage);
+	});
+	ThirdwebEngine::BackendWallet::GetAll(this, 1, 10, SuccessDelegate, ErrorDelegate);
+#endif
 }
