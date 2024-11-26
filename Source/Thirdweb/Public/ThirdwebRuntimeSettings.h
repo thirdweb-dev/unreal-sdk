@@ -35,18 +35,6 @@ protected:
 	UPROPERTY(Config, EditAnywhere, DisplayName="Bundle ID", Category=Global)
 	FString BundleId;
 
-	/** Edit Condition for overriding the final page shown after auth is complete */
-	UPROPERTY(Config, EditAnywhere, Category=Wallets)
-	bool bOverrideExternalAuthRedirectUri;
-	
-	/** Custom URI shown after external auth is complete */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Custom External Auth Redirect URI", Category=Wallets)
-	FString CustomExternalAuthRedirectUri;
-	
-	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
-	UPROPERTY(Config, EditAnywhere, Category="Wallets|InApp")
-	FString EncryptionKey;
-
 	/** Ecosystem Wallet Identifier tied to your Thirdweb Ecosystem account. Only relevant when using Ecosystem Wallets. e.g. `ecosystem.my-cool-game` */
 	UPROPERTY(Config, EditAnywhere, DisplayName="Ecosystem ID", Category="Wallets|Ecosystem")
 	FString EcosystemId;
@@ -54,6 +42,10 @@ protected:
 	/** Ecosystem Wallet Partner ID - Needed if Allowlist-based Ecosystem */
 	UPROPERTY(Config, EditAnywhere, DisplayName="Partner ID", Category="Wallets|Ecosystem")
 	FString PartnerId;
+
+	/** Required if using custom auth methods via standard InApp wallets (Non-Ecosystem) */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Encrypton Key (Legacy)", Category="Wallets|Ecosystem|Advanced")
+	FString EncryptionKey;
 	
 	/** Optional array of engine signers stored globally for convenience */
 	UPROPERTY(Config, EditAnywhere, Category="Wallets|Smart")
@@ -66,31 +58,39 @@ protected:
 	/** Access Token for Engine Authorization */
 	UPROPERTY(Config, EditAnywhere, DisplayName="Access Token", Category=Engine)
 	FString EngineAccessToken;
-
-	/** Edit Condition for overriding Custom Application Schema */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Override App URI", Category=Engine)
-	bool bOverrideAppUri;
-	
-	/** Custom Application URI for oauth redirects. default is bundleid://{bundleId} */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category=Engine)
-	FString CustomAppUri;
 	
 	/** Opt in or out of connect analytics */
 	UPROPERTY(Config, EditAnywhere, Category=Advanced)
 	bool bSendAnalytics;
 
+	/** Edit Condition for overriding Custom Application Schema */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Override App URI", meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
+	bool bOverrideAppUri;
+	
+	/** Custom Application URI for oauth redirects. default is {bundleId}://{clientId} */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category="Advanced|Wallets")
+	FString CustomAppUri;
+
+	/** Edit Condition for overriding the final page shown after auth is complete */
+	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
+	bool bOverrideExternalAuthRedirectUri;
+	
+	/** Custom URI shown after external auth is complete */
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom External Auth Redirect URI", meta=(EditCondition="bOverrideExternalAuthRedirectUri"), Category="Advanced|Wallets")
+	FString CustomExternalAuthRedirectUri;
+	
 	/** Edit Condition for overriding OAuth Browser Provider Backends */
-	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(InlineEditConditionToggle))
+	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
 	bool bOverrideOAuthBrowserProviderBackends;
 
-	UPROPERTY(Config, EditAnywhere, Category=Advanced, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"))
+	UPROPERTY(Config, EditAnywhere, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"), Category="Advanced|Wallets")
 	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
 	
 private:
 	static const TArray<EThirdwebOAuthProvider> ExternalOnlyProviders;
 	
 public:
-	UFUNCTION(CallInEditor, Category="Wallets|InApp")
+	// UFUNCTION(CallInEditor, Category="Wallets|InApp")
 	void GenerateEncryptionKey();
 
 	UFUNCTION(BlueprintPure, Category="Thirdweb|Settings")
