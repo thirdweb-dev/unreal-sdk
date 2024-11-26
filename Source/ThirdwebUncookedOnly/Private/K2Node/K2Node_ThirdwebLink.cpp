@@ -7,7 +7,6 @@
 namespace TwPins
 {
 	const FName NewWallet = FName(TEXT("NewWallet"));
-	const FName Signature = FName(TEXT("Signature"));
 }
 
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"

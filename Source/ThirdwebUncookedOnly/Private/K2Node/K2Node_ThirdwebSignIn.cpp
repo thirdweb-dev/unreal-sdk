@@ -4,10 +4,6 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignIn.h"
 
-namespace TwPins
-{
-	const FName Signature = FName(TEXT("Signature"));
-}
 
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
 

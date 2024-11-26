@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/Engine/AsyncTaskThirdwebEngineReadContract.h"
+#include "AsyncTasks/Engine/Contract/AsyncTaskThirdwebEngineReadContract.h"
 
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"

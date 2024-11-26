@@ -6,11 +6,6 @@
 #include "K2Node_ThirdwebBaseAsyncTask.h"
 #include "K2Node_ThirdwebSignIn.generated.h"
 
-namespace TwPins
-{
-	extern const FName Signature;
-}
-
 UCLASS()
 class THIRDWEBUNCOOKEDONLY_API UK2Node_ThirdwebSignIn : public UK2Node_ThirdwebBaseAsyncTask
 {

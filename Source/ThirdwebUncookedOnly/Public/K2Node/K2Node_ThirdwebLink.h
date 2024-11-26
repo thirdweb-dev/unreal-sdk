@@ -9,7 +9,6 @@
 namespace TwPins
 {
 	extern const FName NewWallet;
-	extern const FName Signature;
 }
 
 UCLASS()
