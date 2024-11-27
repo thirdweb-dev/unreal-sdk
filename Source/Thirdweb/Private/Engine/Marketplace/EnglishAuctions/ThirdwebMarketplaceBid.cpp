@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceBId.h"
+#include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceBid.h"
 
 FThirdwebMarketplaceBid FThirdwebMarketplaceBid::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {

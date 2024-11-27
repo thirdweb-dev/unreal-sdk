@@ -6,7 +6,7 @@
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"
 #include "Engine/Marketplace/ThirdwebMarketplace.h"
-#include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceBId.h"
+#include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceBid.h"
 
 UAsyncTaskThirdwebEngineMarketplaceEnglishAuctionsGetWinningBid* UAsyncTaskThirdwebEngineMarketplaceEnglishAuctionsGetWinningBid::GetWinningBid(
 	UObject* WorldContextObject,
