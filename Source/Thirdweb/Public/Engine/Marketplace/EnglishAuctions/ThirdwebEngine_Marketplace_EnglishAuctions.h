@@ -3,11 +3,11 @@
 #pragma once
 
 #include "ThirdwebMacros.h"
+#include "ThirdwebMarketplaceEnglishAuction.h"
 
 struct FThirdwebAccountIdentifierParams;
 struct FThirdwebURLSearchParams;
 struct FThirdwebMarketplaceCreateEnglishAuctionRequest;
-struct FThirdwebMarketplaceEnglishAuction;
 struct FThirdwebAssetCurrencyValue;
 struct FThirdwebMarketplaceBid;
 

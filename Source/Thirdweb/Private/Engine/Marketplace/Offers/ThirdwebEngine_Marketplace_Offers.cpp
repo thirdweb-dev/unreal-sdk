@@ -8,6 +8,7 @@
 #include "Engine/Marketplace/ThirdwebEngine_Marketplace.h"
 #include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
 #include "Engine/Marketplace/Offers/ThirdwebMarketplaceMakeOfferRequest.h"
+#include "Engine/Marketplace/Offers/ThirdwebMarketplaceOffer.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Internal/ThirdwebHeaders.h"

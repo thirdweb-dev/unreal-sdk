@@ -43,9 +43,9 @@ namespace ThirdwebEngine::Contract
 			FString Content = Response->GetContentAsString();
 			TW_LOG(Verbose, TEXT("ThirdwebEngine::Contract::Read::Content=%s"), *Content)
 			FString Error;
-			if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
+			if (TSharedPtr<FJsonValue> JsonValue; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonValue, Error))
 			{
-				EXECUTE_IF_BOUND(SuccessDelegate, Content)
+				EXECUTE_IF_BOUND(SuccessDelegate, ThirdwebUtils::Json::ToString(JsonValue))
 			}
 			else
 			{

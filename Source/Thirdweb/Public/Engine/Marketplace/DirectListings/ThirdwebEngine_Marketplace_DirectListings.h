@@ -3,12 +3,12 @@
 #pragma once
 
 #include "ThirdwebMacros.h"
+#include "ThirdwebMarketplaceDirectListing.h"
 
 struct FThirdwebAccountIdentifierParams;
 struct FThirdwebMarketplaceUpdateDirectListingRequest;
 struct FThirdwebURLSearchParams;
 struct FThirdwebMarketplaceCreateDirectListingRequest;
-struct FThirdwebMarketplaceDirectListing;
 struct FSmartWalletHandle;
 
 namespace ThirdwebEngine::Marketplace::DirectListings

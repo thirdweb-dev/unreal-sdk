@@ -103,6 +103,7 @@ namespace ThirdwebUtils
 		extern TSharedPtr<FJsonObject> ToJson(const FString& String);
 		extern TArray<TSharedPtr<FJsonValue>> ToJsonArray(const FString& String);
 		extern FString ToString(const TSharedPtr<FJsonObject>& JsonObject);
+		extern FString ToString(const TSharedPtr<FJsonValue>& JsonValue);
 		extern FString AsString(const TSharedPtr<FJsonValue>& JsonValue);
 		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonValue>& JsonValue, FString& Error);
 		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error);

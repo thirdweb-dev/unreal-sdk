@@ -174,7 +174,11 @@ switch ($Mode)
             }
             SetUERoot($Config.getVersionPath($Version))
             SetClang($Version)
-            $FolderNameParts = @("ThirdwebSDK", $UPlugin.VersionName, $Version)
+            $FolderNameParts = @("ThirdwebSDK", $UPlugin.VersionName)
+            if ($IncludeHost) {
+                $FolderNameParts += "WithHost"
+            }
+            $FolderNameParts += $Version
             $FullDestination = Join-Path -Path $Destination -ChildPath ($FolderNameParts -join "-")
             $TargetPlatforms = $Platforms -join "+"
             $Args = @(
@@ -190,6 +194,7 @@ switch ($Mode)
                     -NoNewWindow `
                     -WorkingDirectory $PluginDir `
                     -ArgumentList $Args
+            Compress-Archive -Path ($FullDestination + "\*") -DestinationPath ($FullDestination + ".zip") -Force
         }
     }
     'save' {

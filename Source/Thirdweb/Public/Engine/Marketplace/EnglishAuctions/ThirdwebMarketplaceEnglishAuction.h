@@ -11,8 +11,7 @@ USTRUCT(BlueprintType, DisplayName="Marketplace English Auction")
 struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketplaceInternalEntryBase
 {
 	GENERATED_BODY()
-
-		
+	
 	UPROPERTY(BlueprintReadWrite, Category="Auction")
 	FString MinimumBidAmount;
 
@@ -30,5 +29,10 @@ struct THIRDWEB_API FThirdwebMarketplaceEnglishAuction : public FThirdwebMarketp
 	
 	static FThirdwebMarketplaceEnglishAuction FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 	static TArray<FThirdwebMarketplaceEnglishAuction> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
+
+	friend uint32 GetTypeHash(const FThirdwebMarketplaceEnglishAuction& Other)
+	{
+		return FCrc::MemCrc32(&Other, sizeof(FThirdwebMarketplaceEnglishAuction));
+	}
 };
 

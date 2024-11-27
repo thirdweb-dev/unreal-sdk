@@ -549,6 +549,23 @@ namespace ThirdwebUtils
 			return Out;
 		}
 
+		FString ToString(const TSharedPtr<FJsonValue>& JsonValue)
+		{
+			if (JsonValue.IsValid())
+			{
+				switch (JsonValue->Type)
+				{
+				case EJson::String: return JsonValue->AsString();
+				case EJson::Boolean: return JsonValue->AsBool() ? TEXT("true") : TEXT("false");
+				case EJson::Array: return ToString(JsonValue->AsArray());
+				case EJson::Object: return ToString(JsonValue->AsObject());
+				case EJson::Number: return FString::SanitizeFloat(JsonValue->AsNumber(), 0);
+				default: return TEXT("");
+				}
+			}
+			return TEXT("");
+		}
+
 		FString AsString(const TSharedPtr<FJsonValue>& JsonValue)
 		{
 			if (JsonValue.IsValid() && !JsonValue->IsNull())

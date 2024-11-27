@@ -3,11 +3,11 @@
 #pragma once
 
 #include "ThirdwebMacros.h"
+#include "ThirdwebMarketplaceOffer.h"
 
 struct FThirdwebMarketplaceMakeOfferRequest;
 struct FThirdwebAccountIdentifierParams;
 struct FThirdwebURLSearchParams;
-struct FThirdwebMarketplaceOffer;
 
 namespace ThirdwebEngine::Marketplace::Offers
 {

@@ -2,15 +2,15 @@
 
 #pragma once
 
+#include "ThirdwebMarketplaceCommon.h"
 #include "Engine/ThirdwebAsset.h"
 #include "ThirdwebMarketplaceInternalEntryBase.generated.h"
 
 class FJsonObject;
 class FJsonValue;
-enum class EThirdwebMarketplaceListingStatus : uint8;
 
 USTRUCT(BlueprintType)
-struct FThirdwebMarketplaceInternalEntryBase
+struct THIRDWEB_API FThirdwebMarketplaceInternalEntryBase
 {
 	GENERATED_BODY()
 
@@ -44,6 +44,10 @@ struct FThirdwebMarketplaceInternalEntryBase
 	static FThirdwebMarketplaceInternalEntryBase FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 	static TArray<FThirdwebMarketplaceInternalEntryBase> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
 
+	friend uint32 GetTypeHash(const FThirdwebMarketplaceInternalEntryBase& Other)
+   	{
+  		return FCrc::MemCrc32(&Other, sizeof(FThirdwebMarketplaceInternalEntryBase));
+  	}
 protected:
 	void Load(const FThirdwebMarketplaceInternalEntryBase& Base);
 };

@@ -204,7 +204,7 @@ FThirdwebEngineTransactionStatusResult FThirdwebEngineTransactionStatusResult::F
 			TArray<TSharedPtr<FJsonValue>> JsonValues = ThirdwebUtils::Json::ToJsonArray(JsonObject->GetStringField(TEXT("functionArgs")));
 			for (int i = 0; i < JsonValues.Num(); i++)
 			{
-				Result.FunctionArgs.Emplace(ThirdwebUtils::Json::AsString(JsonValues[i]));
+				Result.FunctionArgs.Emplace(ThirdwebUtils::Json::ToString(JsonValues[i]));
 			}
 		}
 		if (ThirdwebUtils::Json::IsNotNullField<EJson::Number>(JsonObject,TEXT("onChainTxStatus")))

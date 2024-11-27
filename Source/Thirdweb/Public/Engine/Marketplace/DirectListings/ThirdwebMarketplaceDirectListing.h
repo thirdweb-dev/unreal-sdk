@@ -25,5 +25,10 @@ struct THIRDWEB_API FThirdwebMarketplaceDirectListing : public FThirdwebMarketpl
 
 	static FThirdwebMarketplaceDirectListing FromJson(const TSharedPtr<FJsonObject>& JsonObject);
 	static TArray<FThirdwebMarketplaceDirectListing> FromJson(const TArray<TSharedPtr<FJsonValue>>& JsonArray);
+
+	friend uint32 GetTypeHash(const FThirdwebMarketplaceDirectListing& Other)
+	{
+		return FCrc::MemCrc32(&Other, sizeof(FThirdwebMarketplaceDirectListing));
+	}
 };
 
