@@ -53,7 +53,7 @@ UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll* UAsyncTaskThirdwebEngin
 	RR_TASK
 }
 
-void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::HandleResponse(const TArray<FThirdwebMarketplaceListing>& Listings)
+void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGetAll::HandleResponse(const TArray<FThirdwebMarketplaceDirectListing>& Listings)
 {
 	Success.Broadcast(Listings, TEXT(""));
 	SetReadyToDestroy();

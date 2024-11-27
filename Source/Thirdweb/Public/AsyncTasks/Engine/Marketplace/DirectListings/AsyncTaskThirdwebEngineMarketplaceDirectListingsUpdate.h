@@ -3,7 +3,8 @@
 #pragma once
 
 #include "AsyncTasks/Engine/Marketplace/AsyncTaskThirdwebEngineMarketplacePostBase.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListingRequest.h"
 #include "AsyncTaskThirdwebEngineMarketplaceDirectListingsUpdate.generated.h"
 
 class UThirdwebMarketplace;
@@ -25,7 +26,7 @@ public:
 		const FString& Contract,
 		const FString& BackendWallet,
 		const FSmartWalletHandle& Account,
-		const FThirdwebMarketplaceUpdateListingRequest& Listing,
+		const FThirdwebMarketplaceUpdateDirectListingRequest& Listing,
 		const FString& IdempotencyKey,
 		UPARAM(DisplayName="Simulate TX") const bool bSimulateTx
 	);
@@ -38,14 +39,14 @@ public:
 		const UThirdwebMarketplace* Marketplace,
 		const FString& BackendWallet,
 		const FSmartWalletHandle& Account,
-		const FThirdwebMarketplaceUpdateListingRequest& Listing,
+		const FThirdwebMarketplaceUpdateDirectListingRequest& Listing,
 		const FString& IdempotencyKey,
 		UPARAM(DisplayName="Simulate TX") const bool bSimulateTx
 	);
 
 protected:
 	UPROPERTY(Transient)
-	FThirdwebMarketplaceUpdateListingRequest Listing;
+	FThirdwebMarketplaceUpdateDirectListingRequest Listing;
 
 public:
 	virtual void Activate() override;

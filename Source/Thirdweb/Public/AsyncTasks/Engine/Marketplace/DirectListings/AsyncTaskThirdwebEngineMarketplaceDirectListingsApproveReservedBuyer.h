@@ -3,7 +3,7 @@
 #pragma once
 
 #include "AsyncTasks/Engine/Marketplace/AsyncTaskThirdwebEngineMarketplacePostBase.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
 #include "AsyncTaskThirdwebEngineMarketplaceDirectListingsApproveReservedBuyer.generated.h"
 
 class UThirdwebMarketplace;

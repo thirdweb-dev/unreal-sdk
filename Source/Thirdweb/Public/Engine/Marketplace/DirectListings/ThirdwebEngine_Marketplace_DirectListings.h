@@ -5,17 +5,17 @@
 #include "ThirdwebMacros.h"
 
 struct FThirdwebAccountIdentifierParams;
-struct FThirdwebMarketplaceUpdateListingRequest;
+struct FThirdwebMarketplaceUpdateDirectListingRequest;
 struct FThirdwebURLSearchParams;
-struct FThirdwebMarketplaceCreateListingRequest;
-struct FThirdwebMarketplaceListing;
+struct FThirdwebMarketplaceCreateDirectListingRequest;
+struct FThirdwebMarketplaceDirectListing;
 struct FSmartWalletHandle;
 
 namespace ThirdwebEngine::Marketplace::DirectListings
 {
 	extern FString FormatUrl(const int64 ChainId, const FString& ContractAddress, const FString& Endpoint, const FThirdwebURLSearchParams& Params);
 
-	DECLARE_DELEGATE_OneParam(FGetAllDelegate, const TArray<FThirdwebMarketplaceListing>& /* Listings */)
+	DECLARE_DELEGATE_OneParam(FGetAllDelegate, const TArray<FThirdwebMarketplaceDirectListing>& /* Listings */)
 	extern THIRDWEB_API void GetAll(
 		const UObject* Outer,
 		const int32 Count,
@@ -30,7 +30,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FStringDelegate& ErrorDelegate
 	);
 
-	DECLARE_DELEGATE_OneParam(FGetListingDelegate, const FThirdwebMarketplaceListing& /* Listing */)
+	DECLARE_DELEGATE_OneParam(FGetListingDelegate, const FThirdwebMarketplaceDirectListing& /* Listing */)
 	extern THIRDWEB_API void Get(
 		const UObject* Outer,
 		const FString& ListingId,
@@ -74,7 +74,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& ContractAddress,
 		const FString& BackendWalletAddress,
 		const FThirdwebAccountIdentifierParams& Account,
-		const FThirdwebMarketplaceCreateListingRequest& CreateListingRequest,
+		const FThirdwebMarketplaceCreateDirectListingRequest& CreateListingRequest,
 		const FString& IdempotencyKey,
 		const bool bSimulateTx,
 		const FStringDelegate& SuccessDelegate,
@@ -87,7 +87,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& ContractAddress,
 		const FString& BackendWalletAddress,
 		const FThirdwebAccountIdentifierParams& Account,
-		const FThirdwebMarketplaceUpdateListingRequest& UpdateListingRequest,
+		const FThirdwebMarketplaceUpdateDirectListingRequest& UpdateListingRequest,
 		const FString& IdempotencyKey,
 		const bool bSimulateTx,
 		const FStringDelegate& SuccessDelegate,

@@ -12,7 +12,7 @@ UAsyncTaskThirdwebEngineMarketplaceDirectListingsCreate* UAsyncTaskThirdwebEngin
 	const FString& Contract,
 	const FString& BackendWallet,
 	const FSmartWalletHandle& Account,
-	const FThirdwebMarketplaceCreateListingRequest& Listing,
+	const FThirdwebMarketplaceCreateDirectListingRequest& Listing,
 	const FString& IdempotencyKey,
 	const bool bSimulateTx
 )
@@ -33,7 +33,7 @@ UAsyncTaskThirdwebEngineMarketplaceDirectListingsCreate* UAsyncTaskThirdwebEngin
 	const UThirdwebMarketplace* Marketplace,
 	const FString& BackendWallet,
 	const FSmartWalletHandle& Account,
-	const FThirdwebMarketplaceCreateListingRequest& Listing,
+	const FThirdwebMarketplaceCreateDirectListingRequest& Listing,
 	const FString& IdempotencyKey,
 	const bool bSimulateTx)
 {

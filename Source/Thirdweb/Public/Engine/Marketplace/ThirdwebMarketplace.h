@@ -23,4 +23,6 @@ public:
 	
 	UFUNCTION(BlueprintPure, DisplayName="Get Contract Address", Category="Thirdweb|Marketplace|Details")
 	FString GetContractAddress() const { return ContractAddress; }
+
+	virtual bool IsValid() { return ChainId > 0 && !ContractAddress.IsEmpty(); }
 };

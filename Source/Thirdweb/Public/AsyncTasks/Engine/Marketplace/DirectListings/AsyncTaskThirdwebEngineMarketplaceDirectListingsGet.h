@@ -6,7 +6,7 @@
 #include "AsyncTaskThirdwebEngineMarketplaceDirectListingsGet.generated.h"
 
 class UThirdwebMarketplace;
-struct FThirdwebMarketplaceListing;
+struct FThirdwebMarketplaceDirectListing;
 /**
  * 
  */
@@ -32,7 +32,7 @@ public:
 		const UThirdwebMarketplace* Marketplace,
 		UPARAM(DisplayName="Listing ID") const FString& ListingId
 	);
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGetDirectListingDelegate, const FThirdwebMarketplaceListing&, Listing, const FString&, Error);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGetDirectListingDelegate, const FThirdwebMarketplaceDirectListing&, Listing, const FString&, Error);
 
 	UPROPERTY(BlueprintAssignable)
 	FGetDirectListingDelegate Success;
@@ -45,7 +45,7 @@ protected:
 	FString ListingId;
 
 private:
-	virtual void HandleResponse(const FThirdwebMarketplaceListing& Listing);
+	virtual void HandleResponse(const FThirdwebMarketplaceDirectListing& Listing);
 	void HandleFailed(const FString& Error);
 
 public:

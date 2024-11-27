@@ -16,32 +16,50 @@ void UThirdwebMarketplaceSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-void UThirdwebMarketplaceSubsystem::AddMarketplace(const UObject* WorldContextObject, UThirdwebMarketplace* Marketplace)
+UThirdwebMarketplace* UThirdwebMarketplaceSubsystem::AddMarketplace(const UObject* WorldContextObject, const int64 ChainId, const FString& Address)
 {
-	if (Marketplace && Marketplace->GetChainId() > 0)
+	if (ChainId > 0 && !Address.IsEmpty())
 	{
 		if (UThirdwebMarketplaceSubsystem* Subsystem = Get(WorldContextObject))
 		{
-			Subsystem->Marketplaces.Emplace(Marketplace->GetChainId(), Marketplace);
+			return Subsystem->RegisterMarketplace(WorldContextObject, NewObject<UThirdwebMarketplace>(Subsystem));
 		}
 	}
+	return nullptr;
 }
 
-void UThirdwebMarketplaceSubsystem::RemoveMarketplace(const UObject* WorldContextObject, UThirdwebMarketplace* Marketplace)
+UThirdwebMarketplace* UThirdwebMarketplaceSubsystem::RegisterMarketplace(const UObject* WorldContextObject, UThirdwebMarketplace* Marketplace)
 {
-	if (Marketplace && Marketplace->GetChainId() > 0)
+	if (Marketplace && Marketplace->IsValid())
 	{
 		if (UThirdwebMarketplaceSubsystem* Subsystem = Get(WorldContextObject))
 		{
-			if (Subsystem->Marketplaces.Contains(Marketplace->GetChainId()))
+			int64 ChainId = Marketplace->GetChainId();
+			if (!Subsystem->Marketplaces.Contains(ChainId))
 			{
-				Subsystem->Marketplaces.Remove(Marketplace->GetChainId());
+				Subsystem->Marketplaces.Add(ChainId);
+			}
+			return Subsystem->Marketplaces[ChainId].FindOrAdd(Marketplace->GetContractAddress(), Marketplace);
+		}
+	}
+	return nullptr;
+}
+
+void UThirdwebMarketplaceSubsystem::DeregisterMarketplace(const UObject* WorldContextObject, UThirdwebMarketplace* Marketplace)
+{
+	if (Marketplace && Marketplace->IsValid())
+	{
+		if (UThirdwebMarketplaceSubsystem* Subsystem = Get(WorldContextObject))
+		{
+			if (int64 ChainId = Marketplace->GetChainId(); Subsystem->Marketplaces.Contains(ChainId))
+			{
+				Subsystem->Marketplaces[ChainId].Remove(Marketplace->GetContractAddress());
 			}
 		}
 	}
 }
 
-UThirdwebMarketplace* UThirdwebMarketplaceSubsystem::GetMarketplace(const UObject* WorldContextObject, int64 ChainId)
+UThirdwebMarketplace* UThirdwebMarketplaceSubsystem::FindMarketplace(const UObject* WorldContextObject, const int64 ChainId, const FString& Address)
 {
 	if (ChainId > 0)
 	{
@@ -49,7 +67,7 @@ UThirdwebMarketplace* UThirdwebMarketplaceSubsystem::GetMarketplace(const UObjec
 		{
 			if (Subsystem->Marketplaces.Contains(ChainId))
 			{
-				return *Subsystem->Marketplaces.Find(ChainId);
+				return *Subsystem->Marketplaces[ChainId].Find(Address);
 			}
 		}
 	}
@@ -60,11 +78,20 @@ TArray<UThirdwebMarketplace*> UThirdwebMarketplaceSubsystem::GetAllMarketplaces(
 {
 	if (UThirdwebMarketplaceSubsystem* Subsystem = Get(WorldContextObject))
 	{
+		TArray<TMap<FString, UThirdwebMarketplace*>> ChainMarketplaceMaps;
+		Subsystem->Marketplaces.GenerateValueArray(ChainMarketplaceMaps);
+		
 		TArray<UThirdwebMarketplace*> Result;
-		Subsystem->Marketplaces.GenerateValueArray(Result);
+		for (TMap ChainMarketplaceMap : ChainMarketplaceMaps)
+		{
+			
+			TArray<UThirdwebMarketplace*> ChainResult;
+			ChainMarketplaceMap.GenerateValueArray(ChainResult);
+			Result.Append(ChainResult);
+		}
 		return Result;
 	}
-	return TArray<UThirdwebMarketplace*>();
+	return {};
 }
 
 UThirdwebMarketplaceSubsystem* UThirdwebMarketplaceSubsystem::Get(const UObject* WorldContextObject)

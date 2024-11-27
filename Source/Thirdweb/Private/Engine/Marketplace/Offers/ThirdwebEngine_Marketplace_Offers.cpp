@@ -6,7 +6,7 @@
 #include "ThirdwebUtils.h"
 #include "Engine/ThirdwebAccountIdentifierParams.h"
 #include "Engine/Marketplace/ThirdwebEngine_Marketplace.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
 #include "Engine/Marketplace/Offers/ThirdwebMarketplaceMakeOfferRequest.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"

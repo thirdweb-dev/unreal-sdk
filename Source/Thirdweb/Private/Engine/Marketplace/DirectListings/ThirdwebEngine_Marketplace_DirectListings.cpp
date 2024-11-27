@@ -5,7 +5,7 @@
 #include "ThirdwebLog.h"
 #include "ThirdwebUtils.h"
 #include "Engine/Marketplace/ThirdwebEngine_Marketplace.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Internal/ThirdwebHeaders.h"
@@ -52,7 +52,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 			FString Error;
 			if (TArray<TSharedPtr<FJsonValue>> JsonArray; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonArray, Error))
 			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceListing::FromJson(JsonArray))
+				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceDirectListing::FromJson(JsonArray))
 			}
 			else
 			{
@@ -87,7 +87,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 			FString Error;
 			if (TSharedPtr<FJsonObject> JsonObject; ThirdwebUtils::Json::ParseEngineResponse(Content, JsonObject, Error))
 			{
-				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceListing::FromJson(JsonObject))
+				EXECUTE_IF_BOUND(SuccessDelegate, FThirdwebMarketplaceDirectListing::FromJson(JsonObject))
 			}
 			else
 			{
@@ -202,7 +202,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& ContractAddress,
 		const FString& BackendWalletAddress,
 		const FThirdwebAccountIdentifierParams& Account,
-		const FThirdwebMarketplaceCreateListingRequest& CreateListingRequest,
+		const FThirdwebMarketplaceCreateDirectListingRequest& CreateListingRequest,
 		const FString& IdempotencyKey,
 		const bool bSimulateTx,
 		const FStringDelegate& SuccessDelegate,
@@ -236,7 +236,7 @@ namespace ThirdwebEngine::Marketplace::DirectListings
 		const FString& ContractAddress,
 		const FString& BackendWalletAddress,
 		const FThirdwebAccountIdentifierParams& Account,
-		const FThirdwebMarketplaceUpdateListingRequest& UpdateListingRequest,
+		const FThirdwebMarketplaceUpdateDirectListingRequest& UpdateListingRequest,
 		const FString& IdempotencyKey,
 		const bool bSimulateTx,
 		const FStringDelegate& SuccessDelegate,

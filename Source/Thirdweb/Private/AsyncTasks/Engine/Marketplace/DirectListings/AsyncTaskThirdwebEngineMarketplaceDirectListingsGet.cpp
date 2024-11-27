@@ -5,7 +5,7 @@
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"
 #include "Engine/Marketplace/ThirdwebMarketplace.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
 
 UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet* UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet::Get(
 	UObject* WorldContextObject,
@@ -34,7 +34,7 @@ UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet* UAsyncTaskThirdwebEngineMa
 	RR_TASK
 }
 
-void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet::HandleResponse(const FThirdwebMarketplaceListing& Listing)
+void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet::HandleResponse(const FThirdwebMarketplaceDirectListing& Listing)
 {
 	Success.Broadcast(Listing, TEXT(""));
 	SetReadyToDestroy();
@@ -42,7 +42,7 @@ void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet::HandleResponse(const 
 
 void UAsyncTaskThirdwebEngineMarketplaceDirectListingsGet::HandleFailed(const FString& Error)
 {
-	Failed.Broadcast(FThirdwebMarketplaceListing(), Error);
+	Failed.Broadcast(FThirdwebMarketplaceDirectListing(), Error);
 	SetReadyToDestroy();
 }
 

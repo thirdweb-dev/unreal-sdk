@@ -5,7 +5,8 @@
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"
 #include "Engine/Marketplace/ThirdwebMarketplace.h"
-#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceListing.h"
+#include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListing.h"
+#include "Engine/Marketplace/Offers/ThirdwebMarketplaceOffer.h"
 
 UAsyncTaskThirdwebEngineMarketplaceOffersGet* UAsyncTaskThirdwebEngineMarketplaceOffersGet::Get(
 	UObject* WorldContextObject,
