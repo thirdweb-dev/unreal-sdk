@@ -32,6 +32,6 @@ protected:
 	FString Uri;
 
 private:
-	virtual void HandleResponse(const TArray<uint8>& Result);
+	virtual void HandleResponse(const TArray<uint8>& Data);
 	void HandleFailed(const FString& Error);
 };

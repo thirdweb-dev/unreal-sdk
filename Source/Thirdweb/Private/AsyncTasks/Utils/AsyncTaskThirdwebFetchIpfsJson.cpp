@@ -1,14 +1,11 @@
 // Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
-#include "AsyncTasks/AsyncTaskThirdwebFetchIpfsJson.h"
+#include "AsyncTasks/Utils/AsyncTaskThirdwebFetchIpfsJson.h"
 
 #include "ThirdwebUtils.h"
 #include "Components/SlateWrapperTypes.h"
 
-UAsyncTaskThirdwebFetchIpfsJson* UAsyncTaskThirdwebFetchIpfsJson::FetchIpfsJson(
-	UObject* WorldContextObject,
-	const FString& Uri
-)
+UAsyncTaskThirdwebFetchIpfsJson* UAsyncTaskThirdwebFetchIpfsJson::FetchIpfsJson(UObject* WorldContextObject,const FString& Uri)
 {
 	NEW_TASK
 	Task->Uri = Uri;
@@ -24,9 +21,9 @@ void UAsyncTaskThirdwebFetchIpfsJson::Activate()
 	);
 }
 
-void UAsyncTaskThirdwebFetchIpfsJson::HandleResponse(const TArray<uint8>& Result)
+void UAsyncTaskThirdwebFetchIpfsJson::HandleResponse(const TArray<uint8>& Data)
 {
-	Success.Broadcast(ThirdwebUtils::Storage::ConvertDownloadResult<FString>(Result), TEXT(""));
+	Success.Broadcast(ThirdwebUtils::Storage::ConvertDownloadResult<FString>(Data), TEXT(""));
 	SetReadyToDestroy();
 }
 

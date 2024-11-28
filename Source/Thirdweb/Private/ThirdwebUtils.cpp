@@ -153,6 +153,7 @@ namespace ThirdwebUtils
 				{
 					FBase64::Decode(FinalUrl.Replace(Base64Prefix, TEXT("")), FinalUrl);
 					EXECUTE_IF_BOUND(Success, Internal::StringToBytes(FinalUrl));
+					return;
 				}
 				FinalUrl = Internal::ReplaceIpfs(FinalUrl, FString::Printf(TEXT("https://%s.ipfscdn.io/ipfs/"), *UThirdwebRuntimeSettings::GetClientId()));
 
@@ -160,7 +161,7 @@ namespace ThirdwebUtils
 				const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
 				Request->SetVerb(TEXT("GET"));
 				Request->SetTimeout(30.0f);
-				Request->SetURL(Url);
+				Request->SetURL(FinalUrl);
 				Request->OnProcessRequestComplete().BindLambda([Success, Error](FHttpRequestPtr, const FHttpResponsePtr& Response, const bool bConnectedSuccessfully)
 				{
 					if (bConnectedSuccessfully)
@@ -477,7 +478,7 @@ namespace ThirdwebUtils
 		{
 			static const FString DefaultGateway = TEXT("https://ipfs.io/ipfs/");
 			const FString GatewayUrl = Gateway.IsEmpty() ? DefaultGateway : Gateway;
-			return !Url.IsEmpty() && Url.StartsWith(TEXT("ipfs://")) ? Url.Replace(TEXT("ipfs://"), *GatewayUrl) : Url;
+			return Gateway + Url.RightChop(7);
 		}
 	}
 
