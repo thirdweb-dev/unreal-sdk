@@ -4,6 +4,7 @@
 
 #include "ThirdwebMarketplaceCommon.h"
 #include "Engine/ThirdwebAsset.h"
+#include "Misc/DateTime.h"
 #include "ThirdwebMarketplaceInternalEntryBase.generated.h"
 
 class FJsonObject;

@@ -2,6 +2,7 @@
 
 #include "Engine/ThirdwebAsset.h"
 
+#include "Dom/JsonObject.h"
 #include "Engine/Marketplace/ThirdwebMarketplaceCommon.h"
 
 FThirdwebAssetCurrencyValue FThirdwebAssetCurrencyValue::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
