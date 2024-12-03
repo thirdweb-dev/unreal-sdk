@@ -11,6 +11,7 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/KismetStringLibrary.h"
+#include "Misc/FileHelper.h"
 #include "Slate/WidgetRenderer.h"
 #include "Widgets/Notifications/SNotificationList.h"
 

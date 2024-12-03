@@ -7,9 +7,8 @@
 #include "Thirdweb.h"
 #include "ThirdwebCommon.h"
 #include "ThirdwebUtils.h"
-
 #include "Containers/ThirdwebCountryCodes.h"
-
+#include "Engine/Transaction/ThirdwebEngineTransactionStatusResult.h"
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
@@ -135,6 +134,11 @@ FString UThirdwebFunctionLibrary::BP_ZeroAddress()
 	return ThirdwebUtils::ZeroAddress;
 }
 
+UTexture2D* UThirdwebFunctionLibrary::BP_CreateQrCode(const FString& Text)
+{
+	return ThirdwebUtils::CreateQrCode(Text);
+}
+
 FThirdwebCountryCode UThirdwebFunctionLibrary::BP_GetCountryCodeData(const int32 CountryCode)
 {
 	return ThirdwebCountryCodes::GetCountryCodeData(CountryCode);
@@ -143,5 +147,11 @@ FThirdwebCountryCode UThirdwebFunctionLibrary::BP_GetCountryCodeData(const int32
 TArray<FThirdwebCountryCode> UThirdwebFunctionLibrary::BP_GetAllCountryCodeData()
 {
 	return ThirdwebCountryCodes::GetCountryCodesArray();
+}
+
+void UThirdwebFunctionLibrary::BP_GetTransactionReceiptInputs(const FThirdwebEngineTransactionStatusResult& TransactionStatus, FString& TxHash, int64& ChainID)
+{
+	TxHash = TransactionStatus.TransactionHash;
+	ChainID = TransactionStatus.ChainId;
 }
 

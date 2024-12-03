@@ -4,12 +4,9 @@
 
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
-
 #include "Blueprint/WidgetTree.h"
-
 #include "Browser/ThirdwebOAuthBrowserWidget.h"
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
-
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/PanelWidget.h"
@@ -55,6 +52,7 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 		ExternalBrowser = NewObject<UThirdwebOAuthExternalBrowser>(this);
 		ExternalBrowser->OnAuthenticated.BindUObject(this, &ThisClass::HandleAuthenticated);
 		ExternalBrowser->OnError.BindUObject(this, &ThisClass::HandleError);
+		ExternalBrowser->OnSiweComplete.BindUObject(this, &ThisClass::HandleSiweComplete);
 	}
 
 	return Super::RebuildWidget();
@@ -73,6 +71,19 @@ void UThirdwebOAuthBrowserUserWidget::OnWidgetRebuilt()
 	SetVisible(false);
 }
 
+void UThirdwebOAuthBrowserUserWidget::BeginDestroy()
+{
+	if (ExternalBrowser)
+	{
+		ExternalBrowser->ConditionalBeginDestroy();
+	}
+	if (Browser)
+	{
+		Browser->ConditionalBeginDestroy();
+	}
+	Super::BeginDestroy();
+}
+
 void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InAppWallet)
 {
 	// Validate Wallet
@@ -82,14 +93,21 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 		return HandleError(TEXT("Invalid Wallet"));
 	}
 	Wallet = InAppWallet;
-
+	TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Wallet Type::%s"), Wallet.GetSourceString());
+	if (Wallet == FInAppWalletHandle::Siwe)
+	{
+		TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against SIWE"));
+		ExternalBrowser->Authenticate(TEXT("SIWE"));
+		return;
+	}
+	
 	// Get Login URL
 	FString Link;
 	if (FString Error; !Wallet.FetchOAuthLoginURL(UThirdwebOAuthBrowserWidget::GetDummyUrl(), Link, Error))
 	{
 		return HandleError(Error);
 	}
-	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
+	TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
 
 	// Check Browser Type
 	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))
@@ -118,7 +136,7 @@ bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
 {
 	const FString Url = Browser->GetUrl();
 
-	return Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
+	return  Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
 }
 
 FString UThirdwebOAuthBrowserUserWidget::GetUrl() const
@@ -177,6 +195,11 @@ void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, co
 void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString& AuthResult)
 {
 	OnAuthenticated.Broadcast(AuthResult);
+}
+
+void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString& Signature, const FString& Payload)
+{
+	OnSiweComplete.Broadcast(Signature, Payload);
 }
 
 void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)

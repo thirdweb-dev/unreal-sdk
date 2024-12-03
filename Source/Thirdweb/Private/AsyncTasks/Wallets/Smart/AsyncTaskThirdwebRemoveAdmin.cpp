@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebRemoveAdmin.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebRemoveAdmin::Activate()

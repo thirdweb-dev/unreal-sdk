@@ -3,9 +3,7 @@
 #pragma once
 
 #include "HAL/Platform.h"
-
 #include "Internationalization/Internationalization.h"
-
 #include "ThirdwebCommon.generated.h"
 
 UENUM()

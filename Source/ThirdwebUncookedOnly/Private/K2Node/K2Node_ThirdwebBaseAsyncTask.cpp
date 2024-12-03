@@ -15,6 +15,7 @@ namespace TwPins
 	const FName Wallet = FName(TEXT("Wallet"));
 	const FName InAppWallet = FName(TEXT("InAppWallet"));
 	const FName SmartWallet = FName(TEXT("SmartWallet"));
+	const FName Signature = FName(TEXT("Signature"));
 	const FName Success = FName(TEXT("Success"));
 	const FName Failed = FName(TEXT("Failed"));
 	const FName Error = FName(TEXT("Error"));

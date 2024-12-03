@@ -68,7 +68,7 @@ void UAsyncTaskThirdwebLoginWithOAuth::HandleFailed(const FString& Error)
 	if (IsInGameThread())
 	{
 		Browser->RemoveFromParent();
-		Failed.Broadcast(TEXT(""));
+		Failed.Broadcast(Error);
 		SetReadyToDestroy();
 	}
 	else

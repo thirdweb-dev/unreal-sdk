@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include "Serialization/JsonTypes.h"
+#include "ThirdwebMacros.h"
 #include "Dom/JsonObject.h"
+#include "Serialization/JsonTypes.h"
 
+struct FThirdwebIPFSUploadResult;
 enum class EThirdwebEngineTransactionOnChainStatus : uint8;
 enum class EThirdwebEngineTransactionStatus : uint8;
 struct FWalletHandle;
@@ -12,7 +14,10 @@ struct FInAppWalletHandle;
 struct FSmartWalletHandle;
 class FJsonValue;
 class IHttpRequest;
+class UTexture2D;
+class UTexture2DDynamic;
 enum class EThirdwebOAuthProvider : uint8;
+
 
 namespace ThirdwebUtils
 {
@@ -83,31 +88,35 @@ namespace ThirdwebUtils
 	extern THIRDWEB_API EThirdwebEngineTransactionStatus ToTransactionStatus(const FString& String);
 	extern THIRDWEB_API EThirdwebEngineTransactionOnChainStatus ToOnChainStatus(const FString& String);
 
-
 	extern FString ParseAuthResult(const FString& AuthResult);
-	
+	extern UTexture2D* CreateQrCode(const FString& Text);
+
 	namespace Maps
 	{
 		extern const TMap<EThirdwebOAuthProvider, FText> OAuthProviderToText;
 		extern const TMap<EThirdwebEngineTransactionStatus, FText> TransactionStatusToText;
 		extern const TMap<EThirdwebEngineTransactionOnChainStatus, FText> OnChainStatusToText;
 	}
-	
+
 	namespace Json
 	{
 		extern TSharedPtr<FJsonObject> ToJson(const FString& String);
 		extern TArray<TSharedPtr<FJsonValue>> ToJsonArray(const FString& String);
 		extern FString ToString(const TSharedPtr<FJsonObject>& JsonObject);
+		extern FString ToString(const TSharedPtr<FJsonValue>& JsonValue);
 		extern FString AsString(const TSharedPtr<FJsonValue>& JsonValue);
+		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonValue>& JsonValue, FString& Error);
 		extern bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error);
-		
+		extern bool ParseEngineResponse(const FString& Content, TArray<TSharedPtr<FJsonValue>>& JsonArray, FString& Error);
+		extern FString ParseEngineError(const TSharedPtr<FJsonObject>& Error);
+
 		template <EJson JsonType>
-		bool IsNotNullField(const TSharedPtr<FJsonObject>& JsonObject, const FStringView FieldName)
+		bool IsNotNullField(const TSharedPtr<FJsonObject>& JsonObject, const FString FieldName)
 		{
-			return JsonObject.IsValid() && JsonObject->HasField(FieldName) ? !JsonObject->GetField(FieldName, JsonType)->IsNull() : false;
+			return JsonObject.IsValid() && JsonObject->HasField(FieldName) ? !JsonObject->GetField<JsonType>(FieldName)->IsNull() : false;
 		}
 	}
-
+	
 	namespace Internal
 	{
 		extern FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FString& MaskCharacter = TEXT("*"), const int32 ShowBeginCount = 4, const int32 ShowEndCount = 4);
@@ -124,14 +133,34 @@ namespace ThirdwebUtils
 		extern void LogRequest(const TSharedRef<IHttpRequest>& Request, const TArray<FString>& SensitiveStrings = {});
 
 		extern int64 ParseInt64(const FString& String);
-
+		extern FString BytesToString(const TArray<uint8>& Bytes);
+		extern TArray<uint8> StringToBytes(const FString& String);
+		extern UTexture2DDynamic* BytesToTexture2DDynamic(const TArray<uint8>& Bytes);
+		
 		extern FString GetPluginVersion();
 		extern FString GenerateUUID();
 
-		static void SendConnectEvent(const FWalletHandle Wallet);
-		static void SendConnectEvent(const FInAppWalletHandle Wallet);
-		static void SendConnectEvent(const FSmartWalletHandle Wallet);
+		extern void SendConnectEvent(const FWalletHandle Wallet);
+		extern void SendConnectEvent(const FInAppWalletHandle Wallet);
+		extern void SendConnectEvent(const FSmartWalletHandle Wallet);
 
 		extern TSharedRef<IHttpRequest> CreateEngineRequest(const FString& Verb = TEXT("GET"));
+
+		extern FString ReplaceIpfs(const FString& Url, const FString& Gateway);
+	}
+
+	namespace Storage
+	{
+		DECLARE_DELEGATE_OneParam(FDownloadBytesSuccessDelegate, const TArray<uint8>& /* Bytes */);
+		extern THIRDWEB_API void Download(const FString& Url, const FDownloadBytesSuccessDelegate& Success, const FStringDelegate& Error);
+
+		template <typename T = FJsonObject>
+		extern THIRDWEB_API T ConvertDownloadResult(const TArray<uint8>& Bytes);
+		
+		DECLARE_DELEGATE_OneParam(FUploadSuccessDelegate, const FThirdwebIPFSUploadResult& /* Result */);
+		extern void UploadInternal(const FString& Filename, const TArray<uint8>& Content, const FUploadSuccessDelegate& Success, const FStringDelegate& Error);
+
+		template <typename T = FString>
+		extern THIRDWEB_API void Upload(const FString& Filename, const T Content,  const FUploadSuccessDelegate& Success, const FStringDelegate& Error);
 	}
 }

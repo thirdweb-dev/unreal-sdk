@@ -30,7 +30,7 @@ public:
 
 private:
 	UFUNCTION()
-	void HandleResponse(const bool& bIsDeployed);
+	void HandleResponse(const bool bIsDeployed);
 	
 	UFUNCTION()
 	virtual void HandleFailed(const FString& Error);

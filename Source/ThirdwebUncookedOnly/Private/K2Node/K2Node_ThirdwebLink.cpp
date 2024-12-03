@@ -2,7 +2,7 @@
 
 #include "K2Node/K2Node_ThirdwebLink.h"
 
-#include "AsyncTasks/Wallets/InApp/Link/AsyncTaskThirdwebLink.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebLink.h"
 
 namespace TwPins
 {
@@ -51,7 +51,7 @@ void UK2Node_ThirdwebLink::AllocateDefaultPins()
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::Wallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::NewWallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Input);
-	
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Signature);
 	PostAllocateDefaultPins();
 }
 

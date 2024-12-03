@@ -3,14 +3,12 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "AsyncTaskThirdwebCreateSmartWallet.generated.h"
 
 struct FSmartWalletHandle;
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebCreateSmartWallet : public UAsyncTaskThirdwebBase
 {
 	GENERATED_BODY()

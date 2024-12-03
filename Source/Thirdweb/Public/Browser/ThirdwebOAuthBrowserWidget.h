@@ -6,9 +6,7 @@
 #include "SWebBrowser.h"
 #endif
 #include "Components/Widget.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
 #include "ThirdwebOAuthBrowserWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FSimpleStringDelegate, const FString&);
@@ -29,16 +27,21 @@ public:
 #endif
 	//~ End Public Overrides
 
+	//~ Begin SWebBrowser Handlers
 	virtual void HandleUrlChanged(const FText& InUrl);
 	virtual void HandleOnLoadComplete();
 	virtual bool HandleOnBeforePopup(FString Url, FString Frame);
 	virtual bool HandleOnCreateWindow(const TWeakPtr<IWebBrowserWindow>& Window, const TWeakPtr<IWebBrowserPopupFeatures>& Features);
 	virtual void HandleOnLoadError();
 	virtual bool HandleOnCloseWindow(const TWeakPtr<IWebBrowserWindow>& Window);
+	//~ End SWebBrowser Handlers
+
+	//~ Begin SWebBrowser Wrappers
 	virtual void LoadUrl(const FString& Url);
-	
 	bool IsPageLoaded() const;
 	FString GetUrl() const;
+	//~ End SWebBrowser Wrappers
+	
 	static FString GetDummyUrl();
 	
 	UFUNCTION(BlueprintCallable, Category="Thirdweb|OAuth Browser")

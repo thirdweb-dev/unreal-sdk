@@ -25,7 +25,7 @@ UAsyncTaskThirdwebIsActiveSigner* UAsyncTaskThirdwebIsActiveSigner::IsActiveSign
 	return Task;
 }
 
-void UAsyncTaskThirdwebIsActiveSigner::HandleIsDeployedResponse(const bool& bDeployed)
+void UAsyncTaskThirdwebIsActiveSigner::HandleIsDeployedResponse(const bool bDeployed)
 {
 	if (bDeployed)
 	{

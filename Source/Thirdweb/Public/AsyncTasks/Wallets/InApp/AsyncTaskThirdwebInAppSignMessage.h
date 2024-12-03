@@ -5,7 +5,7 @@
 #include "AsyncTaskThirdwebInAppBase.h"
 #include "AsyncTaskThirdwebInAppSignMessage.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebInAppSignMessage : public UAsyncTaskThirdwebInAppBase
 {
 	GENERATED_BODY()

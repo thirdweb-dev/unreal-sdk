@@ -16,6 +16,7 @@
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateJwtWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateOAuthWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreatePhoneWallet.h"
+#include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSiweWallet.h"
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Styling/SlateIconFinder.h"
@@ -60,19 +61,21 @@ FText UK2Node_ThirdwebCreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType)
 			}
 			else
 			{
+				FText OAuthType = FText::FromString(UThirdwebRuntimeSettings::IsEcosystem() ? TEXT("Ecosystem") : TEXT("InApp"));
+				
 				if (const FString Source = ResolvePinValue(GetSourcePin()); Source == TEXT("OAuth") || Source == TEXT("Email") || Source == TEXT("Phone"))
 				{
 					if (Source == TEXT("OAuth"))
 					{
 						CachedNodeTitle.SetCachedText(
-							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OAuthNodeTitle", "Create In App {0} OAuth Wallet"), FText::FromString(ResolvePinValue(GetProviderPin()))),
+							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OAuthNodeTitle", "Create {1} OAuth {0} Wallet"), OAuthType, FText::FromString(ResolvePinValue(GetProviderPin()))),
 							this
 						);
 					}
 					else
 					{
 						CachedNodeTitle.SetCachedText(
-							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create In App {0} OTP Wallet"), FText::FromString(Source)),
+							FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create {1} OTP {0} Wallet"), OAuthType, FText::FromString(Source)),
 							this
 						);
 					}
@@ -80,7 +83,7 @@ FText UK2Node_ThirdwebCreateWallet::GetNodeTitle(ENodeTitleType::Type TitleType)
 				else
 				{
 					CachedNodeTitle.SetCachedText(
-						FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create In App {0} Wallet"), FText::FromString(Source)),
+						FText::Format(LOCTEXT("K2Node_ThirdwebCreateWallet_OTPNodeTitle", "Create {1} {0} Wallet"),OAuthType,  FText::FromString(Source)),
 						this
 					);
 				}
@@ -219,6 +222,12 @@ void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerCo
 				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateGuestWallet, CreateGuestWallet);
 				break;
 			}
+		case EThirdwebInAppWalletSource::Siwe:
+			{
+				ProxyClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
+				ProxyFactoryClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
+				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSiweWallet, CreateSiweWallet);
+			}
 		}
 	}
 	RemovePin(GetTypePin());
@@ -232,7 +241,7 @@ void UK2Node_ThirdwebCreateWallet::UpdatePins()
 	if (UEdGraphPin* Pin = GetTypePin())
 	{
 		bool bSmart = ResolvePinValue(Pin) == TEXT("Smart");
-		SetNodeHasAdvanced(UThirdwebRuntimeSettings::IsEcosystem() || bSmart);
+		SetNodeHasAdvanced(bSmart);
 		FString Source = ResolvePinValue(GetSourcePin());
 		SetPinVisibility(GetSourcePin(), !bSmart);
 		SetPinVisibility(GetProviderPin(), !bSmart && Source == TEXT("OAuth"));

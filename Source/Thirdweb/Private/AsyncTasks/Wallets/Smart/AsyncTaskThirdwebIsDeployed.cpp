@@ -22,7 +22,7 @@ UAsyncTaskThirdwebIsDeployed* UAsyncTaskThirdwebIsDeployed::IsDeployed(UObject* 
 	return Task;
 }
 
-void UAsyncTaskThirdwebIsDeployed::HandleResponse(const bool& bIsDeployed)
+void UAsyncTaskThirdwebIsDeployed::HandleResponse(const bool bIsDeployed)
 {
 	if (IsInGameThread())
 	{

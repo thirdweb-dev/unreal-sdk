@@ -3,9 +3,7 @@
 #pragma once
 
 #include "ThirdwebWalletHandle.h"
-
 #include "Engine/StreamableManager.h"
-
 #include "ThirdwebInAppWalletHandle.generated.h"
 
 struct FThirdwebLinkedAccount;
@@ -19,7 +17,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 
 	DECLARE_DELEGATE_OneParam(FCreateInAppWalletDelegate, const FInAppWalletHandle&);
 	DECLARE_DELEGATE_OneParam(FGetLinkedAccountsDelegate, const TArray<FThirdwebLinkedAccount>&);
-	
+
 	enum EInAppSource
 	{
 		InvalidSource,
@@ -28,6 +26,7 @@ struct THIRDWEB_API FInAppWalletHandle : public FWalletHandle
 		Phone,
 		Jwt,
 		AuthEndpoint,
+		Siwe,
 		Guest
 	};
 
@@ -117,6 +116,14 @@ public:
 	static void CreateJwtWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate) { return CreateCustomAuthWallet(Jwt, SuccessDelegate, ErrorDelegate); }
 
 	/**
+	 * Creates a Sign-In with Ethereum (SIWE) wallet.
+	 *
+	 * @param SuccessDelegate The delegate to be executed upon successful wallet creation.
+	 * @param ErrorDelegate The delegate to be executed if an error occurs during wallet creation.
+	 */
+	static void CreateSiweWallet(const FCreateInAppWalletDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
 	 * Creates an in-app wallet with an authentication endpoint.
 	 *
 	 * @param SuccessDelegate Delegate to be called upon successful wallet creation, receiving specific success details.
@@ -126,7 +133,7 @@ public:
 	{
 		return CreateCustomAuthWallet(AuthEndpoint, SuccessDelegate, ErrorDelegate);
 	}
-	
+
 	/**
 	 * Creates a guest wallet by delegating to the custom authorization wallet creation function.
 	 *
@@ -160,7 +167,7 @@ public:
 	 *
 	 */
 	void SendOTP(const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with a One-Time Password (OTP) for the in-app wallet handle.
 	 *
@@ -208,7 +215,7 @@ public:
 	 * @param ErrorDelegate A delegate that will be called if there is an error during the linking process, providing an error message.
 	 */
 	void LinkOAuth(const FInAppWalletHandle& Wallet, const FString& AuthResult, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with a JSON Web Token (JWT) for authentication.
 	 *
@@ -227,7 +234,7 @@ public:
  	 * @param ErrorDelegate Delegate to be executed if an error occurs during authentication.
  	 */
 	void LinkJwt(const FInAppWalletHandle& Wallet, const FString& Jwt, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with the authentication endpoint using the provided payload.
 	 *
@@ -246,7 +253,7 @@ public:
 	 * @param ErrorDelegate The delegate to be executed if an error occurs, should be bound to handle error messages.
 	 */
 	void LinkAuthEndpoint(const FInAppWalletHandle& Wallet, const FString& Payload, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Signs in with guest authentication.
 	 *
@@ -265,20 +272,41 @@ public:
 	void LinkGuest(const FInAppWalletHandle& Wallet, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
 
 	/**
+	 * Initiates a sign-in process using Ethereum credentials.
+	 *
+	 * @param Payload The payload containing the sign-in data.
+	 * @param Signature The signature authenticating the payload.
+	 * @param SuccessDelegate Delegate to execute upon successful sign-in.
+	 * @param ErrorDelegate Delegate to execute upon encountering an error.
+	 */
+	void SignInWithEthereum(const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+
+	/**
+	 * Links an in-app wallet using the SIWE (Sign-In with Ethereum) protocol.
+	 *
+	 * @param Wallet The in-app wallet handle to be linked, must be a valid wallet.
+	 * @param Payload The payload containing the sign-in data.
+	 * @param Signature The signature authenticating the payload.
+	 * @param SuccessDelegate The delegate to be executed upon successful linking.
+	 * @param ErrorDelegate The delegate to be executed in case of an error during the linking process.
+	 */
+	void LinkSiwe(const FInAppWalletHandle& Wallet, const FString& Payload, const FString& Signature, const FStreamableDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
+	
+	/**
 	 * Retrieves the linked accounts associated with this FInAppWalletHandle.
 	 *
 	 * @param SuccessDelegate Delegate that will be executed with the linked accounts information if the operation is successful.
 	 * @param ErrorDelegate Delegate that will be executed with an error message if the operation fails.
 	 */
 	void GetLinkedAccounts(const FGetLinkedAccountsDelegate& SuccessDelegate, const FStringDelegate& ErrorDelegate);
-	
+
 	/**
 	 * Retrieves the source of the in-app wallet.
 	 *
 	 * @return The source of the in-app wallet as an EInAppSource enum.
 	 */
 	EInAppSource GetSource() const { return Source; }
-	
+
 	/**
 	 * Retrieves the source string.
 	 *
@@ -303,6 +331,7 @@ public:
 			{Phone, TEXT("Phone")},
 			{Jwt, TEXT("JWT")},
 			{AuthEndpoint, TEXT("AuthEndpoint")},
+			{Siwe, TEXT("SIWE")},
 			{Guest, TEXT("Guest")},
 		};
 		return Map.Contains(Source) ? Map[Source] : TEXT("Unknown");
@@ -322,6 +351,36 @@ public:
 	 */
 	EThirdwebOAuthProvider GetOAuthProvider() const { return Provider; }
 
+	bool operator==(const FInAppWalletHandle& Other) const
+	{
+		return GetID() == Other.GetID();
+	}
+
+	bool operator!=(const FInAppWalletHandle& Other) const
+	{
+		return GetID() != Other.GetID();
+	}
+	
+	bool operator==(const EInAppSource& InSource) const
+	{
+		return GetSource() == InSource;
+	}
+
+	bool operator!=(const EInAppSource& InSource) const
+	{
+		return GetSource() != InSource;
+	}
+
+	bool operator==(const EThirdwebOAuthProvider& InProvider) const
+	{
+		return GetOAuthProvider() == InProvider;
+	}
+
+	bool operator!=(const EThirdwebOAuthProvider& InProvider) const
+	{
+		return GetOAuthProvider() != InProvider;
+	}
+	
 private:
 	// The current Handle type
 	EInAppSource Source = InvalidSource;

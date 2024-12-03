@@ -5,30 +5,31 @@
 #include <random>
 
 #include "HttpModule.h"
+#include "IImageWrapperModule.h"
+#include "RenderingThread.h"
+#include "TextureResource.h"
 #include "Thirdweb.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
-
+#include "Containers/ThirdwebIPFSUploadResult.h"
+#include "Containers/ThirdwebMultipartFormData.h"
 #include "Dom/JsonObject.h"
-
+#include "Engine/Texture2D.h"
+#include "Engine/Texture2DDynamic.h"
 #include "Engine/ThirdwebEngineCommon.h"
-
 #include "GenericPlatform/GenericPlatformHttp.h"
-
 #include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #include "Interfaces/IPluginManager.h"
-
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
-
+#include "Misc/Base64.h"
 #include "Misc/DefaultValueHelper.h"
-
 #include "Policies/CondensedJsonPrintPolicy.h"
-
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
-
+#include "ThirdParty/QRCodeGenerator.h"
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 #include "Wallets/ThirdwebWalletHandle.h"
@@ -111,6 +112,168 @@ namespace ThirdwebUtils
 		return Result;
 	}
 
+	UTexture2D* CreateQrCode(const FString& Text)
+	{
+		QRCodeGenerator::FQRCode QrCode = QRCodeGenerator::FQRCode::EncodeText(TCHAR_TO_UTF8(*Text), QRCodeGenerator::FQRCode::ECC::Low);
+
+		uint8 Size = QrCode.GetSize();
+		TArray<FColor> Pixels;
+		Pixels.SetNumZeroed(Size * Size);
+
+		for (uint8 x = 0; x < Size; x++)
+		{
+			for (uint8 y = 0; y < Size; y++)
+			{
+				Pixels[x + y * Size] = QrCode.GetModule(x, y) ? FColor::White : FColor::Black;
+			}
+		}
+
+		UTexture2D* Texture = UTexture2D::CreateTransient(Size, Size, PF_B8G8R8A8, "QRCode");
+		void* Data = Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+		FMemory::Memcpy(Data, Pixels.GetData(), Size * Size * 4);
+		Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
+		Texture->UpdateResource();
+		Texture->Filter = TF_Nearest;
+
+		return Texture;
+	}
+
+	namespace Storage
+	{
+		void Download(const FString& Url, const FDownloadBytesSuccessDelegate& Success, const FStringDelegate& Error)
+		{
+			{
+				FString FinalUrl = Url;
+				if (FinalUrl.IsEmpty())
+				{
+					EXECUTE_IF_BOUND(Error, TEXT("Empty URL"))
+				}
+				static const TCHAR* Base64Prefix = TEXT("data:application/json;base64,");
+				if (FinalUrl.StartsWith(Base64Prefix))
+				{
+					FBase64::Decode(FinalUrl.Replace(Base64Prefix, TEXT("")), FinalUrl);
+					EXECUTE_IF_BOUND(Success, Internal::StringToBytes(FinalUrl));
+					return;
+				}
+				FinalUrl = Internal::ReplaceIpfs(FinalUrl, FString::Printf(TEXT("https://%s.ipfscdn.io/ipfs/"), *UThirdwebRuntimeSettings::GetClientId()));
+
+				FHttpModule& HttpModule = FHttpModule::Get();
+				const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
+				Request->SetVerb(TEXT("GET"));
+				Request->SetTimeout(30.0f);
+				Request->SetURL(FinalUrl);
+				Request->OnProcessRequestComplete().BindLambda([Success, Error](FHttpRequestPtr, const FHttpResponsePtr& Response, const bool bConnectedSuccessfully)
+				{
+					if (bConnectedSuccessfully)
+					{
+						if (Response.IsValid())
+						{
+							EXECUTE_IF_BOUND(Success, Response->GetContent())
+						}
+						else
+						{
+							EXECUTE_IF_BOUND(Error, TEXT("Invalid Response Object"))
+						}
+					}
+					else
+					{
+						EXECUTE_IF_BOUND(Error, TEXT("Network Connection Error"))
+					}
+				});
+				Request->ProcessRequest();
+			}
+		}
+
+		template <typename T>
+		T ConvertDownloadResult(const TArray<uint8>& Bytes)
+		{
+			if constexpr (std::is_same_v<T, TSharedPtr<FJsonObject>>)
+			{
+				return Json::ToJson(Internal::BytesToString(Bytes));
+			}
+			else if constexpr (std::is_same_v<T, UTexture2DDynamic*>)
+			{
+				return Internal::BytesToTexture2DDynamic(Bytes);
+			}
+			else if constexpr (std::is_same_v<T, FString>)
+			{
+				return Internal::BytesToString(Bytes);
+			}
+			else
+			{
+				static_assert(std::is_same_v<T, TSharedPtr<FJsonObject>> || std::is_same_v<T, UTexture2DDynamic*> || std::is_same_v<T, FString>, "Unsupported type for ConvertDownloadResult");
+				return T{};
+			}
+		}
+
+		template THIRDWEB_API TSharedPtr<FJsonObject> ConvertDownloadResult<TSharedPtr<FJsonObject>>(const TArray<uint8>& Bytes);
+		template THIRDWEB_API UTexture2DDynamic* ConvertDownloadResult<UTexture2DDynamic*>(const TArray<uint8>& Bytes);
+		template THIRDWEB_API FString ConvertDownloadResult<FString>(const TArray<uint8>& Bytes);
+
+		template <typename T>
+		void Upload(const FString& Filename, const T Content, const FUploadSuccessDelegate& Success, const FStringDelegate& Error)
+
+		{
+			if constexpr (std::is_same_v<T, TArray<uint8>>)
+			{
+				return UploadInternal(Filename, Content, Success, Error);
+			}
+			else if constexpr (std::is_same_v<T, FString>)
+			{
+				return UploadInternal(Filename, Internal::StringToBytes(Content), Success, Error);
+			}
+			else
+			{
+				static_assert(std::is_same_v<T, TArray<uint8>> || std::is_same_v<T, FString>, "Unsupported type for Upload");
+			}
+		}
+
+		template THIRDWEB_API void Upload<TArray<uint8>>(const FString& Filename, const TArray<uint8> Content, const FUploadSuccessDelegate& Success, const FStringDelegate& Error);
+		template THIRDWEB_API void Upload<FString>(const FString& Filename, const FString Content, const FUploadSuccessDelegate& Success, const FStringDelegate& Error);
+
+		void UploadInternal(const FString& Filename, const TArray<uint8>& Content, const FUploadSuccessDelegate& Success, const FStringDelegate& Error)
+		{
+			if (Content.Num() == 0)
+			{
+				EXECUTE_IF_BOUND(Error, TEXT("Empty Content"))
+				return;
+			}
+			FHttpModule& HttpModule = FHttpModule::Get();
+			const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
+			Request->SetVerb(TEXT("POST"));
+
+			// Prepare multipart form data
+			FThirdwebMultipartFormData FormData;
+			FormData.AddFile(TEXT("file"), Filename, Content);
+
+			// Get the content and boundary
+			TArray<uint8> RequestContent = FormData.GetContent();
+			FString Boundary = FormData.GetBoundary();
+
+			// Set the request content
+			Request->SetContent(RequestContent);
+
+			// Set the content type to multipart/form-data
+			Request->SetHeader(TEXT("Content-Type"), TEXT("multipart/form-data; boundary=") + Boundary);
+
+			// Bind the request completion callbacks
+			Request->OnProcessRequestComplete().BindLambda([Success, Error](FHttpRequestPtr, const FHttpResponsePtr& Response, const bool bConnectedSuccessfully)
+			{
+				if (bConnectedSuccessfully && Response.IsValid() && EHttpResponseCodes::IsOk(Response->GetResponseCode()))
+				{
+					EXECUTE_IF_BOUND(Success, FThirdwebIPFSUploadResult::FromJson(Response->GetContentAsString()));
+				}
+				else
+				{
+					EXECUTE_IF_BOUND(Error, Response.IsValid() ? Response->GetContentAsString() : TEXT("Request failed"));
+				}
+			});
+
+			// Execute the request
+			Request->ProcessRequest();
+		}
+	}
+
 	namespace Internal
 	{
 		FString MaskSensitiveString(const FString& InString, const FString& MatchString, const FString& MaskCharacter, const int32 ShowBeginCount, const int32 ShowEndCount)
@@ -150,6 +313,8 @@ namespace ThirdwebUtils
 
 		void LogRequest(const TSharedRef<IHttpRequest>& Request, const TArray<FString>& SensitiveStrings)
 		{
+			TArray<FString> Sensitive = SensitiveStrings;
+			Sensitive.AddUnique(UThirdwebRuntimeSettings::GetEngineAccessToken());
 			TArray<uint8> Content = Request->GetContent();
 			TW_LOG(
 				VeryVerbose,
@@ -164,6 +329,58 @@ namespace ThirdwebUtils
 		{
 			int64 Result;
 			return FDefaultValueHelper::ParseInt64(String, Result) ? Result : 0;
+		}
+
+		TArray<uint8> StringToBytes(const FString& String)
+		{
+			uint64 UTF8Length = FPlatformString::ConvertedLength<UTF8CHAR>(*String, String.Len());
+			TArray<uint8> Buffer;
+			Buffer.SetNumUninitialized(UTF8Length);
+			FPlatformString::Convert(reinterpret_cast<UTF8CHAR*>(Buffer.GetData()), Buffer.Num(), *String, String.Len());
+			return Buffer;
+		}
+
+		UTexture2DDynamic* BytesToTexture2DDynamic(const TArray<uint8>& Bytes)
+		{
+			IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+
+			// ReSharper disable CppTooWideScopeInitStatement
+			EImageFormat ImageFormat = ImageWrapperModule.DetectImageFormat(Bytes.GetData(), Bytes.Num());
+			if (ImageFormat != EImageFormat::Invalid)
+			{
+				TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageFormat);
+				if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(Bytes.GetData(), Bytes.Num()))
+				{
+					TArray64<uint8> RawData;
+					if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
+					{
+						FTexture2DDynamicCreateInfo CreateInfo(PF_B8G8R8A8, false, true);
+						UTexture2DDynamic* Texture = UTexture2DDynamic::Create(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), CreateInfo);
+
+						// Filling the texture's data
+						Texture->UpdateResource();
+						ENQUEUE_RENDER_COMMAND(UpdateDynamicTexture)([Texture, RawDataData = MoveTemp(RawData)](FRHICommandListImmediate&)
+						{
+							if (FTexture2DDynamicResource* Texture2DDynamicResource = static_cast<FTexture2DDynamicResource*>(Texture->GetResource()))
+							{
+								uint32 DestStride;
+								void* TextureData = RHILockTexture2D(Texture2DDynamicResource->GetTexture2DRHI(), 0, RLM_WriteOnly, DestStride, false);
+								FMemory::Memcpy(TextureData, RawDataData.GetData(), RawDataData.Num());
+								RHIUnlockTexture2D(Texture2DDynamicResource->GetTexture2DRHI(), 0, false);
+							}
+						});
+						return Texture;
+					}
+				}
+			}
+			// ReSharper restore CppTooWideScopeInitStatement
+			return nullptr;
+		}
+
+		FString BytesToString(const TArray<uint8>& Bytes)
+		{
+			FUTF8ToTCHAR Data(reinterpret_cast<const ANSICHAR*>(Bytes.GetData()), Bytes.Num());
+			return FString(Data.Length(), Data.Get());
 		}
 
 		FString GetPluginVersion()
@@ -256,6 +473,13 @@ namespace ThirdwebUtils
 			Request->SetTimeout(30.0f);
 			return Request;
 		}
+
+		FString ReplaceIpfs(const FString& Url, const FString& Gateway)
+		{
+			static const FString DefaultGateway = TEXT("https://ipfs.io/ipfs/");
+			const FString GatewayUrl = Gateway.IsEmpty() ? DefaultGateway : Gateway;
+			return Gateway + Url.RightChop(7);
+		}
 	}
 
 	namespace Maps
@@ -299,7 +523,7 @@ namespace ThirdwebUtils
 			{
 				return JsonObject;
 			}
-			return TSharedPtr<FJsonObject>();
+			return MakeShareable(new FJsonObject);
 		}
 
 		TArray<TSharedPtr<FJsonValue>> ToJsonArray(const FString& String)
@@ -326,6 +550,23 @@ namespace ThirdwebUtils
 			return Out;
 		}
 
+		FString ToString(const TSharedPtr<FJsonValue>& JsonValue)
+		{
+			if (JsonValue.IsValid())
+			{
+				switch (JsonValue->Type)
+				{
+				case EJson::String: return JsonValue->AsString();
+				case EJson::Boolean: return JsonValue->AsBool() ? TEXT("true") : TEXT("false");
+				case EJson::Array: return ToString(JsonValue->AsArray());
+				case EJson::Object: return ToString(JsonValue->AsObject());
+				case EJson::Number: return FString::SanitizeFloat(JsonValue->AsNumber(), 0);
+				default: return TEXT("");
+				}
+			}
+			return TEXT("");
+		}
+
 		FString AsString(const TSharedPtr<FJsonValue>& JsonValue)
 		{
 			if (JsonValue.IsValid() && !JsonValue->IsNull())
@@ -343,28 +584,58 @@ namespace ThirdwebUtils
 			return TEXT("");
 		}
 
-		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error)
+		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonValue>& JsonValue, FString& Error)
 		{
 			if (TSharedPtr<FJsonObject> ContentJsonObject = ToJson(Content); ContentJsonObject.IsValid())
 			{
 				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("error")))
 				{
-					JsonObject = ContentJsonObject->GetObjectField(TEXT("error"));
-					Error = TEXT("Unknown Error");
-					if (JsonObject->HasTypedField<EJson::String>(TEXT("message")))
-					{
-						Error = JsonObject->GetStringField(TEXT("message"));
-					}
+					Error = ParseEngineError(ContentJsonObject->GetObjectField(TEXT("error")));
 					return false;
 				}
-				if (ContentJsonObject->HasTypedField<EJson::Object>(TEXT("result")))
+				if (ContentJsonObject->HasField(TEXT("result")))
 				{
-					JsonObject = ContentJsonObject->GetObjectField(TEXT("result"));
-					return true;
+					JsonValue = ContentJsonObject->TryGetField(TEXT("result"));
+					if (JsonValue.IsValid())
+					{
+						return true;
+					}
+					Error = TEXT("Invalid Result Type");
+					return false;
 				}
 			}
 			Error = TEXT("Invalid Response");
 			return false;
+		}
+
+		bool ParseEngineResponse(const FString& Content, TSharedPtr<FJsonObject>& JsonObject, FString& Error)
+		{
+			if (TSharedPtr<FJsonValue> JsonValue; ParseEngineResponse(Content, JsonValue, Error))
+			{
+				JsonObject = JsonValue->AsObject();
+				return true;
+			}
+			return false;
+		}
+
+		bool ParseEngineResponse(const FString& Content, TArray<TSharedPtr<FJsonValue>>& JsonArray, FString& Error)
+		{
+			if (TSharedPtr<FJsonValue> JsonValue; ParseEngineResponse(Content, JsonValue, Error))
+			{
+				JsonArray = JsonValue->AsArray();
+				return true;
+			}
+			return false;
+		}
+
+		FString ParseEngineError(const TSharedPtr<FJsonObject>& Error)
+		{
+			FString Message = TEXT("Unknown Error");
+			if (Error->HasTypedField<EJson::String>(TEXT("message")))
+			{
+				Message = Error->GetStringField(TEXT("message"));
+			}
+			return Message;
 		}
 	}
 }

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
-
 #include "ThirdwebFunctionLibrary.generated.h"
 
+struct FThirdwebEngineTransactionStatusResult;
 struct FThirdwebCountryCode;
 struct FInAppWalletHandle;
 struct FSmartWalletHandle;
@@ -110,20 +110,28 @@ public:
 	static bool BP_IsTextChecksummedAddress(const FText Address);
 	
 	/** Returns the checksummed address. If already checksummed it is a no-op */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="To Checksummed Address", AutoCreateRefTerm="Address"), Category="Utilities|Text")
+	UFUNCTION(BlueprintPure, DisplayName="To Checksummed Address", meta=(AutoCreateRefTerm="Address"), Category="Utilities|Text")
 	static FText Conv_TextAddressToStringChecksummedAddress(const FText& Address);
 
 	/** Constant for the ethereum zero address */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Zero Address"), Category="Utilities|String")
+	UFUNCTION(BlueprintPure, DisplayName="Zero Address", Category="Utilities|String")
 	static FString BP_ZeroAddress();
 
+	UFUNCTION(BlueprintPure, DisplayName="Create QR Code", Category="Utilities|String")
+	static UTexture2D* BP_CreateQrCode(const FString& Text);
+	
 	/// Data
 
 	/** Gets the country code data for the input country code, if it exists */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Get Country Code Data"), Category="Utilities|Country Codes")
+	UFUNCTION(BlueprintPure, DisplayName="Get Country Code Data", Category="Utilities|Country Codes")
 	static FThirdwebCountryCode BP_GetCountryCodeData(const int32 CountryCode);
 
 	/** Gets all country code data */
-	UFUNCTION(BlueprintPure, meta=(DisplayName="Get All Country Code Data"), Category="Utilities|Country Codes")
+	UFUNCTION(BlueprintPure, DisplayName="Get All Country Code Data", Category="Utilities|Country Codes")
 	static TArray<FThirdwebCountryCode> BP_GetAllCountryCodeData();
+
+	// Engine
+
+	UFUNCTION(BlueprintPure, DisplayName="Get Transaction Receipt Inputs", Category="Utilities|Engine|Transaction Status Result")
+	static void BP_GetTransactionReceiptInputs(const FThirdwebEngineTransactionStatusResult& TransactionStatus, FString& TxHash, int64& ChainID);
 };

@@ -32,7 +32,7 @@ protected:
 	
 private:
 	UFUNCTION()
-	void HandleIsDeployedResponse(const bool& bDeployed);
+	void HandleIsDeployedResponse(const bool bDeployed);
 	
 	UFUNCTION()
 	void HandleResponse(const TArray<FSigner>& Signers);

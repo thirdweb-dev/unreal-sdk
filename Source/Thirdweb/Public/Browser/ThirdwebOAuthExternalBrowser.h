@@ -4,9 +4,7 @@
 
 #include "HttpRouteHandle.h"
 #include "Tickable.h"
-
 #include "UObject/Object.h"
-
 #include "ThirdwebOAuthExternalBrowser.generated.h"
 
 class IHttpRouter;
@@ -27,6 +25,7 @@ public:
 	/** FTickableGameObject implementation */
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { return TStatId(); };
+	virtual void BeginDestroy() override;
 	
 private:
 	bool CallbackRequestHandler(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete);
@@ -37,7 +36,9 @@ public:
 	DECLARE_DELEGATE_OneParam(FSimpleStringDelegate, const FString&);
 	FSimpleStringDelegate OnAuthenticated;
 	FSimpleStringDelegate OnError;
-
+	
+	DECLARE_DELEGATE_TwoParams(FDoubleStringDelegate, const FString&, const FString&);
+	FDoubleStringDelegate OnSiweComplete;
 private:
 	enum EState
 	{
@@ -46,8 +47,14 @@ private:
 		AuthComplete,
 		Complete
 	};
-	
+
+	// OAuth
 	FString AuthResult;
+	// SIWE
+	FString Signature;
+	FString Payload;
+	bool bIsSiwe;
+	
 	FEvent* AuthEvent;
 	FHttpRouteHandle RouteHandle;
 	TSharedPtr<IHttpRouter> Router;

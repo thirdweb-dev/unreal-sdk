@@ -12,6 +12,7 @@ namespace TwPins
 	extern const FName Wallet;
 	extern const FName InAppWallet;
 	extern const FName SmartWallet;
+	extern const FName Signature;
 	extern const FName Success;
 	extern const FName Failed;
 	extern const FName Error;

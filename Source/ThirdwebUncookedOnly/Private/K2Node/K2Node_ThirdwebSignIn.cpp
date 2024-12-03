@@ -2,7 +2,8 @@
 
 #include "K2Node/K2Node_ThirdwebSignIn.h"
 
-#include "AsyncTasks/Wallets/InApp/SignIn/AsyncTaskThirdwebSignIn.h"
+#include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignIn.h"
+
 
 #define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
 
@@ -45,7 +46,7 @@ void UK2Node_ThirdwebSignIn::AllocateDefaultPins()
 	// Input Pins
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FInAppWalletHandle::StaticStruct(), TwPins::Wallet);
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Input);
-	
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_String, TwPins::Signature);
 	PostAllocateDefaultPins();
 }
 
