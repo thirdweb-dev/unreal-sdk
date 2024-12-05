@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2024 Thirdweb. All Rights Reserved.
 
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateAuthEndpointWallet.h"
+
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 
 void UAsyncTaskThirdwebCreateAuthEndpointWallet::Activate()

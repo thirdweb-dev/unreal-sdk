@@ -2,6 +2,7 @@
 
 #include "Engine/Marketplace/Offers/ThirdwebMarketplaceOffer.h"
 
+#include "Dom/JsonObject.h"
 #include "Engine/Marketplace/ThirdwebMarketplaceCommon.h"
 #include "Misc/DateTime.h"
 

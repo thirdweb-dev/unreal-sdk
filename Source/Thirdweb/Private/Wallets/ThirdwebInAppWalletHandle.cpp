@@ -544,6 +544,11 @@ void FInAppWalletHandle::SignInWithOAuth(const FString& AuthResult, const FStrea
 	CHECK_VALIDITY(ErrorDelegate)
 	CHECK_SOURCE(OAuthProvider, ErrorDelegate)
 
+	if (AuthResult.IsEmpty())
+	{
+		ErrorDelegate.Execute(TEXT("Empty Auth Result"));
+		return;
+	}
 	FString Result = ThirdwebUtils::ParseAuthResult(AuthResult);
 	FInAppWalletHandle ThisCopy = *this;
 	UE::Tasks::Launch(UE_SOURCE_LOCATION, [ThisCopy, Result, SuccessDelegate, ErrorDelegate]

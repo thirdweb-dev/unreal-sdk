@@ -3,6 +3,7 @@
 #include "Engine/Transaction/ThirdwebEngineTransactionStatusResult.h"
 
 #include "ThirdwebUtils.h"
+#include "Dom/JsonObject.h"
 #include "Engine/ThirdwebEngineCommon.h"
 
 FThirdwebEngineTransactionStatusResult::FThirdwebEngineTransactionStatusResult()

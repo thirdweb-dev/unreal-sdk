@@ -2,6 +2,8 @@
 
 #include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceBid.h"
 
+#include "Dom/JsonObject.h"
+
 FThirdwebMarketplaceBid FThirdwebMarketplaceBid::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	FThirdwebMarketplaceBid Bid;

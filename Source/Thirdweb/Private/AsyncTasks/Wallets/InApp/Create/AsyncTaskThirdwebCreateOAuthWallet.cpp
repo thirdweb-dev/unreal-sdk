@@ -3,20 +3,7 @@
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateOAuthWallet.h"
 
 #include "ThirdwebRuntimeSettings.h"
-
 #include "Wallets/ThirdwebInAppWalletHandle.h"
-
-UAsyncTaskThirdwebCreateOAuthWallet* UAsyncTaskThirdwebCreateOAuthWallet::CreateOAuthWallet(UObject* WorldContextObject, const EThirdwebOAuthProvider Provider)
-{
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
-	ThisClass* Task = NewObject<ThisClass>(WorldContextObject);
-	Task->Provider = Provider;
-	Task->RegisterWithGameInstance(WorldContextObject);
-	return Task;
-}
 
 void UAsyncTaskThirdwebCreateOAuthWallet::Activate()
 {

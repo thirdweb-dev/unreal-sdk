@@ -147,7 +147,7 @@ void UK2Node_ThirdwebFetchIpfsData::ExpandNode(FKismetCompilerContext& CompilerC
 	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
-void UK2Node_ThirdwebFetchIpfsData::UpdatePins()
+bool UK2Node_ThirdwebFetchIpfsData::UpdatePins()
 {
 	if (UEdGraphPin* Pin = GetDataPin())
 	{
@@ -171,6 +171,7 @@ void UK2Node_ThirdwebFetchIpfsData::UpdatePins()
 				}
 				CachedNodeTitle.MarkDirty();
 				GetGraph()->NotifyGraphChanged();
+				return true;
 			}
 		}
 		else
@@ -183,9 +184,11 @@ void UK2Node_ThirdwebFetchIpfsData::UpdatePins()
 				SetPinFriendlyName(Pin, LOCTEXT("K2Node_ThirdwebFetchIpfsData_JsonData", "Data"));
 				CachedNodeTitle.MarkDirty();
 				GetGraph()->NotifyGraphChanged();
+				return true;
 			}
 		}
 	}
+	return false;
 }
 
 UEdGraphPin* UK2Node_ThirdwebFetchIpfsData::GetUriPin() const

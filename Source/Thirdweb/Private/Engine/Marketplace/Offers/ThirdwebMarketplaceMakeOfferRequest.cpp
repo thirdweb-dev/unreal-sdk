@@ -2,6 +2,8 @@
 
 #include "Engine/Marketplace/Offers/ThirdwebMarketplaceMakeOfferRequest.h"
 
+#include "Dom/JsonObject.h"
+
 TSharedPtr<FJsonObject> FThirdwebMarketplaceMakeOfferRequest::ToJson() const
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);

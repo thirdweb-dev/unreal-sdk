@@ -3,11 +3,8 @@
 #pragma once
 
 #include "HAL/Platform.h"
-
 #include "Internationalization/Internationalization.h"
-
 #include "TWUOCommon.generated.h"
-
 
 UENUM(BlueprintType, DisplayName="Thirdweb Wallet Type")
 enum class EThirdwebWalletType : uint8
@@ -25,5 +22,6 @@ enum class EThirdwebInAppWalletSource : uint8
 	Jwt UMETA(DisplayName="JWT"),
 	AuthEndpoint UMETA(DisplayName="Auth Endpoint"),
 	Guest UMETA(DisplayName="Guest"),
-	Siwe UMETA(DisplayName="SIWE")
+	Siwe UMETA(DisplayName="SIWE"),
+	Invalid UMETA(Hidden)
 };

@@ -6,7 +6,7 @@
 #include "AsyncTaskThirdwebSmartSignMessage.generated.h"
 
 
-UCLASS()
+UCLASS(Abstract)
 class THIRDWEB_API UAsyncTaskThirdwebSmartSignMessage : public UAsyncTaskThirdwebSmartBase
 {
 	GENERATED_BODY()

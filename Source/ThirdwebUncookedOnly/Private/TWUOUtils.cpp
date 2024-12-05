@@ -2,26 +2,28 @@
 
 #include "TWUOUtils.h"
 
+#define LOCTEXT_NAMESPACE "ThirdwebUncookedOnly"
+
 namespace ThirdwebUtils
 {
 	namespace Maps
 	{
-		const TMap<EThirdwebInAppWalletSource, FString> InAppWalletSourceToString = {
-			{EThirdwebInAppWalletSource::OAuth, TEXT("OAuth")},
-			{EThirdwebInAppWalletSource::Email, TEXT("Email")},
-			{EThirdwebInAppWalletSource::Phone, TEXT("Phone")},
-			{EThirdwebInAppWalletSource::Jwt, TEXT("Jwt")},
-			{EThirdwebInAppWalletSource::AuthEndpoint, TEXT("AuthEndpoint")},
-			{EThirdwebInAppWalletSource::Guest, TEXT("Guest")},
-			{EThirdwebInAppWalletSource::Siwe, TEXT("SIWE")}
+		const TMap<EThirdwebInAppWalletSource, FText> InAppWalletSourceToText = {
+			{EThirdwebInAppWalletSource::OAuth, LOCTEXT("OAuth", "OAuth")},
+			{EThirdwebInAppWalletSource::Email, LOCTEXT("Email", "Email")},
+			{EThirdwebInAppWalletSource::Phone, LOCTEXT("Phone", "Phone")},
+			{EThirdwebInAppWalletSource::Jwt, LOCTEXT("Jwt", "Jwt")},
+			{EThirdwebInAppWalletSource::AuthEndpoint, LOCTEXT("Auth Endpoint", "Auth Endpoint")},
+			{EThirdwebInAppWalletSource::Guest, LOCTEXT("Guest", "Guest")},
+			{EThirdwebInAppWalletSource::Siwe, LOCTEXT("SIWE", "SIWE")},
 		};
 	}
 
 	EThirdwebInAppWalletSource ToInAppWalletSource(const FString& Source)
 	{
-		for (const auto& It : Maps::InAppWalletSourceToString)
+		for (const auto& It : Maps::InAppWalletSourceToText)
 		{
-			if (It.Value.Equals(Source, ESearchCase::IgnoreCase))
+			if (It.Value.ToString().Equals(Source, ESearchCase::IgnoreCase))
 			{
 				return It.Key;
 			}
@@ -29,8 +31,20 @@ namespace ThirdwebUtils
 		return EThirdwebInAppWalletSource::OAuth;
 	}
 
+	EThirdwebInAppWalletSource ToInAppWalletSource(const FText& Source)
+	{
+		return ToInAppWalletSource(Source.ToString());
+	}
+
 	FString ToString(const EThirdwebInAppWalletSource& Source)
 	{
-		return Maps::InAppWalletSourceToString.Contains(Source) ? Maps::InAppWalletSourceToString[Source] : TEXT("Invalid");
+		return Maps::InAppWalletSourceToText.Contains(Source) ? Maps::InAppWalletSourceToText[Source].ToString() : TEXT("Invalid");
+	}
+
+	FText ToText(const EThirdwebInAppWalletSource& Source)
+	{
+		return Maps::InAppWalletSourceToText.Contains(Source) ? Maps::InAppWalletSourceToText[Source] : LOCTEXT("Invalid", "Invalid");
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

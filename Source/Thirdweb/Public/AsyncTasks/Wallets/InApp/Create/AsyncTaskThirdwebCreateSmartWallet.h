@@ -17,12 +17,23 @@ public:
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject", AdvancedDisplay="Factory,AccountOverride"), Category="Thirdweb|Wallets|Smart")
-	static UAsyncTaskThirdwebCreateSmartWallet* CreateSmartWallet(UObject* WorldContextObject,
-	                                                              const FInAppWalletHandle& InAppWallet,
-	                                                              const int64 ChainID,
-	                                                              const bool bGasless = true,
-	                                                              const FString& Factory = "",
-	                                                              const FString& AccountOverride = "");
+	static UAsyncTaskThirdwebCreateSmartWallet* CreateSmartWallet(
+		UObject* WorldContextObject,
+		const FInAppWalletHandle& InAppWallet,
+		const int64 ChainID,
+		const bool bGasless = true,
+		const FString& Factory = "",
+		const FString& AccountOverride = ""
+	)
+	{
+		NEW_TASK
+		Task->InAppWallet = InAppWallet;
+		Task->ChainID = ChainID;
+		Task->bGasless = bGasless;
+		Task->Factory = Factory;
+		Task->AccountOverride = AccountOverride;
+		RR_TASK
+	};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCreateSmartWalletDelegate, const FSmartWalletHandle&, SmartWallet, const FString&, Error);
 
