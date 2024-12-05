@@ -213,6 +213,7 @@ void UK2Node_ThirdwebCreateWallet::ExpandNode(FKismetCompilerContext& CompilerCo
 				ProxyClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
 				ProxyFactoryClass = UAsyncTaskThirdwebCreateSiweWallet::StaticClass();
 				ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UAsyncTaskThirdwebCreateSiweWallet, CreateSiweWallet);
+				break;
 			}
 		default:
 			{

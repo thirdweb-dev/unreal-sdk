@@ -14,7 +14,12 @@ class THIRDWEB_API UAsyncTaskThirdwebCreateOAuthWallet : public UAsyncTaskThirdw
 
 public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"), Category="Thirdweb|Wallets|InApp")
-	static UAsyncTaskThirdwebCreateOAuthWallet* CreateOAuthWallet(UObject* WorldContextObject, const EThirdwebOAuthProvider Provider);
+	static UAsyncTaskThirdwebCreateOAuthWallet* CreateOAuthWallet(UObject* WorldContextObject, const EThirdwebOAuthProvider Provider)
+	{
+		NEW_TASK
+		Task->Provider = Provider;
+		RR_TASK
+	}
 
 protected:
 	UPROPERTY(Transient)

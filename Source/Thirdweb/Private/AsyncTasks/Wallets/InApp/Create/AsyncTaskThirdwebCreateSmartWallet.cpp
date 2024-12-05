@@ -3,31 +3,7 @@
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
 #include "Components/SlateWrapperTypes.h"
-
 #include "Wallets/ThirdwebSmartWalletHandle.h"
-
-UAsyncTaskThirdwebCreateSmartWallet* UAsyncTaskThirdwebCreateSmartWallet::CreateSmartWallet(UObject* WorldContextObject,
-                                                                                            const FInAppWalletHandle& InAppWallet,
-                                                                                            const int64 ChainID,
-                                                                                            const bool bGasless,
-                                                                                            const FString& Factory,
-                                                                                            const FString& AccountOverride)
-{
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
-	NEW_TASK
-
-	Task->InAppWallet = InAppWallet;
-	Task->ChainID = ChainID;
-	Task->bGasless = bGasless;
-	Task->Factory = Factory;
-	Task->AccountOverride = AccountOverride;
-
-	Task->RegisterWithGameInstance(WorldContextObject);
-	return Task;
-}
 
 void UAsyncTaskThirdwebCreateSmartWallet::Activate()
 {
