@@ -21,19 +21,18 @@ public:
 	UK2Node_ThirdwebSignMessage();
 	
 	// UEdGraphNode interface implementation
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+	virtual void AllocateDefaultPins() override;
 	virtual FText GetTooltipText() const override;
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual void PinDefaultValueChanged(UEdGraphPin* Pin) override;
 	// End of implementation
 
 	// UK2Node interface implementation
+	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual FText GetMenuCategory() const override;
 	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
 	// End of implementation
-	
-	virtual void AllocateDefaultPins() override;
-	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 
 protected:
-	virtual void UpdatePins() override;
+	virtual bool UpdatePins() override;
 };

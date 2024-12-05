@@ -2,6 +2,7 @@
 
 #include "Engine/Marketplace/DirectListings/ThirdwebMarketplaceDirectListingRequest.h"
 
+#include "Dom/JsonObject.h"
 #include "Engine/Marketplace/ThirdwebMarketplaceCommon.h"
 
 TSharedPtr<FJsonObject> FThirdwebMarketplaceCreateDirectListingRequest::ToJson() const

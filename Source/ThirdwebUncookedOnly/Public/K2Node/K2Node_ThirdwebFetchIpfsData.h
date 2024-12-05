@@ -21,17 +21,19 @@ public:
 	UK2Node_ThirdwebFetchIpfsData();
 	
 	// UEdGraphNode interface implementation
+	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
 	virtual void PinDefaultValueChanged(UEdGraphPin* Pin) override;
 	// End of implementation
-
-	virtual void AllocateDefaultPins() override;
-	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
+	
+	// UK2Node interface implementation
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
+	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
+	// End of implementation
 
 protected:
-	virtual void UpdatePins() override;
+	virtual bool UpdatePins() override;
 
 	// Base Pins
 	UEdGraphPin* GetUriPin() const;

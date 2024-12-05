@@ -90,6 +90,10 @@ UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::SetPinVisibility(UEdGraphPin* Pin, c
 	if (Pin)
 	{
 		Pin->bHidden = !bShow;
+		if (!bShow && Pin->LinkedTo.Num() > 0)
+		{
+			Pin->BreakAllPinLinks();
+		}
 	}
 	return Pin;
 }
@@ -168,6 +172,15 @@ void UK2Node_ThirdwebBaseAsyncTask::SetNodeHasAdvanced(const bool bHasAdvanced)
 	}
 }
 
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::BreakPinLinksIf(UEdGraphPin* Pin, const bool bBreak)
+{
+	if (bBreak && Pin && Pin->LinkedTo.Num() > 0)
+	{
+		Pin->BreakAllPinLinks();
+	}
+	return Pin;
+}
+
 UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetProviderPin() const
 {
 	UEdGraphPin* Pin = FindPin(TwPins::Provider);
@@ -185,6 +198,13 @@ UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetInputPin() const
 UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetWalletPin() const
 {
 	UEdGraphPin* Pin = FindPin(TwPins::Wallet);
+	check(Pin == NULL || Pin->Direction == EGPD_Input);
+	return Pin;
+}
+
+UEdGraphPin* UK2Node_ThirdwebBaseAsyncTask::GetSignaturePin() const
+{
+	UEdGraphPin* Pin = FindPin(TwPins::Signature);
 	check(Pin == NULL || Pin->Direction == EGPD_Input);
 	return Pin;
 }
