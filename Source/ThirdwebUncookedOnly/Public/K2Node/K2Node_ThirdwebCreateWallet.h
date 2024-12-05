@@ -4,6 +4,7 @@
 
 #include "K2Node.h"
 #include "K2Node_ThirdwebBaseAsyncTask.h"
+#include "TWUOCommon.h"
 #include "K2Node_ThirdwebCreateWallet.generated.h"
 
 namespace TwPins
@@ -26,20 +27,30 @@ public:
 	UK2Node_ThirdwebCreateWallet();
 	
 	// UEdGraphNode interface implementation
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	virtual void AllocateDefaultPins() override;
 	virtual FText GetTooltipText() const override;
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual void PinDefaultValueChanged(UEdGraphPin* Pin) override;
 	// End of implementation
-
-	virtual void AllocateDefaultPins() override;
+	
+	// UK2Node interface implementation
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
+	virtual bool ShouldShowNodeProperties() const override { return true; }
+	// End of implementation
 
 protected:
-	virtual void UpdatePins() override;
+	UPROPERTY(EditDefaultsOnly, Category="Config")
+	EThirdwebWalletType Type;
+	
+	UPROPERTY(EditDefaultsOnly, meta=(EditCondition="Type==EThirdwebWalletType::InApp", EditConditionHides), Category="Config")
+	EThirdwebInAppWalletSource Source;
 
-	// Base Pins
-	UEdGraphPin* GetTypePin() const;
-	UEdGraphPin* GetSourcePin() const;
+protected:
+	virtual bool UpdatePins() override;
+	
 	virtual UEdGraphPin* GetWalletPin() const override;
 	
 	// Smart Wallet Pins

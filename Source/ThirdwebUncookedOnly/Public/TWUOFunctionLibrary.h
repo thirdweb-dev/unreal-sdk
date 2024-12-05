@@ -25,7 +25,13 @@ public:
 	UFUNCTION(BlueprintPure, DisplayName="To String (In App Wallet Source)", meta=(CompactNodeTitle="=>", BlueprintAutocast), Category="Utilities|String|In App Wallet")
 	static FString Conv_ThirdwebInAppWalletSourceToString(EThirdwebInAppWalletSource Source);
 
-	UFUNCTION(BlueprintPure, DisplayName="To In App Wallet Source", meta=(CompactNodeTitle="=>", BlueprintAutocast), Category="Utilities|String|In App Wallet")
+	UFUNCTION(BlueprintPure, DisplayName="To Text (In App Wallet Source)", meta=(CompactNodeTitle="=>", BlueprintAutocast), Category="Utilities|Text|In App Wallet")
+	static FText Conv_ThirdwebInAppWalletSourceToText(EThirdwebInAppWalletSource Source);
+	
+	UFUNCTION(BlueprintPure, DisplayName="To In App Wallet Source (String)", meta=(CompactNodeTitle="=>", BlueprintAutocast), Category="Utilities|String|In App Wallet")
 	static EThirdwebInAppWalletSource Conv_StringToThirdwebInAppWalletSource(FString Source);
+
+	UFUNCTION(BlueprintPure, DisplayName="To In App Wallet Source (Text)", meta=(CompactNodeTitle="=>", BlueprintAutocast), Category="Utilities|Text|In App Wallet")
+	static EThirdwebInAppWalletSource Conv_TextToThirdwebInAppWalletSource(FText Source);
 
 };

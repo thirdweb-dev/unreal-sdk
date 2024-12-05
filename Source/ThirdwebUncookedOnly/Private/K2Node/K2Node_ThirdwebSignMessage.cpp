@@ -92,7 +92,7 @@ void UK2Node_ThirdwebSignMessage::ExpandNode(FKismetCompilerContext& CompilerCon
 	Super::ExpandNode(CompilerContext, SourceGraph);
 }
 
-void UK2Node_ThirdwebSignMessage::UpdatePins()
+bool UK2Node_ThirdwebSignMessage::UpdatePins()
 {
 	if (UEdGraphPin* Pin = GetWalletPin())
 	{
@@ -102,6 +102,7 @@ void UK2Node_ThirdwebSignMessage::UpdatePins()
 			{
 				Pin->PinType = ConnectedPin->PinType;
 				GetGraph()->NotifyGraphChanged();
+				return true;
 			}
 		}
 		else
@@ -111,9 +112,11 @@ void UK2Node_ThirdwebSignMessage::UpdatePins()
 				Pin->PinType.PinCategory = UEdGraphSchema_K2::PC_Wildcard;
 				Pin->BreakAllPinLinks();
 				GetGraph()->NotifyGraphChanged();
+				return true;
 			}
 		}
 	}
+	return false;
 }
 
 #undef LOCTEXT_NAMESPACE

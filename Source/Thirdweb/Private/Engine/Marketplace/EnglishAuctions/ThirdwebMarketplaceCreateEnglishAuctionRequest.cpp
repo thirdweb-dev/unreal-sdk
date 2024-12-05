@@ -2,6 +2,8 @@
 
 #include "Engine/Marketplace/EnglishAuctions/ThirdwebMarketplaceCreateEnglishAuctionRequest.h"
 
+#include "Dom/JsonObject.h"
+
 TSharedPtr<FJsonObject> FThirdwebMarketplaceCreateEnglishAuctionRequest::ToJson() const
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);

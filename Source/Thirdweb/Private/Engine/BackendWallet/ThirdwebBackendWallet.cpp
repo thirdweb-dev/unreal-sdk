@@ -2,6 +2,8 @@
 
 #include "Engine/BackendWallet/ThirdwebBackendWallet.h"
 
+#include "Dom/JsonObject.h"
+
 FThirdwebBackendWallet FThirdwebBackendWallet::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	FThirdwebBackendWallet Wallet;
