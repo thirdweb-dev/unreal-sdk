@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebInAppSignMessage.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebInAppSignMessage::Activate()

@@ -10,9 +10,12 @@ public:
 	// Constructor
 	FThirdwebHeaders();
 
-	// Adds a header
+	// Adds a header conditionally
 	void Set(const FString& Name, const FString& Value, const bool bCondition = true);
 
+	// Adds headers
+	void SetMany(TArray<TTuple<FString, FString>> Pairs);
+	
 	// Removes a header
 	bool Remove(const FString& Name);
 

@@ -16,6 +16,15 @@ void FThirdwebHeaders::Set(const FString& Name, const FString& Value, const bool
 	}
 }
 
+void FThirdwebHeaders::SetMany(TArray<TTuple<FString, FString>> Pairs)
+{
+	for (const auto& Pair : Pairs)
+	{
+		Set(Pair.Key, Pair.Value);
+	}
+}
+
+
 bool FThirdwebHeaders::Remove(const FString& Name)
 {
 	return Headers.Remove(Name) > 0;

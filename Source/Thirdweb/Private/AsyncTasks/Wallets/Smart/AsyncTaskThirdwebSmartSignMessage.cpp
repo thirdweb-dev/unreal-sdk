@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebSmartSignMessage.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebSmartSignMessage::Activate()

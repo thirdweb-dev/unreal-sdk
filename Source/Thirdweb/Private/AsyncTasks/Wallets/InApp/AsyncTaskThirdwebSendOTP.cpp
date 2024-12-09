@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSendOTP.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebSendOTP::Activate()
