@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 183,
-	"VersionName": "1.3.8",
+	"VersionName": "1.8.3",
 	"FriendlyName": "Thirdweb SDK",
 	"Description": "ThirdwebSDK for Unreal Engine",
 	"Category": "Thirdweb",
