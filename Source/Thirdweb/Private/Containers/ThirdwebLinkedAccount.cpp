@@ -2,6 +2,8 @@
 
 #include "Containers/ThirdwebLinkedAccount.h"
 
+#include "Dom/JsonObject.h"
+
 FThirdwebLinkedAccount FThirdwebLinkedAccount::FromJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	FThirdwebLinkedAccount LinkedAccount;

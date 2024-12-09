@@ -2,6 +2,7 @@
 
 #include "Containers/ThirdwebMultipartFormData.h"
 
+#include "Containers/StringConv.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
 

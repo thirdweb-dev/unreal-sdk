@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "Containers/Array.h"
+#include "Containers/Map.h"
+#include "Containers/UnrealString.h"
+
 struct FThirdwebURLSearchParams
 {
 	FThirdwebURLSearchParams() = default;

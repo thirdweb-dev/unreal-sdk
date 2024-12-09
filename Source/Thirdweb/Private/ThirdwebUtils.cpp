@@ -27,6 +27,7 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/Base64.h"
 #include "Misc/DefaultValueHelper.h"
+#include "Modules/ModuleManager.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"

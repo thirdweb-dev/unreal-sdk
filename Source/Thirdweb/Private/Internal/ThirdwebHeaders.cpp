@@ -2,6 +2,7 @@
 
 #include "Internal/ThirdwebHeaders.h"
 
+#include "Containers/UnrealString.h"
 #include "Interfaces/IHttpRequest.h"
 
 FThirdwebHeaders::FThirdwebHeaders()
