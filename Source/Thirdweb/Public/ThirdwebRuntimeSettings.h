@@ -56,7 +56,7 @@ protected:
 	FString EngineBaseUrl;
 
 	/** Access Token for Engine Authorization */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Access Token", Category=Engine)
+	UPROPERTY(Config, EditAnywhere, DisplayName="Access Token", meta=(ConfigHierarchyEditable), Category=Engine)
 	FString EngineAccessToken;
 	
 	/** Opt in or out of connect analytics */
@@ -64,26 +64,26 @@ protected:
 	bool bSendAnalytics;
 
 	/** Edit Condition for overriding Custom Application Schema */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Override App URI", meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, DisplayName="Override App URI", meta=(InlineEditConditionToggle, ConfigHierarchyEditable), Category="Advanced|Wallets")
 	bool bOverrideAppUri;
 	
 	/** Custom Application URI for oauth redirects. default is {bundleId}://{clientId} */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri"), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom App URI", meta=(EditCondition="bOverrideAppUri", ConfigHierarchyEditable), Category="Advanced|Wallets")
 	FString CustomAppUri;
 
 	/** Edit Condition for overriding the final page shown after auth is complete */
-	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle, ConfigHierarchyEditable), Category="Advanced|Wallets")
 	bool bOverrideExternalAuthRedirectUri;
 	
 	/** Custom URI shown after external auth is complete */
-	UPROPERTY(Config, EditAnywhere, DisplayName="Custom External Auth Redirect URI", meta=(EditCondition="bOverrideExternalAuthRedirectUri"), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, DisplayName="Custom External Auth Redirect URI", meta=(EditCondition="bOverrideExternalAuthRedirectUri", ConfigHierarchyEditable), Category="Advanced|Wallets")
 	FString CustomExternalAuthRedirectUri;
 	
 	/** Edit Condition for overriding OAuth Browser Provider Backends */
-	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, meta=(InlineEditConditionToggle, ConfigHierarchyEditable), Category="Advanced|Wallets")
 	bool bOverrideOAuthBrowserProviderBackends;
 
-	UPROPERTY(Config, EditAnywhere, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider"), Category="Advanced|Wallets")
+	UPROPERTY(Config, EditAnywhere, meta=(EditCondition="bOverrideOAuthBrowserProviderBackends", ArraySizeEnum="EThirdwebOAuthProvider", ConfigHierarchyEditable), Category="Advanced|Wallets")
 	EThirdwebOAuthBrowserBackend OAuthBrowserProviderBackendOverrides[static_cast<int>(EThirdwebOAuthProvider::None)];
 	
 private:

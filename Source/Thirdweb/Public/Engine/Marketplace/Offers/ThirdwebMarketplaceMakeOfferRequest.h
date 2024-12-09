@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Misc/DateTime.h"
 #include "ThirdwebMarketplaceMakeOfferRequest.generated.h"
 
 class FJsonObject;
