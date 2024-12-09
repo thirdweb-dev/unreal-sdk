@@ -4,11 +4,9 @@
 
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
-
 #include "Async/Async.h"
-
+#include "Async/TaskGraphInterfaces.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
-
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #if WITH_CEF

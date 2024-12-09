@@ -2,9 +2,9 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebIsActiveSigner.h"
 
-#include "Containers/ThirdwebSigner.h"
-
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
+#include "Containers/ThirdwebSigner.h"
 
 void UAsyncTaskThirdwebIsActiveSigner::Activate()
 {

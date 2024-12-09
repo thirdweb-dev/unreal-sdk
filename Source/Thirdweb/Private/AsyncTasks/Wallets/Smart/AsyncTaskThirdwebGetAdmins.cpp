@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebGetAdmins.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebGetAdmins::Activate()

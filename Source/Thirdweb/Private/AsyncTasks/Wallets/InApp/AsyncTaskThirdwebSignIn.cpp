@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebSignIn.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 UAsyncTaskThirdwebSignIn* UAsyncTaskThirdwebSignIn::SignIn(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FString& Input, const FString& Signature)

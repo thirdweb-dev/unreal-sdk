@@ -11,6 +11,7 @@
 #include "Thirdweb.h"
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "Containers/ThirdwebIPFSUploadResult.h"
 #include "Containers/ThirdwebMultipartFormData.h"
 #include "Dom/JsonObject.h"
@@ -21,6 +22,7 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Interfaces/IPluginManager.h"
+#include "Internal/ThirdwebHeaders.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/Base64.h"
@@ -419,8 +421,7 @@ namespace ThirdwebUtils
 		{
 			if (!IsInGameThread())
 			{
-				// Retry on the GameThread.
-				const FWalletHandle WalletCopy;
+				const FWalletHandle WalletCopy = Wallet;
 				FFunctionGraphTask::CreateAndDispatchWhenReady([WalletCopy]()
 				{
 					SendConnectEvent(WalletCopy);
@@ -436,13 +437,17 @@ namespace ThirdwebUtils
 			const TSharedRef<IHttpRequest> Request = HttpModule.CreateRequest();
 			Request->SetVerb("POST");
 			Request->SetURL("https://c.thirdweb.com/event");
-			Request->SetHeader("Content-Type", "application/json");
-			Request->SetHeader("x-sdk-name", "UnrealEngineSDK");
-			Request->SetHeader("x-sdk-os", UGameplayStatics::GetPlatformName());
-			Request->SetHeader("x-sdk-platform", "unreal-engine");
-			Request->SetHeader("x-sdk-version", GetPluginVersion());
-			Request->SetHeader("x-client-id", Settings->GetClientId());
-			Request->SetHeader("x-bundle-id", Settings->GetBundleId());
+			FThirdwebHeaders Headers;
+			Headers.SetMany({
+				{TEXT("Content-Type"), TEXT("application/json")},
+				{TEXT("x-sdk-name"), TEXT("UnrealEngineSDK")},
+				{TEXT("x-sdk-os"), UGameplayStatics::GetPlatformName()},
+				{TEXT("x-sdk-platform"), TEXT("unreal-engine")},
+				{TEXT("x-sdk-version"), GetPluginVersion()},
+				{TEXT("x-client-id"), Settings->GetClientId()},
+				{TEXT("x-bundle-id"), Settings->GetBundleId()},
+			});
+			Headers.UpdateRequest(Request);
 			Request->SetTimeout(5.0f);
 
 			// ReSharper disable once CppLocalVariableMayBeConst
@@ -451,7 +456,7 @@ namespace ThirdwebUtils
 			JsonObject->SetStringField(TEXT("action"), TEXT("connect"));
 			JsonObject->SetStringField(TEXT("walletAddress"), Wallet.ToAddress());
 			JsonObject->SetStringField(TEXT("walletType"), Wallet.GetTypeString());
-			Request->SetContentAsString(ThirdwebUtils::Json::ToString(JsonObject));
+			Request->SetContentAsString(Json::ToString(JsonObject));
 			Request->ProcessRequest();
 		}
 

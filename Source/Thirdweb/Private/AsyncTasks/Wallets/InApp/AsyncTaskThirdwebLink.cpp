@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/AsyncTaskThirdwebLink.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 UAsyncTaskThirdwebLink* UAsyncTaskThirdwebLink::Link(UObject* WorldContextObject, const FInAppWalletHandle& Wallet, const FInAppWalletHandle& NewWallet, const FString& Input, const FString& Signature)

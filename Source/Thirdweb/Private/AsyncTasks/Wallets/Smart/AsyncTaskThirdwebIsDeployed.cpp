@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebIsDeployed.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebIsDeployed::Activate()

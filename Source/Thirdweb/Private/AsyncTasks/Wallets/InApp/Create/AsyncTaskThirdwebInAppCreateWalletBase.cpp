@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebInAppCreateWalletBase.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Wallets/ThirdwebInAppWalletHandle.h"
 
 void UAsyncTaskThirdwebInAppCreateWalletBase::HandleResponse(const FInAppWalletHandle& Wallet)

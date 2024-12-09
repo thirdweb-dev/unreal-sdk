@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Wallets/InApp/Create/AsyncTaskThirdwebCreateSmartWallet.h"
 
+#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Wallets/ThirdwebSmartWalletHandle.h"
 
