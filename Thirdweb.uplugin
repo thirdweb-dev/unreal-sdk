@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 200,
-	"VersionName": "2.0.0-dev",
+	"Version": 182,
+	"VersionName": "1.8.2",
 	"FriendlyName": "Thirdweb SDK",
 	"Description": "ThirdwebSDK for Unreal Engine",
 	"Category": "Thirdweb",
@@ -11,7 +11,7 @@
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/f21200c2610146f3888172994448e50d",
 	"SupportURL": "https://thirdweb.com/support",
 	"CanContainContent": true,
-	"IsBetaVersion": true,
+	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"EditorCustomVirtualPath": "Thirdweb",

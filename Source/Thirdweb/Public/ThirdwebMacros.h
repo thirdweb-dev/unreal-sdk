@@ -3,7 +3,7 @@
 // ReSharper disable CppUE4CodingStandardNamingViolationWarning,CppUE4CodingStandardNamingViolationWarning
 #pragma once
 
-#include "Delegates/Delegate.h" 
+#include "Delegates/Delegate.h"
 #include "Delegates/DelegateCombinations.h"
 
 #define TO_RUST_STRING(v) v.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*v)
