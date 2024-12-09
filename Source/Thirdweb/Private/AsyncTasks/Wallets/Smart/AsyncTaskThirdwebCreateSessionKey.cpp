@@ -3,7 +3,6 @@
 #include "AsyncTasks/Wallets/Smart/AsyncTaskThirdwebCreateSessionKey.h"
 
 #include "Async/TaskGraphInterfaces.h"
-#include "Async/TaskGraphInterfaces.h"
 #include "Components/SlateWrapperTypes.h"
 
 void UAsyncTaskThirdwebCreateSessionKey::Activate()
