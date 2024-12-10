@@ -1,4 +1,4 @@
-name: Build Binaries
+name: Build Plugin
 
 on:
   workflow_dispatch:
@@ -25,9 +25,9 @@ jobs:
   build:
     name: Build Target
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        engine: [ 5.4 ] # [5.5, 5.4, 5.3, 5.2, 5.1, 5.0]
+        engine: [ 5.4, 5.3, 5.2, 5.1, 5.0 ] # [5.5]
         os: [ ubuntu-latest-8, ubuntu-24.04-arm64 ] # windows-11-desktop, macos-13
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,7 +41,7 @@ jobs:
               export LINUX_TARGET_TYPE="LinuxArm64"
           fi
           echo "LINUX_TARGET_TYPE=$LINUX_TARGET_TYPE" >> "$GITHUB_ENV"
-          
+
       - name: Build Plugin (Linux)
         if: ${{ matrix.os == 'ubuntu-latest-8' || matrix.os == 'ubuntu-24.04-arm64' }}
         uses: addnab/docker-run-action@v3
@@ -56,7 +56,7 @@ jobs:
               BuildPlugin \
               -NoHostPlatform \
               -TargetPlatform=Linux${{ env.LINUX_TARGET_TYPE }} \
-              -Package=/build \
+              -Package=/home/ue4//build \
               -Plugin="/plugin/Thirdweb.uplugin"
 
       # - name: Downgrade Xcode
