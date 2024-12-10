@@ -31,11 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      #- name: Login to Docker Hub
+      #  uses: docker/login-action@v3
+      #  with:
+      #    username: ${{ vars.GHCR_USERNAME }}
+      #    password: ${{ secrets.GHCR_TOKEN }}
+      #    
       - uses: addnab/docker-run-action@v3
         with:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
-          registry: gcr.io
+          registry: ghcr.io
           image: epicgames/unreal-engine:dev-slim-${{ matrix.engine }}
           options: -v ${{ github.workspace }}:/plugin
           run: |
