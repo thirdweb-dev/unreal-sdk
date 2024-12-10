@@ -10,6 +10,7 @@ on:
       - 'Resources/**'
       - 'Source/**'
       - 'Thirdweb.uplugin'
+      - '.github/workflows/build.yml'
   pull_request:
     branches: [ main, ci-cd ]
     paths:
@@ -18,6 +19,7 @@ on:
       - 'Resources/**'
       - 'Source/**'
       - 'Thirdweb.uplugin'
+      - '.github/workflows/build.yml'
 
 jobs:
   build:
@@ -42,7 +44,7 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
           registry: ghcr.io
-          image: epicgames/unreal-engine:dev-slim-${{ matrix.engine }}
+          image: ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.engine }}
           options: -v ${{ github.workspace }}:/plugin
           run: |
             Engine/Build/BatchFiles/RunUAT.sh \
