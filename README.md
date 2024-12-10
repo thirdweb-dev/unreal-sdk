@@ -57,7 +57,7 @@ Legend: ✅ Supported | ❌ Unsupported | ➖ Not applicable
 
 ## Documentation
 
-Documentation is available at https://portal.thirdweb.com/unreal
+Documentation is available at https://portal.thirdweb.com/unreal-engine
 
 [^1]: Unreal Engine's Marketplace Guidelines - Section 3.1.b https://www.unrealengine.com/en-US/marketplace-guidelines#31b
 
