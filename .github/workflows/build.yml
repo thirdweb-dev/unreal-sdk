@@ -28,7 +28,7 @@ jobs:
       fail-fast: true
       matrix:
         engine: [5.4] # [5.5, 5.4, 5.3, 5.2, 5.1, 5.0]
-        os: [ubuntu-24.04] # [ubuntu-24.04, ubuntu-24.04-arm64, windows-2022, macos-13]
+        os: [ubuntu-latest-8] # [ubuntu-24.04, ubuntu-24.04-arm64, windows-11-desktop, macos-13] ubuntu-latest-8
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
