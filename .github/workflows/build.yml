@@ -1,0 +1,65 @@
+name: Build Binaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, ci-cd ]
+    paths:
+      - 'Config/**'
+      - 'Content/**'
+      - 'Resources/**'
+      - 'Source/**'
+      - 'Thirdweb.uplugin'
+  pull_request:
+    branches: [ main, ci-cd ]
+    paths:
+      - 'Config/**'
+      - 'Content/**'
+      - 'Resources/**'
+      - 'Source/**'
+      - 'Thirdweb.uplugin'
+
+jobs:
+  build:
+    name: Build Target
+    strategy:
+      fail-fast: true
+      matrix:
+        engine: [5.4] # [5.5, 5.4, 5.3, 5.2, 5.1, 5.0]
+        os: [ubuntu-24.04] # [ubuntu-24.04, ubuntu-24.04-arm64, windows-2022, macos-13]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: addnab/docker-run-action@v3
+        with:
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+          registry: gcr.io
+          image: epicgames/unreal-engine:dev-slim-${{ matrix.engine }}
+          options: -v ${{ github.workspace }}:/plugin
+          run: |
+            Engine/Build/BatchFiles/RunUAT.sh \
+              BuildPlugin \
+              -NoHostPlatform \
+              -TargetPlatform=Linux+LinuxArm64 \
+              -Package=/home/ue4/build \
+              -Plugin="/plugin/Thirdweb.uplugin"
+
+      # - name: Downgrade Xcode
+      #   if: ${{ matrix.os == 'macos-13' }}
+      #   uses: maxim-lobanov/setup-xcode@v1
+      #   with:
+      #     xcode-version: '14.1.0'
+
+      # - name: Debug Clang
+      #   if: ${{ matrix.platform == 'ios' }}
+      #   run: clang --version
+
+      #- name: Archive Build Artifact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: ${{ format('{0}-{1}-{2}', matrix.platform, matrix.arch, github.run_id) }}
+      #    path: |
+      #      target/*/release/libthirdweb.a
+      #      target/*/release/thirdweb.lib
