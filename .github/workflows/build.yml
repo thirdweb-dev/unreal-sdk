@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        engine: [ 5.4, 5.3, 5.2, 5.1, 5.0 ] # [5.5]
+        engine: [ "5.4", "5.3","5.2", "5.1", "5.0" ] # [5.5]
         os: [ ubuntu-latest-8, ubuntu-24.04-arm64 ] # windows-11-desktop, macos-13
     runs-on: ${{ matrix.os }}
     steps:
