@@ -5,7 +5,6 @@
 #include "ThirdwebLog.h"
 #include "ThirdwebRuntimeSettings.h"
 #include "Blueprint/WidgetTree.h"
-#include "Browser/ThirdwebOAuthBrowserWidget.h"
 #include "Browser/ThirdwebOAuthExternalBrowser.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
@@ -17,13 +16,14 @@
 #endif
 
 const FString UThirdwebOAuthBrowserUserWidget::BackendUrlPrefix = TEXT("https://embedded-wallet.thirdweb.com/");
+const FString UThirdwebOAuthBrowserUserWidget::DummyUrl = TEXT("http://localhost:8789/callback");
 
 TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 {
 	// RebuildWidget is not called until the widget is first added to the
 	// viewport.
 
-	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
+	UPanelWidget *RootWidget = Cast<UPanelWidget>(GetRootWidget());
 
 	// Construct root widget if needed
 	if (!RootWidget)
@@ -35,19 +35,6 @@ TSharedRef<SWidget> UThirdwebOAuthBrowserUserWidget::RebuildWidget()
 	// Construct children
 	if (RootWidget)
 	{
-		// Construct browser widget
-		Browser = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(
-			UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOauthBrowser"));
-		Browser->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
-		Browser->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
-		Browser->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
-		UPanelSlot* PanelSlot = RootWidget->AddChild(Browser);
-		if (UOverlaySlot* RootWidgetSlot = Cast<UOverlaySlot>(PanelSlot))
-		{
-			RootWidgetSlot->SetHorizontalAlignment(HAlign_Fill);
-			RootWidgetSlot->SetVerticalAlignment(VAlign_Fill);
-		}
-
 		// Construct External browser
 		ExternalBrowser = NewObject<UThirdwebOAuthExternalBrowser>(this);
 		ExternalBrowser->OnAuthenticated.BindUObject(this, &ThisClass::HandleAuthenticated);
@@ -77,14 +64,19 @@ void UThirdwebOAuthBrowserUserWidget::BeginDestroy()
 	{
 		ExternalBrowser->ConditionalBeginDestroy();
 	}
-	if (Browser)
-	{
-		Browser->ConditionalBeginDestroy();
-	}
 	Super::BeginDestroy();
 }
 
-void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InAppWallet)
+FString UThirdwebOAuthBrowserUserWidget::GetDummyUrl()
+{
+#if PLATFORM_ANDROID
+	return UThirdwebRuntimeSettings::GetAppUri();
+#else
+	return DummyUrl;
+#endif
+}
+
+void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle &InAppWallet)
 {
 	// Validate Wallet
 	if (!InAppWallet.IsValid())
@@ -100,62 +92,40 @@ void UThirdwebOAuthBrowserUserWidget::Authenticate(const FInAppWalletHandle& InA
 		ExternalBrowser->Authenticate(TEXT("SIWE"));
 		return;
 	}
-	
+
 	// Get Login URL
 	FString Link;
-	if (FString Error; !Wallet.FetchOAuthLoginURL(UThirdwebOAuthBrowserWidget::GetDummyUrl(), Link, Error))
+	if (FString Error; !Wallet.FetchOAuthLoginURL(GetDummyUrl(), Link, Error))
 	{
 		return HandleError(Error);
 	}
 	TW_LOG(VeryVerbose, TEXT("OAuthBrowserUserWidget::Authenticate::Authenticating against %s"), *Link);
 
-	// Check Browser Type
-	if (UThirdwebRuntimeSettings::IsExternalOAuthBackend(Wallet.GetOAuthProvider()))
-	{
 #if PLATFORM_ANDROID
-		if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
-		{
-			jstring JUrl = Env->NewStringUTF(TCHAR_TO_UTF8(*Link));
-			jclass JClass = FAndroidApplication::FindJavaClass("com/thirdweb/unrealengine/ThirdwebActivity");
-			static jmethodID JLaunchUrl = FJavaWrapper::FindStaticMethod(Env, JClass, "startActivity", "(Landroid/app/Activity;Ljava/lang/String;)V", false);
-			ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod(Env, JClass, JLaunchUrl, FJavaWrapper::GameActivityThis, JUrl);
-			TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Opening CustomTabs"));
-			return;
-		}
-		TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::No JNIEnv found"));
+	if (JNIEnv *Env = FAndroidApplication::GetJavaEnv())
+	{
+		jstring JUrl = Env->NewStringUTF(TCHAR_TO_UTF8(*Link));
+		jclass JClass = FAndroidApplication::FindJavaClass("com/thirdweb/unrealengine/ThirdwebActivity");
+		static jmethodID JLaunchUrl = FJavaWrapper::FindStaticMethod(Env, JClass, "startActivity", "(Landroid/app/Activity;Ljava/lang/String;)V", false);
+		ThirdwebUtils::Internal::Android::CallJniStaticVoidMethod(Env, JClass, JLaunchUrl, FJavaWrapper::GameActivityThis, JUrl);
+		TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::Authenticate::Opening CustomTabs"));
 		return;
+	}
+	TW_LOG(Error, TEXT("OAuthBrowserUserWidget::Authenticate::No JNIEnv found"));
+	return;
 #endif
 
-		return ExternalBrowser->Authenticate(Link);
-	}
-	return Browser->Authenticate(Link);
+	return ExternalBrowser->Authenticate(Link);
 }
 
-
-bool UThirdwebOAuthBrowserUserWidget::IsBlank() const
-{
-	const FString Url = Browser->GetUrl();
-
-	return  Url.IsEmpty() || Url.StartsWith(BackendUrlPrefix);
-}
-
-FString UThirdwebOAuthBrowserUserWidget::GetUrl() const
-{
-	if (Browser)
-	{
-		return Browser->GetUrl();
-	}
-	return TEXT("");
-}
-
-void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
+void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString &Url)
 {
 	TW_LOG(Verbose, TEXT("OAuthBrowserUserWidget::HandleUrlChanged::%s"), *Url);
 	if (Url.IsEmpty() || (Url.StartsWith(BackendUrlPrefix) && !Url.StartsWith(BackendUrlPrefix + TEXT("sdk/oauth"))))
 	{
 		return SetVisible(false);
 	}
-	if (Url.StartsWith(UThirdwebOAuthBrowserWidget::GetDummyUrl()))
+	if (Url.StartsWith(GetDummyUrl()))
 	{
 		SetVisible(false);
 		FString Left, Right;
@@ -168,7 +138,7 @@ void UThirdwebOAuthBrowserUserWidget::HandleUrlChanged(const FString& Url)
 	bShouldBeVisible = true;
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
+void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString &Url)
 {
 	if (bShouldBeVisible)
 	{
@@ -176,45 +146,34 @@ void UThirdwebOAuthBrowserUserWidget::HandlePageLoaded(const FString& Url)
 	}
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString& Url, const FString& Frame)
+void UThirdwebOAuthBrowserUserWidget::HandleOnBeforePopup(const FString &Url, const FString &Frame)
 {
-	if (UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget()))
-	{
-		// Construct browser widget
-		UThirdwebOAuthBrowserWidget* Popup = WidgetTree->ConstructWidget<UThirdwebOAuthBrowserWidget>(
-			UThirdwebOAuthBrowserWidget::StaticClass(), TEXT("ThirdwebOAuthBrowserPopUp"));
-		Popup->OnUrlChanged.AddUObject(this, &ThisClass::HandleUrlChanged);
-		Popup->OnPageLoaded.AddUObject(this, &ThisClass::HandlePageLoaded);
-		Popup->OnBeforePopup.AddUObject(this, &ThisClass::HandleOnBeforePopup);
-		RootWidget->AddChild(Popup);
-		Popup->LoadUrl(Url);
-	}
 	return OnPopup.Broadcast(Url, Frame);
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString& AuthResult)
+void UThirdwebOAuthBrowserUserWidget::HandleAuthenticated(const FString &AuthResult)
 {
 	OnAuthenticated.Broadcast(AuthResult);
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString& Signature, const FString& Payload)
+void UThirdwebOAuthBrowserUserWidget::HandleSiweComplete(const FString &Signature, const FString &Payload)
 {
 	OnSiweComplete.Broadcast(Signature, Payload);
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleError(const FString& Error)
+void UThirdwebOAuthBrowserUserWidget::HandleError(const FString &Error)
 {
 	OnError.Broadcast(Error);
 }
 
 #if PLATFORM_ANDROID
-void UThirdwebOAuthBrowserUserWidget::HandleDeepLink(const FString& Url)
+void UThirdwebOAuthBrowserUserWidget::HandleDeepLink(const FString &Url)
 {
 	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleDeepLink::%s"), *Url);
 	HandleUrlChanged(Url);
 }
 
-void UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed(const FString& Url)
+void UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed(const FString &Url)
 {
 	TW_LOG(VeryVerbose, TEXT("UThirdwebOAuthBrowserUserWidget::HandleCustomTabsDismissed::%s"), *Url);
 	HandleUrlChanged(Url);
