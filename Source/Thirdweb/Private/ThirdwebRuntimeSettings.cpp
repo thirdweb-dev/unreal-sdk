@@ -10,16 +10,6 @@
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
-// These Providers do not work with an embedded browser for various reasons:
-// - Google: https://accounts.youtube.com/accounts/SetSID does not load
-// - Facebook: https://www.facebook.com/privacy/consent/gdp does not load
-// - Telegram: Forced transient pop-up window
-const TArray<EThirdwebOAuthProvider> UThirdwebRuntimeSettings::ExternalOnlyProviders = {
-	EThirdwebOAuthProvider::Google,
-	EThirdwebOAuthProvider::Facebook,
-	EThirdwebOAuthProvider::Telegram,
-};
-
 const FString UThirdwebRuntimeSettings::DefaultExternalAuthRedirectUri = TEXT("https://static.thirdweb.com/auth/complete");
 
 UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
@@ -27,13 +17,11 @@ UThirdwebRuntimeSettings::UThirdwebRuntimeSettings()
 	bSendAnalytics = true;
 	bOverrideExternalAuthRedirectUri = false;
 	CustomExternalAuthRedirectUri = DefaultExternalAuthRedirectUri;
-	bOverrideOAuthBrowserProviderBackends = false;
 	bOverrideAppUri = false;
-	for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders) OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
 }
 
 #if WITH_EDITOR
-void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEvent &PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
@@ -45,24 +33,12 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, PartnerId),
 		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineBaseUrl),
 		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, EngineAccessToken),
-		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, CustomAppUri)
-	};
+		GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, CustomAppUri)};
 
 	bool bChanged = false;
 	// ReSharper disable once CppTooWideScopeInitStatement
 	const FName CurrentPropertyName = PropertyChangedEvent.GetMemberPropertyName();
 	UE_LOG(LogTemp, Warning, TEXT("PropertyChangedEvent=%s"), *CurrentPropertyName.ToString())
-	if (CurrentPropertyName == GET_MEMBER_NAME_CHECKED(UThirdwebRuntimeSettings, OAuthBrowserProviderBackendOverrides))
-	{
-		for (const EThirdwebOAuthProvider Provider : ExternalOnlyProviders)
-		{
-			if (OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] != EThirdwebOAuthBrowserBackend::External)
-			{
-				OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)] = EThirdwebOAuthBrowserBackend::External;
-				bChanged = true;
-			}
-		}
-	}
 	if (Trimmable.Contains(CurrentPropertyName))
 	{
 		FString Value;
@@ -109,7 +85,7 @@ void UThirdwebRuntimeSettings::PostEditChangeProperty(struct FPropertyChangedEve
 	}
 }
 
-bool UThirdwebRuntimeSettings::CanEditChange(const FProperty* InProperty) const
+bool UThirdwebRuntimeSettings::CanEditChange(const FProperty *InProperty) const
 {
 	if (!Super::CanEditChange(InProperty))
 	{
@@ -139,7 +115,7 @@ void UThirdwebRuntimeSettings::GenerateEncryptionKey()
 
 TArray<FString> UThirdwebRuntimeSettings::GetEngineSigners()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->EngineSigners;
 	}
@@ -148,7 +124,7 @@ TArray<FString> UThirdwebRuntimeSettings::GetEngineSigners()
 
 FString UThirdwebRuntimeSettings::GetEngineSigner()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		if (Settings->EngineSigners.Num() > 0)
 		{
@@ -160,7 +136,7 @@ FString UThirdwebRuntimeSettings::GetEngineSigner()
 
 FString UThirdwebRuntimeSettings::GetExternalAuthRedirectUri()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		if (Settings->bOverrideExternalAuthRedirectUri && !Settings->CustomExternalAuthRedirectUri.IsEmpty())
 		{
@@ -172,7 +148,7 @@ FString UThirdwebRuntimeSettings::GetExternalAuthRedirectUri()
 
 FString UThirdwebRuntimeSettings::GetEncryptionKey()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->EncryptionKey;
 	}
@@ -186,28 +162,9 @@ FString UThirdwebRuntimeSettings::GetStorageDirectory()
 	return StorageDir;
 }
 
-bool UThirdwebRuntimeSettings::IsExternalOAuthBackend(const EThirdwebOAuthProvider Provider)
-{
-	if (ExternalOnlyProviders.Contains(Provider)) return true;
-#if PLATFORM_APPLE
-	// Apple natively handles apple auth links, so we want to enforce that flow
-	if (Provider == EThirdwebOAuthProvider::Apple) return true;
-#endif
-
-	if (const UThirdwebRuntimeSettings* Settings = Get())
-	{
-		if (Settings->bOverrideOAuthBrowserProviderBackends)
-		{
-			return static_cast<int>(Settings->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
-		}
-		return static_cast<int>(StaticClass()->GetDefaultObject<UThirdwebRuntimeSettings>()->OAuthBrowserProviderBackendOverrides[static_cast<int>(Provider)]) == 1;
-	}
-	return false;
-}
-
 FString UThirdwebRuntimeSettings::GetEcosystemId()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->EcosystemId.TrimStartAndEnd();
 	}
@@ -231,7 +188,7 @@ bool UThirdwebRuntimeSettings::IsEcosystem()
 
 FString UThirdwebRuntimeSettings::GetClientId()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->ClientId.TrimStartAndEnd();
 	}
@@ -240,7 +197,7 @@ FString UThirdwebRuntimeSettings::GetClientId()
 
 FString UThirdwebRuntimeSettings::GetBundleId()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->BundleId.TrimStartAndEnd();
 	}
@@ -249,7 +206,7 @@ FString UThirdwebRuntimeSettings::GetBundleId()
 
 bool UThirdwebRuntimeSettings::AnalyticsEnabled()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->bSendAnalytics;
 	}
@@ -258,7 +215,7 @@ bool UThirdwebRuntimeSettings::AnalyticsEnabled()
 
 FString UThirdwebRuntimeSettings::GetEngineBaseUrl()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		FString Url = Settings->EngineBaseUrl.TrimStartAndEnd();
 		return Url.EndsWith("/") ? Url.LeftChop(1) : Url;
@@ -268,7 +225,7 @@ FString UThirdwebRuntimeSettings::GetEngineBaseUrl()
 
 FString UThirdwebRuntimeSettings::GetEngineAccessToken()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		return Settings->EngineAccessToken.TrimStartAndEnd();
 	}
@@ -277,7 +234,7 @@ FString UThirdwebRuntimeSettings::GetEngineAccessToken()
 
 FString UThirdwebRuntimeSettings::GetAppUri()
 {
-	if (const UThirdwebRuntimeSettings* Settings = Get())
+	if (const UThirdwebRuntimeSettings *Settings = Get())
 	{
 		if (Settings->bOverrideAppUri)
 		{
@@ -291,8 +248,8 @@ FString UThirdwebRuntimeSettings::GetAppUri()
 void UThirdwebRuntimeSettings::FetchEngineSigners()
 {
 #if WITH_EDITOR
-	ThirdwebEngine::BackendWallet::FGetAllDelegate SuccessDelegate = ThirdwebEngine::BackendWallet::FGetAllDelegate::CreateWeakLambda(this, [this](const TArray<FThirdwebBackendWallet>& BackendWallets)
-	{
+	ThirdwebEngine::BackendWallet::FGetAllDelegate SuccessDelegate = ThirdwebEngine::BackendWallet::FGetAllDelegate::CreateWeakLambda(this, [this](const TArray<FThirdwebBackendWallet> &BackendWallets)
+																																	  {
 		TArray<FString> Addresses;
 		for (const FThirdwebBackendWallet& BackendWallet : BackendWallets)
 		{
@@ -303,12 +260,9 @@ void UThirdwebRuntimeSettings::FetchEngineSigners()
 		if (MarkPackageDirty())
 		{
 			PostEditChange();
-		}
-	});
-	FStringDelegate ErrorDelegate = FStringDelegate::CreateWeakLambda(this, [](const FString& ErrorMessage)
-	{
-		TW_LOG(Error, TEXT("UThirdwebRuntimeSettings::FetchEngineSigners::Failed to fetch engine signers::Error=%s"), *ErrorMessage);
-	});
+		} });
+	FStringDelegate ErrorDelegate = FStringDelegate::CreateWeakLambda(this, [](const FString &ErrorMessage)
+																	  { TW_LOG(Error, TEXT("UThirdwebRuntimeSettings::FetchEngineSigners::Failed to fetch engine signers::Error=%s"), *ErrorMessage); });
 	ThirdwebEngine::BackendWallet::GetAll(this, 1, 10, SuccessDelegate, ErrorDelegate);
 #endif
 }
