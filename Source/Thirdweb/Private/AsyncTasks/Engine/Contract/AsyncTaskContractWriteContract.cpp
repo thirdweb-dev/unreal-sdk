@@ -2,6 +2,7 @@
 
 #include "AsyncTasks/Engine/Contract/AsyncTaskContractWriteContract.h"
 
+#include "ThirdwebRuntimeSettings.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/ThirdwebEngine.h"
 

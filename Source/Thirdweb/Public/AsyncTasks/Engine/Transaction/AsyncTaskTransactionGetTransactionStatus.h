@@ -3,9 +3,8 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionStatusResult.h"
 #include "AsyncTaskTransactionGetTransactionStatus.generated.h"
-
-struct FThirdwebEngineTransactionStatusResult;
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskTransactionGetTransactionStatus : public UAsyncTaskThirdwebBase

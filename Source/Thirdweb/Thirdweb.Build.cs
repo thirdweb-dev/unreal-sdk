@@ -22,9 +22,13 @@ public class Thirdweb : ModuleRules
 
 	private bool IsMobile => IsIOSIsh || IsAndroid;
 
-	private string LibExt =>
-		IsWin64 ? ".lib" : Target.Architectures.Contains(UnrealArch.IOSSimulator) ? ".sim.a" : ".a";
 
+	private string LibExt => IsWin64 ? ".lib" :
+#if UE_5_2_OR_LATER
+		 Target.Architectures.Contains(UnrealArch.IOSSimulator) ? ".sim.a" : 
+#endif
+		 ".a";
+	
 	private string LibDir => Path.Combine(Path.Combine(ModuleDirectory, "..", "ThirdParty"),
 		IsIOSIsh ? "IOS" : Target.Platform.ToString());
 

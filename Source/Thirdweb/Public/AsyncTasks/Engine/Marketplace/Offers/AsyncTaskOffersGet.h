@@ -3,9 +3,9 @@
 #pragma once
 
 #include "AsyncTasks/Engine/Marketplace/AsyncTaskMarketplaceGetBase.h"
+#include "Engine/Marketplace/Offers/ThirdwebMarketplaceOffer.h"
 #include "AsyncTaskOffersGet.generated.h"
 
-struct FThirdwebMarketplaceOffer;
 class UThirdwebMarketplace;
 
 /**

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "AsyncTasks/AsyncTaskThirdwebBase.h"
+#include "Engine/Transaction/ThirdwebEngineTransactionReceipt.h"
 #include "AsyncTaskTransactionGetTransactionReceipt.generated.h"
 
-struct FThirdwebEngineTransactionReceipt;
 
 UCLASS(Blueprintable, BlueprintType)
 class THIRDWEB_API UAsyncTaskTransactionGetTransactionReceipt : public UAsyncTaskThirdwebBase
