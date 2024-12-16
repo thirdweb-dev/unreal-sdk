@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ThirdwebEditorStyle.h"
-
 #include "Framework/Commands/Commands.h"
 
 class FThirdwebEditorCommands : public TCommands<FThirdwebEditorCommands>
@@ -13,23 +12,18 @@ public:
 
 	virtual void RegisterCommands() override;
 
-	static TSharedPtr<FUICommandInfo> GetOpenSettingsCommand() { return Get().OpenSettings; }
-	static TSharedPtr<FUICommandInfo> GetTakeScreenshotCommand() { return Get().TakeScreenshot; }
-	// ReSharper disable once CppConstValueFunctionReturnType
-	static const TArray<TSharedPtr<FUICommandInfo>> GetCommands() { return {Get().OpenSettings, Get().TakeScreenshot}; }
-
-	template <typename CallableT>
-	static void ForEach(CallableT Callable)
-	{
-		// ReSharper disable once CppTooWideScopeInitStatement
-		const TArray<TSharedPtr<FUICommandInfo>> Commands = GetCommands();
-		for (const TSharedPtr<FUICommandInfo>& Value : Commands)
-		{
-			Invoke(Callable, Value);
-		}
-	}
-
-protected:
-	TSharedPtr<FUICommandInfo> OpenSettings;
+	// Configuration
+	TSharedPtr<FUICommandInfo> OpenRuntimeSettings;
+	TSharedPtr<FUICommandInfo> OpenEditorSettings;
+	// Utilities
 	TSharedPtr<FUICommandInfo> TakeScreenshot;
+	// Reference
+	TSharedPtr<FUICommandInfo> ViewDocumentation;
+	// Support
+	TSharedPtr<FUICommandInfo> AccessOfficialSupport;
+	TSharedPtr<FUICommandInfo> AccessCommunitySupport;
+	TSharedPtr<FUICommandInfo> ReportABug;
+	TSharedPtr<FUICommandInfo> IssueTracker;
+	// Footer
+	TSharedPtr<FUICommandInfo> ViewWebsite;
 };

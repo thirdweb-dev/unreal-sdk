@@ -57,6 +57,9 @@ protected:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName="Timeout", meta=(EditCondition="!bScreenshotDisableNotifications", EditConditionHides), Category="Screenshots|Notifications")
 	int32 ScreenshotNotificationTimeoutSeconds;
 
+	UPROPERTY(Config, EditAnywhere, DisplayName="Hide Dropdown In Editor Toolbar", Category=Tools)
+	bool bHideDropdownInEditorToolbar;
+
 public:
 	static bool NotificationsEnabled() { return !Get()->bScreenshotDisableNotifications; }
 	static FInputChord GetScreenshotShortcut() { return Get()->ScreenshotShortcut; }
@@ -69,7 +72,8 @@ public:
 	static FDirectoryPath GetScreenshotSaveDirectory() { return Get()->ScreenshotSaveDirectory; }
 	static EThirdwebEditorBlueprintImageFormat GetScreenshotFormat() { return Get()->ScreenshotFormat; }
 	static float GetScreenshotQuality();
-
+	static bool HideDropdownInEditorToolbar() { return Get()->bHideDropdownInEditorToolbar; }
+	
 	/** Convenience Getter */
 	static UThirdwebEditorSettings* Get() { return GetMutableDefault<UThirdwebEditorSettings>(); }
 };

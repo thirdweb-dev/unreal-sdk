@@ -3,13 +3,9 @@
 #include "ThirdwebEditorStyle.h"
 
 #include "ThirdwebEditorModule.h"
-
 #include "Framework/Application/SlateApplication.h"
-
 #include "Interfaces/IPluginManager.h"
-
 #include "Slate/SlateGameResources.h"
-
 #include "Styling/SlateStyleMacros.h"
 #include "Styling/SlateStyleRegistry.h"
 
@@ -48,8 +44,8 @@ TSharedRef<FSlateStyleSet> FThirdwebEditorStyle::Create()
 	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("ThirdwebEditorStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Thirdweb")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("ThirdwebEditor.OpenSettings", new IMAGE_BRUSH_SVG(TEXT("ThirdwebIcon"), Icon20x20));
-	Style->Set("ThirdwebEditor.TakeScreenshot", new IMAGE_BRUSH_SVG(TEXT("ScreenshotIcon"), Icon20x20));
+	Style->Set("LevelEditor.Thirdweb.Logo", new IMAGE_BRUSH_SVG(TEXT("ThirdwebIcon"), Icon20x20));
+	Style->Set("LevelEditor.Thirdweb.Screenshot", new IMAGE_BRUSH_SVG(TEXT("ScreenshotIcon"), Icon20x20));
 	return Style;
 }
 

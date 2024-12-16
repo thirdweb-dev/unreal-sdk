@@ -17,6 +17,7 @@ UThirdwebEditorSettings::UThirdwebEditorSettings()
 	ScreenshotShortcut = FInputChord(EModifierKey::Control, EKeys::F7);
 	bScreenshotDisableNotifications = false;
 	ScreenshotNotificationTimeoutSeconds = 5;
+	bHideDropdownInEditorToolbar = false;
 }
 
 #if WITH_EDITOR
